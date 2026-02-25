@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manuais e Vídeos - ToyKing | O Reino dos Brinquedos</title>
+    <meta name="description" content="Encontre manuais de instrução e vídeos demonstrativos dos brinquedos ToyKing.">
+    <link rel="icon" href="assets/images/logo.png" type="image/png">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="pages.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+    <!-- LOADER -->
+    <div class="loader-overlay">
+        <div class="loader-content">
+            <img src="assets/images/logo.png" alt="ToyKing">
+            <div class="loader-dots"><span></span><span></span><span></span><span></span></div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="header" id="header">
+        <div class="header-top">
+            <div class="container">
+                <a href="index.html" class="logo"><img src="assets/images/logo.png" alt="ToyKing Logo"></a>
+                <nav class="nav-main">
+                    <a href="index.html">Início</a>
+                    <a href="produtos.html">Produtos</a>
+                    <a href="manuais.html" class="active">Manuais e Vídeos</a>
+                    <a href="quem-somos.html">Quem Somos</a>
+                    <a href="contato.html">Contato</a>
+                </nav>
+                <button class="search-btn" aria-label="Pesquisar"><i class="fas fa-search"></i></button>
+                <button class="mobile-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+            </div>
+        </div>
+        <div class="header-sub">
+            <div class="container">
+                <a href="produtos.html" class="cat-link highlight">🔥 Novidades!</a>
+                <a href="produtos.html" class="cat-link">Todas as Categorias</a>
+                <a href="produtos.html" class="cat-link">ToyKing Baby</a>
+                <a href="produtos.html" class="cat-link">Mundo dos Dinos</a>
+                <a href="produtos.html" class="cat-link">Super Robôs</a>
+                <a href="produtos.html" class="cat-link">Racing Club</a>
+                <a href="produtos.html" class="cat-link">Musicais</a>
+                <a href="produtos.html" class="cat-link">Jogos & Ação</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- MOBILE NAV -->
+    <div class="mobile-overlay"></div>
+    <nav class="mobile-nav">
+        <button class="mobile-nav-close"><i class="fas fa-times"></i></button>
+        <a href="index.html">🏠 Início</a>
+        <a href="produtos.html">🧸 Produtos</a>
+        <a href="manuais.html">📖 Manuais e Vídeos</a>
+        <a href="quem-somos.html">ℹ️ Quem Somos</a>
+        <a href="contato.html">📞 Contato</a>
+    </nav>
+
+    <!-- PAGE HERO -->
+    <section class="page-hero">
+        <div class="particles"></div>
+        <div class="container">
+            <h1>📖 Manuais e Vídeos</h1>
+            <p>Encontre manuais de instrução e vídeos demonstrativos dos nossos brinquedos.</p>
+            <div class="breadcrumb">
+                <a href="index.html"><i class="fas fa-home"></i> Início</a>
+                <i class="fas fa-chevron-right" style="font-size:0.7rem;opacity:0.5;"></i>
+                <span>Manuais e Vídeos</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- FILTER -->
+    <div class="filter-bar">
+        <div class="container">
+            <div class="filter-group">
+                <span class="filter-label">Filtrar por tipo:</span>
+                <select class="filter-select" id="filterType">
+                    <option value="all">Todos</option>
+                    <option value="manual">Com Manual</option>
+                    <option value="video">Com Vídeo</option>
+                </select>
+            </div>
+            <div class="search-input-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" class="search-input" placeholder="Buscar produto..." id="searchManuals">
+            </div>
+        </div>
+    </div>
+
+    <!-- MANUALS GRID -->
+    <section class="manuals-page">
+        <div class="container">
+            <div class="manuals-grid" id="manualsGrid"></div>
+        </div>
+    </section>
+
+    <!-- ALERT -->
+    <section class="alert-section">
+        <div class="alert-box reveal">
+            <div class="alert-icon">⚠️</div>
+            <h3>ALERTA IMPORTANTE</h3>
+            <p>Prezados clientes e parceiros, a <strong>ToyKing</strong> informa que apenas se comunica através de seus
+                canais e domínio eletrônico oficial.</p>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <img src="assets/images/logo.png" alt="ToyKing" class="footer-logo">
+                    <p>O maior reino dos brinquedos do Brasil!</p>
+                    <div class="footer-social">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                        <a href="#"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Atendimento</h4>
+                    <p><i class="fas fa-phone"></i> (11) 3000-0000</p>
+                    <p><i class="fas fa-envelope"></i> contato@toyking.com.br</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Institucional</h4>
+                    <a href="quem-somos.html"><i class="fas fa-angle-right"></i> Sobre a ToyKing</a><br>
+                    <a href="contato.html"><i class="fas fa-angle-right"></i> Contato</a><br>
+                    <a href="manuais.html"><i class="fas fa-angle-right"></i> Manuais e Vídeos</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Ajuda & Suporte</h4>
+                    <a href="#"><i class="fas fa-angle-right"></i> SAC</a><br>
+                    <a href="#"><i class="fas fa-angle-right"></i> Política de Privacidade</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 ToyKing – Todos os direitos reservados. 👑</p>
+            </div>
+        </div>
+    </footer>
+
+    <button class="scroll-top" aria-label="Voltar ao topo"><i class="fas fa-chevron-up"></i></button>
+
+    <script src="script.js"></script>
+    <script>
+        const manuals = [
+            { name: 'Mesa Criativa Blocos', code: 'TK07003', hasManual: true, hasVideo: true, icon: '🧱' },
+            { name: 'Dino Rex Interativo', code: 'TK01001', hasManual: true, hasVideo: true, icon: '🦕' },
+            { name: 'Robô Alpha Interativo', code: 'TK02001', hasManual: true, hasVideo: true, icon: '🤖' },
+            { name: 'Guitarra Rock Star', code: 'TK04001', hasManual: true, hasVideo: true, icon: '🎸' },
+            { name: 'Microfone Karaokê LED', code: 'TK04002', hasManual: true, hasVideo: true, icon: '🎤' },
+            { name: 'Turbo Racer Fricção', code: 'TK06001', hasManual: true, hasVideo: false, icon: '🏎️' },
+            { name: 'Triceratops Colorido', code: 'TK01002', hasManual: false, hasVideo: true, icon: '🦖' },
+            { name: 'Pterodáctilo Voador', code: 'TK01003', hasManual: false, hasVideo: true, icon: '🦅' },
+            { name: 'Jogo da Memória Animais', code: 'TK03001', hasManual: true, hasVideo: false, icon: '🎲' },
+            { name: 'Estegossauro Musical', code: 'TK01004', hasManual: true, hasVideo: true, icon: '🦕' },
+            { name: 'Robô Guardião Premium', code: 'TK02002', hasManual: true, hasVideo: true, icon: '🛡️' },
+            { name: 'Bateria Musical Infantil', code: 'TK04003', hasManual: true, hasVideo: true, icon: '🥁' },
+            { name: 'Xilofone Arco-Íris', code: 'TK04004', hasManual: true, hasVideo: false, icon: '🎵' },
+            { name: 'Super Pista Radical', code: 'TK06002', hasManual: true, hasVideo: true, icon: '🏁' },
+            { name: 'Monster Truck 4x4', code: 'TK06003', hasManual: false, hasVideo: true, icon: '🚗' },
+            { name: 'Blocos de Construção 100pcs', code: 'TK07001', hasManual: true, hasVideo: false, icon: '🧱' },
+            { name: 'Ursinho Fofo Pelúcia', code: 'TK05001', hasManual: false, hasVideo: true, icon: '🧸' },
+            { name: 'Volante Simulador Divertido', code: 'TK08001', hasManual: true, hasVideo: true, icon: '🎮' },
+        ];
+
+        const grid = document.getElementById('manualsGrid');
+
+        function renderManuals() {
+            const type = document.getElementById('filterType').value;
+            const search = document.getElementById('searchManuals').value.toLowerCase();
+            grid.innerHTML = '';
+            const filtered = manuals.filter(m => {
+                if (type === 'manual' && !m.hasManual) return false;
+                if (type === 'video' && !m.hasVideo) return false;
+                if (search && !m.name.toLowerCase().includes(search) && !m.code.toLowerCase().includes(search)) return false;
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#999;font-size:1.1rem;"><i class="fas fa-search" style="font-size:3rem;display:block;margin-bottom:16px;"></i>Nenhum resultado encontrado.</div>';
+                return;
+            }
+
+            filtered.forEach((m, i) => {
+                const card = document.createElement('div');
+                card.className = 'manual-card reveal';
+                card.style.transitionDelay = `${i * 0.05}s`;
+                let actions = '';
+                if (m.hasManual) actions += `<a href="#" class="btn-manual btn-download"><i class="fas fa-download"></i> Manual</a>`;
+                if (m.hasVideo) actions += `<a href="#" class="btn-manual btn-video"><i class="fas fa-play"></i> Vídeo</a>`;
+                card.innerHTML = `
+          <div class="manual-header">
+            <div class="manual-icon">${m.icon}</div>
+            <div>
+              <h3>${m.name}</h3>
+              <div class="manual-code">${m.code}</div>
+            </div>
+          </div>
+          <div class="manual-actions">${actions}</div>`;
+                grid.appendChild(card);
+            });
+
+            document.querySelectorAll('.manual-card.reveal').forEach(el => {
+                setTimeout(() => el.classList.add('visible'), 100);
+            });
+        }
+
+        document.getElementById('filterType').addEventListener('change', renderManuals);
+        document.getElementById('searchManuals').addEventListener('input', renderManuals);
+        renderManuals();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos » Toy King | Distribuidora de Brinquedos</title>
+    <meta name="description"
+        content="Brinquedos Toy King: Encartelados, Display, Didáticos, Brinquedos a Pilha, Verão, Patinetes, Maletas de Pintura e Jogos.">
+    <link rel="icon" href="assets/images/logo.png" type="image/png">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="pages.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+    <!-- LOADER -->
+    <div class="loader-overlay">
+        <div class="loader-content">
+            <img src="assets/images/logo.png" alt="ToyKing">
+            <div class="loader-dots"><span></span><span></span><span></span><span></span></div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="header" id="header">
+        <div class="header-top">
+            <div class="container">
+                <a href="index.html" class="logo"><img src="assets/images/logo.png" alt="ToyKing Logo"></a>
+                <nav class="nav-main">
+                    <a href="index.html">Início</a>
+                    <a href="quem-somos.html">Sobre Nós</a>
+                    <a href="produtos.html" class="active">Produtos</a>
+                    <a href="contato.html">Quero Comprar</a>
+                    <a href="contato.html">Contato</a>
+                </nav>
+                <button class="search-btn" aria-label="Pesquisar"><i class="fas fa-search"></i></button>
+                <button class="mobile-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+            </div>
+        </div>
+        <div class="header-sub">
+            <div class="container">
+                <a href="produtos.html" class="cat-link highlight">🔥 Novidades!</a>
+                <a href="produtos.html" class="cat-link">Encartelados</a>
+                <a href="produtos.html" class="cat-link">Display</a>
+                <a href="produtos.html" class="cat-link">Didáticos</a>
+                <a href="produtos.html" class="cat-link">Brinquedos a Pilha</a>
+                <a href="produtos.html" class="cat-link">Verão</a>
+                <a href="produtos.html" class="cat-link">Patinetes</a>
+                <a href="produtos.html" class="cat-link">Maletas de Pintura</a>
+                <a href="produtos.html" class="cat-link">Jogos</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- MOBILE NAV -->
+    <div class="mobile-overlay"></div>
+    <nav class="mobile-nav">
+        <button class="mobile-nav-close"><i class="fas fa-times"></i></button>
+        <a href="index.html">🏠 Início</a>
+        <a href="quem-somos.html">ℹ️ Sobre Nós</a>
+        <a href="produtos.html">🧸 Produtos</a>
+        <a href="contato.html">🛒 Quero Comprar</a>
+        <a href="contato.html">📞 Contato</a>
+    </nav>
+
+    <!-- PAGE HERO -->
+    <section class="page-hero">
+        <div class="particles"></div>
+        <div class="container">
+            <h1>🧸 Nossos Produtos</h1>
+            <p>Brinquedos lúdicos para toda a família! Diversão garantida em cada detalhe.</p>
+            <div class="breadcrumb">
+                <a href="index.html"><i class="fas fa-home"></i> Início</a>
+                <i class="fas fa-chevron-right" style="font-size:0.7rem;opacity:0.5;"></i>
+                <span>Produtos</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+        <div class="container">
+            <div class="filter-group">
+                <span class="filter-label">Filtrar:</span>
+                <select class="filter-select" id="filterCategory">
+                    <option value="all">Todas as Categorias</option>
+                    <option value="encartelados">Encartelados</option>
+                    <option value="display">Display</option>
+                    <option value="didaticos">Didáticos</option>
+                    <option value="pilha">Brinquedos a Pilha</option>
+                    <option value="armas">Armas</option>
+                    <option value="verao">Verão</option>
+                    <option value="patinetes">Patinetes</option>
+                    <option value="maletas">Maletas de Pintura</option>
+                    <option value="jogos">Jogos</option>
+                </select>
+                <select class="filter-select" id="filterAge">
+                    <option value="all">Todas as Idades</option>
+                    <option value="0m">0+ meses</option>
+                    <option value="6m">+6 meses</option>
+                    <option value="12m">+12 meses</option>
+                    <option value="18m">+18 meses</option>
+                    <option value="3a">+3 anos</option>
+                    <option value="5a">+5 anos</option>
+                </select>
+            </div>
+            <div class="search-input-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" class="search-input" placeholder="Buscar produto..." id="searchProducts">
+            </div>
+        </div>
+    </div>
+
+    <!-- PRODUCTS GRID -->
+    <section class="products-page">
+        <div class="container">
+            <div class="products-page-grid" id="productsGrid">
+                <!-- Products will repeat for demonstration -->
+            </div>
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </section>
+
+    <!-- ALERT -->
+    <section class="alert-section">
+        <div class="alert-box reveal">
+            <div class="alert-icon">⚠️</div>
+            <h3>ALERTA IMPORTANTE</h3>
+            <p>Prezados clientes e parceiros, a <strong>ToyKing</strong> informa que apenas se comunica através de seus
+                canais e domínio eletrônico oficial.</p>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <img src="assets/images/logo.png" alt="Toy King" class="footer-logo">
+                    <p>Distribuidora apaixonada por levar alegria e criatividade!</p>
+                    <div class="footer-social">
+                        <a href="https://www.facebook.com/Toykingoficial" target="_blank"><i
+                                class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/toykingoficial" target="_blank"><i
+                                class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Atendimento</h4>
+                    <p><i class="fas fa-phone"></i> <a href="tel:1132271441"
+                            style="color:inherit;text-decoration:none;">(11) 3227-1441</a></p>
+                    <p><i class="fas fa-envelope"></i> contato@toyking.com.br</p>
+                    <p><i class="fas fa-map-marker-alt"></i> Av. das Américas, 2000, RJ</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Institucional</h4>
+                    <a href="quem-somos.html"><i class="fas fa-angle-right"></i> Sobre Nós</a><br>
+                    <a href="produtos.html"><i class="fas fa-angle-right"></i> Produtos</a><br>
+                    <a href="contato.html"><i class="fas fa-angle-right"></i> Quero Comprar</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Redes Sociais</h4>
+                    <a href="https://www.instagram.com/toykingoficial" target="_blank"><i class="fab fa-instagram"></i>
+                        @toykingoficial</a><br>
+                    <a href="https://www.facebook.com/Toykingoficial" target="_blank"><i class="fab fa-facebook"></i>
+                        Toykingoficial</a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Ajuda & Suporte</h4>
+                <a href="#"><i class="fas fa-angle-right"></i> SAC</a><br>
+                <a href="#"><i class="fas fa-angle-right"></i> Política de Privacidade</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 Toy King – Todos os direitos reservados. Distribuidora de Brinquedos 👑</p>
+        </div>
+        </div>
+    </footer>
+
+    <button class="scroll-top" aria-label="Voltar ao topo"><i class="fas fa-chevron-up"></i></button>
+
+    <script src="script.js"></script>
+    <script>
+        // Generate product cards dynamically
+        const products = [
+            { name: 'Dino Rex Interativo', code: 'TK01001', cat: 'dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: 'NOVO' },
+            { name: 'Triceratops Colorido', code: 'TK01002', cat: 'dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: 'TOP' },
+            { name: 'Pterodáctilo Voador', code: 'TK01003', cat: 'dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: '' },
+            { name: 'Estegossauro Musical', code: 'TK01004', cat: 'dinos', age: '+18 meses', img: 'dinosaur_toys.png', badge: 'NOVO' },
+            { name: 'Robô Alpha Interativo', code: 'TK02001', cat: 'robos', age: '+3 anos', img: 'robot_toys.png', badge: 'NOVO' },
+            { name: 'Robô Guardião Premium', code: 'TK02002', cat: 'robos', age: '+5 anos', img: 'robot_toys.png', badge: 'TOP' },
+            { name: 'Robô Construtor RC', code: 'TK02003', cat: 'robos', age: '+3 anos', img: 'robot_toys.png', badge: '' },
+            { name: 'Robô Dance Musical', code: 'TK02004', cat: 'robos', age: '+18 meses', img: 'robot_toys.png', badge: '' },
+            { name: 'Jogo da Memória Animais', code: 'TK03001', cat: 'jogos', age: '+3 anos', img: 'family_games.png', badge: 'TOP' },
+            { name: 'Batalha dos Heróis', code: 'TK03002', cat: 'jogos', age: '+5 anos', img: 'family_games.png', badge: '' },
+            { name: 'Quiz dos Bichos', code: 'TK03003', cat: 'jogos', age: '+3 anos', img: 'family_games.png', badge: 'NOVO' },
+            { name: 'Dominó Colorido ToyKing', code: 'TK03004', cat: 'jogos', age: '+3 anos', img: 'family_games.png', badge: '' },
+            { name: 'Guitarra Rock Star', code: 'TK04001', cat: 'musicais', age: '+3 anos', img: 'musical_toys.png', badge: 'NOVO' },
+            { name: 'Microfone Karaokê LED', code: 'TK04002', cat: 'musicais', age: '+3 anos', img: 'musical_toys.png', badge: '' },
+            { name: 'Bateria Musical Infantil', code: 'TK04003', cat: 'musicais', age: '+18 meses', img: 'musical_toys.png', badge: '' },
+            { name: 'Xilofone Arco-Íris', code: 'TK04004', cat: 'musicais', age: '+12 meses', img: 'musical_toys.png', badge: 'TOP' },
+            { name: 'Ursinho Fofo Pelúcia', code: 'TK05001', cat: 'baby', age: '0+ meses', img: 'baby_toys.png', badge: 'NOVO' },
+            { name: 'Anéis Empilháveis', code: 'TK05002', cat: 'baby', age: '+6 meses', img: 'baby_toys.png', badge: '' },
+            { name: 'Chocalho Musical Baby', code: 'TK05003', cat: 'baby', age: '0+ meses', img: 'baby_toys.png', badge: '' },
+            { name: 'Mordedor Gelado Zoo', code: 'TK05004', cat: 'baby', age: '0+ meses', img: 'baby_toys.png', badge: 'TOP' },
+            { name: 'Turbo Racer Fricção', code: 'TK06001', cat: 'racing', age: '+3 anos', img: 'racing_cars.png', badge: 'NOVO' },
+            { name: 'Super Pista Radical', code: 'TK06002', cat: 'racing', age: '+5 anos', img: 'racing_cars.png', badge: 'TOP' },
+            { name: 'Monster Truck 4x4', code: 'TK06003', cat: 'racing', age: '+3 anos', img: 'racing_cars.png', badge: '' },
+            { name: 'Carro de Corrida RC', code: 'TK06004', cat: 'racing', age: '+5 anos', img: 'racing_cars.png', badge: '' },
+            { name: 'Blocos de Construção 100pcs', code: 'TK07001', cat: 'blocos', age: '+3 anos', img: 'building_blocks.png', badge: '' },
+            { name: 'Castelo Mágico Blocos', code: 'TK07002', cat: 'blocos', age: '+3 anos', img: 'building_blocks.png', badge: 'TOP' },
+            { name: 'Mesa Criativa Blocos', code: 'TK07003', cat: 'blocos', age: '+3 anos', img: 'building_blocks.png', badge: 'NOVO' },
+            { name: 'Kit Fazendinha Blocos', code: 'TK07004', cat: 'blocos', age: '+3 anos', img: 'building_blocks.png', badge: '' },
+        ];
+
+        const catNames = { dinos: 'Mundo dos Dinos', robos: 'Super Robôs', jogos: 'Jogos & Ação', musicais: 'Musicais', baby: 'ToyKing Baby', racing: 'Racing Club', blocos: 'Construir & Brincar' };
+        const grid = document.getElementById('productsGrid');
+        const perPage = 12;
+        let filteredProducts = [...products];
+
+        function renderProducts(page = 1) {
+            grid.innerHTML = '';
+            const start = (page - 1) * perPage;
+            const pageProducts = filteredProducts.slice(start, start + perPage);
+            pageProducts.forEach((p, i) => {
+                const card = document.createElement('div');
+                card.className = 'product-card-full reveal';
+                card.style.transitionDelay = `${i * 0.05}s`;
+                card.style.cursor = 'pointer';
+                card.onclick = () => window.location.href = 'produto.html?id=' + p.code;
+                card.innerHTML = `
+          ${p.badge ? `<div class="product-img-wrapper"><span class="badge ${p.badge === 'NOVO' ? 'badge-new' : 'badge-hot'}">${p.badge === 'TOP' ? '🔥 TOP' : p.badge}</span>` : '<div class="product-img-wrapper">'}
+          <img src="assets/images/${p.img}" alt="${p.name}" class="product-img">
+          </div>
+          <div class="product-info">
+            <h3>${p.name}</h3>
+            <p class="product-code">${p.code}</p>
+            <div class="product-tags">
+              <span class="product-tag">${catNames[p.cat]}</span>
+              <span class="product-tag">${p.age}</span>
+            </div>
+          </div>`;
+                grid.appendChild(card);
+            });
+            renderPagination(page);
+            // Re-observe reveals
+            document.querySelectorAll('.product-card-full.reveal').forEach(el => {
+                setTimeout(() => el.classList.add('visible'), 100);
+            });
+        }
+
+        function renderPagination(current) {
+            const pages = Math.ceil(filteredProducts.length / perPage);
+            const pag = document.getElementById('pagination');
+            pag.innerHTML = '';
+            if (pages <= 1) return;
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn arrow'; prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevBtn.disabled = current === 1;
+            prevBtn.onclick = () => renderProducts(current - 1);
+            pag.appendChild(prevBtn);
+            for (let i = 1; i <= pages; i++) {
+                const btn = document.createElement('button');
+                btn.className = `page-btn ${i === current ? 'active' : ''}`;
+                btn.textContent = i; btn.onclick = () => renderProducts(i);
+                pag.appendChild(btn);
+            }
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn arrow'; nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextBtn.disabled = current === pages;
+            nextBtn.onclick = () => renderProducts(current + 1);
+            pag.appendChild(nextBtn);
+        }
+
+        function applyFilters() {
+            const cat = document.getElementById('filterCategory').value;
+            const search = document.getElementById('searchProducts').value.toLowerCase();
+            filteredProducts = products.filter(p => {
+                if (cat !== 'all' && p.cat !== cat) return false;
+                if (search && !p.name.toLowerCase().includes(search) && !p.code.toLowerCase().includes(search)) return false;
+                return true;
+            });
+            renderProducts(1);
+        }
+
+        document.getElementById('filterCategory').addEventListener('change', applyFilters);
+        document.getElementById('filterAge').addEventListener('change', applyFilters);
+        document.getElementById('searchProducts').addEventListener('input', applyFilters);
+        renderProducts(1);
+    </script>
+</body>
+
+</html>

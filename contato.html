@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contato » Toy King | Quero Comprar</title>
+    <meta name="description"
+        content="Entre em contato com a Toy King. Quero comprar brinquedos, ser lojista parceiro ou tirar dúvidas.">
+    <link rel="icon" href="assets/images/logo.png" type="image/png">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="pages.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+    <!-- LOADER -->
+    <div class="loader-overlay">
+        <div class="loader-content">
+            <img src="assets/images/logo.png" alt="ToyKing">
+            <div class="loader-dots"><span></span><span></span><span></span><span></span></div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="header" id="header">
+        <div class="header-top">
+            <div class="container">
+                <a href="index.html" class="logo"><img src="assets/images/logo.png" alt="ToyKing Logo"></a>
+                <nav class="nav-main">
+                    <a href="index.html">Início</a>
+                    <a href="quem-somos.html">Sobre Nós</a>
+                    <a href="produtos.html">Produtos</a>
+                    <a href="contato.html" class="active">Quero Comprar</a>
+                    <a href="contato.html">Contato</a>
+                </nav>
+                <button class="search-btn" aria-label="Pesquisar"><i class="fas fa-search"></i></button>
+                <button class="mobile-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+            </div>
+        </div>
+        <div class="header-sub">
+            <div class="container">
+                <a href="produtos.html" class="cat-link highlight">🔥 Novidades!</a>
+                <a href="produtos.html" class="cat-link">Encartelados</a>
+                <a href="produtos.html" class="cat-link">Display</a>
+                <a href="produtos.html" class="cat-link">Didáticos</a>
+                <a href="produtos.html" class="cat-link">Brinquedos a Pilha</a>
+                <a href="produtos.html" class="cat-link">Verão</a>
+                <a href="produtos.html" class="cat-link">Patinetes</a>
+                <a href="produtos.html" class="cat-link">Maletas de Pintura</a>
+                <a href="produtos.html" class="cat-link">Jogos</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- MOBILE NAV -->
+    <div class="mobile-overlay"></div>
+    <nav class="mobile-nav">
+        <button class="mobile-nav-close"><i class="fas fa-times"></i></button>
+        <a href="index.html">🏠 Início</a>
+        <a href="quem-somos.html">ℹ️ Sobre Nós</a>
+        <a href="produtos.html">🧸 Produtos</a>
+        <a href="contato.html">🛒 Quero Comprar</a>
+        <a href="contato.html">📞 Contato</a>
+    </nav>
+
+    <!-- PAGE HERO -->
+    <section class="page-hero">
+        <div class="particles"></div>
+        <div class="container">
+            <h1>📞 Quero Comprar / Contato</h1>
+            <p>Quer ser um lojista parceiro Toy King? Preencha o formulário abaixo e aproveite vantagens exclusivas!</p>
+            <div class="breadcrumb">
+                <a href="index.html"><i class="fas fa-home"></i> Início</a>
+                <i class="fas fa-chevron-right" style="font-size:0.7rem;opacity:0.5;"></i>
+                <span>Contato</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT CONTENT -->
+    <section class="contact-page">
+        <div class="container">
+            <div class="contact-grid">
+                <!-- FORM -->
+                <div class="contact-form-card reveal-left">
+                    <h2>Envie sua Mensagem ✉️</h2>
+                    <p>Preencha os campos abaixo e responderemos o mais rápido possível.</p>
+                    <form id="contactForm" onsubmit="handleSubmit(event)">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-group">
+                                <label for="name">Nome Completo *</label>
+                                <input type="text" id="name" placeholder="Seu nome completo" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">E-mail *</label>
+                                <input type="email" id="email" placeholder="seu@email.com" required>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div class="form-group">
+                                <label for="phone">Telefone</label>
+                                <input type="tel" id="phone" placeholder="(11) 99999-9999">
+                            </div>
+                            <div class="form-group">
+                                <label for="subject">Assunto *</label>
+                                <select id="subject" required>
+                                    <option value="">Selecione...</option>
+                                    <option value="lojista">Quero ser Lojista Parceiro</option>
+                                    <option value="produtos">Dúvidas sobre Produtos</option>
+                                    <option value="representante">Quero ser Representante</option>
+                                    <option value="comprar">Quero Comprar</option>
+                                    <option value="sac">SAC - Reclamação</option>
+                                    <option value="parceria">Parceria Comercial</option>
+                                    <option value="outro">Outro</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Mensagem *</label>
+                            <textarea id="message" placeholder="Escreva sua mensagem aqui..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn-submit" id="submitBtn">
+                            <i class="fas fa-paper-plane"></i> Enviar Mensagem
+                        </button>
+                    </form>
+                    <div id="successMsg" style="display:none; text-align:center; padding: 30px 0;">
+                        <div style="font-size: 4rem; margin-bottom: 16px;">✅</div>
+                        <h3
+                            style="font-family:'Fredoka One',cursive; color: var(--green); font-size: 1.4rem; margin-bottom: 8px;">
+                            Mensagem Enviada!</h3>
+                        <p style="color: #666;">Obrigado pelo contato. Responderemos em breve!</p>
+                    </div>
+                </div>
+
+                <!-- INFO SIDE -->
+                <div class="contact-info-side">
+                    <div class="contact-info-card reveal-right" style="transition-delay: 0.1s;">
+                        <div class="contact-icon-circle blue"><i class="fas fa-phone-alt"></i></div>
+                        <div>
+                            <h4>Telefone / WhatsApp</h4>
+                            <p><a href="tel:1132271441">(11) 3227-1441</a></p>
+                            <p style="font-size:0.85rem; margin-top:4px; color: #999;">Seg-Sex: 9h às 18h</p>
+                        </div>
+                    </div>
+                    <div class="contact-info-card reveal-right" style="transition-delay: 0.2s;">
+                        <div class="contact-icon-circle orange"><i class="fas fa-envelope"></i></div>
+                        <div>
+                            <h4>E-mail</h4>
+                            <p><a href="mailto:contato@toyking.com.br">contato@toyking.com.br</a></p>
+                            <p style="font-size:0.85rem; margin-top:4px; color: #999;">Respondemos em até 24h</p>
+                        </div>
+                    </div>
+                    <div class="contact-info-card reveal-right" style="transition-delay: 0.3s;">
+                        <div class="contact-icon-circle green"><i class="fab fa-whatsapp"></i></div>
+                        <div>
+                            <h4>WhatsApp</h4>
+                            <p><a href="https://wa.me/551132271441">(11) 3227-1441</a></p>
+                            <p style="font-size:0.85rem; margin-top:4px; color: #999;">Atendimento rápido</p>
+                        </div>
+                    </div>
+                    <div class="contact-info-card reveal-right" style="transition-delay: 0.4s;">
+                        <div class="contact-icon-circle red"><i class="fas fa-map-marker-alt"></i></div>
+                        <div>
+                            <h4>Endereço</h4>
+                            <p>Avenida das Américas, 2000, Rio de Janeiro, RJ</p>
+                            <p style="font-size:0.85rem; margin-top:4px; color: #999;">Atendimento comercial</p>
+                        </div>
+                    </div>
+
+                    <!-- Social Cards -->
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <a href="https://www.facebook.com/Toykingoficial" target="_blank"
+                            style="flex:1; min-width: 100px; padding: 16px; background: linear-gradient(135deg, #1877F2, #0D47A1); border-radius: 12px; text-align: center; color: white; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: all 0.3s ease;"
+                            class="reveal-scale" onmouseover="this.style.transform='translateY(-4px)'"
+                            onmouseout="this.style.transform='translateY(0)'">
+                            <i class="fab fa-facebook-f"
+                                style="font-size:1.4rem; display:block; margin-bottom:6px;"></i> Toykingoficial
+                        </a>
+                        <a href="https://www.instagram.com/toykingoficial" target="_blank"
+                            style="flex:1; min-width: 100px; padding: 16px; background: linear-gradient(135deg, #E1306C, #833AB4); border-radius: 12px; text-align: center; color: white; text-decoration: none; font-weight: 800; font-size: 0.9rem; transition: all 0.3s ease;"
+                            class="reveal-scale" onmouseover="this.style.transform='translateY(-4px)'"
+                            onmouseout="this.style.transform='translateY(0)'">
+                            <i class="fab fa-instagram" style="font-size:1.4rem; display:block; margin-bottom:6px;"></i>
+                            @toykingoficial
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAP -->
+            <div class="map-container reveal" style="margin-top: 50px;">
+                <div style="text-align: center; padding: 40px;">
+                    <i class="fas fa-map-marked-alt"
+                        style="font-size: 3rem; color: var(--blue-primary); margin-bottom: 16px; display: block;"></i>
+                    <p style="font-weight: 700; color: var(--blue-dark); font-size: 1.1rem;">Toy King - Avenida das
+                        Américas, 2000, Rio de Janeiro, RJ</p>
+                    <p style="color: #999; font-size: 0.9rem; margin-top: 8px;">Visite-nos para conhecer nossos produtos
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ALERT -->
+    <section class="alert-section">
+        <div class="alert-box reveal">
+            <div class="alert-icon">⚠️</div>
+            <h3>ALERTA IMPORTANTE</h3>
+            <p>Prezados clientes e parceiros, a <strong>Toy King</strong> informa que apenas se comunica através de seus
+                canais e domínio eletrônico oficial: contato@toyking.com.br e (11) 3227-1441.</p>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <img src="assets/images/logo.png" alt="Toy King" class="footer-logo">
+                    <p>Distribuidora apaixonada por levar alegria e criatividade!</p>
+                    <div class="footer-social">
+                        <a href="https://www.facebook.com/Toykingoficial" target="_blank"><i
+                                class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/toykingoficial" target="_blank"><i
+                                class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Atendimento</h4>
+                    <p><i class="fas fa-phone"></i> <a href="tel:1132271441"
+                            style="color:inherit;text-decoration:none;">(11) 3227-1441</a></p>
+                    <p><i class="fas fa-envelope"></i> contato@toyking.com.br</p>
+                    <p><i class="fas fa-map-marker-alt"></i> Av. das Américas, 2000, RJ</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Institucional</h4>
+                    <a href="quem-somos.html"><i class="fas fa-angle-right"></i> Sobre Nós</a><br>
+                    <a href="produtos.html"><i class="fas fa-angle-right"></i> Produtos</a><br>
+                    <a href="contato.html"><i class="fas fa-angle-right"></i> Quero Comprar</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Redes Sociais</h4>
+                    <a href="https://www.instagram.com/toykingoficial" target="_blank"><i class="fab fa-instagram"></i>
+                        @toykingoficial</a><br>
+                    <a href="https://www.facebook.com/Toykingoficial" target="_blank"><i class="fab fa-facebook"></i>
+                        Toykingoficial</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 Toy King – Todos os direitos reservados. Distribuidora de Brinquedos 👑</p>
+            </div>
+        </div>
+    </footer>
+
+    <button class="scroll-top" aria-label="Voltar ao topo"><i class="fas fa-chevron-up"></i></button>
+
+    <script src="script.js"></script>
+    <script>
+        function handleSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            btn.disabled = true;
+            setTimeout(() => {
+                document.getElementById('contactForm').style.display = 'none';
+                document.getElementById('successMsg').style.display = 'block';
+            }, 1500);
+        }
+    </script>
+</body>
+
+</html>
