@@ -181,127 +181,126 @@
 
     <button class="scroll-top" aria-label="Voltar ao topo"><i class="fas fa-chevron-up"></i></button>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
     <script src="script.js"></script>
     <script>
-        // Generate product cards dynamically from LocalStorage (Integration with Admin)
-        let storageProducts = [];
-        try {
-            const rawProds = localStorage.getItem('tk_products');
-            if (rawProds) storageProducts = JSON.parse(rawProds);
-        } catch (e) {
-            console.error('Error loading products from local storage:', e);
-        }
+        // Load products from Supabase
+        async function loadPageData() {
+            let products = [];
+            let allCategories = [];
 
-        if (storageProducts.length === 0) {
-            storageProducts = [
-                { id: 'TK01001', name: 'Dino Rex Interativo', cat: 'Mundo dos Dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: 'NOVO', status: 'active' },
-                { id: 'TK01002', name: 'Triceratops Colorido', cat: 'Mundo dos Dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: 'TOP', status: 'active' },
-                { id: 'TK01003', name: 'Pterodáctilo Voador', cat: 'Mundo dos Dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: '', status: 'active' },
-                { id: 'TK01004', name: 'Estegossauro Musical', cat: 'Mundo dos Dinos', age: '+18 meses', img: 'dinosaur_toys.png', badge: 'NOVO', status: 'active' },
-                { id: 'TK02001', name: 'Robô Alpha Interativo', cat: 'Super Robôs', age: '+3 anos', img: 'robot_toys.png', badge: 'NOVO', status: 'active' },
-                { id: 'TK02002', name: 'Robô Guardião Premium', cat: 'Super Robôs', age: '+5 anos', img: 'robot_toys.png', badge: 'TOP', status: 'active' },
-                { id: 'TK03001', name: 'Jogo da Memória Animais', cat: 'Jogos & Ação', age: '+3 anos', img: 'family_games.png', badge: 'TOP', status: 'active' },
-                { id: 'TK04001', name: 'Guitarra Rock Star', cat: 'Musicais', age: '+3 anos', img: 'musical_toys.png', badge: 'NOVO', status: 'active' },
-                { id: 'TK04002', name: 'Microfone Karaokê LED', cat: 'Musicais', age: '+3 anos', img: 'musical_toys.png', badge: '', status: 'active' },
-                { id: 'TK05001', name: 'Ursinho Fofo Pelúcia', cat: 'ToyKing Baby', age: '0+ meses', img: 'baby_toys.png', badge: 'NOVO', status: 'active' },
-                { id: 'TK06001', name: 'Turbo Racer Fricção', cat: 'Racing Club', age: '+3 anos', img: 'racing_cars.png', badge: 'NOVO', status: 'active' },
-                { id: 'TK07001', name: 'Blocos de Construção 100pcs', cat: 'Construir & Brincar', age: '+3 anos', img: 'building_blocks.png', badge: '', status: 'active' }
-            ];
-        }
+            try {
+                products = await sbGetProducts();
+                products = products.filter(p => p.status === 'active').map(p => ({
+                    id: p.product_code,
+                    name: p.name,
+                    cat: p.category,
+                    age: p.age,
+                    img: p.image_url,
+                    badge: p.badge,
+                    status: p.status
+                }));
+            } catch (e) { console.error('Erro Supabase produtos:', e); }
 
-        // Use either local storage products or empty array
-        const products = storageProducts.filter(p => p.status === 'active');
-
-        let allCategories = [];
-        try {
-            const rawCats = localStorage.getItem('tk_categories');
-            if (rawCats) {
-                allCategories = JSON.parse(rawCats);
-            } else {
-                allCategories = ['Encartelados', 'Display', 'Didáticos', 'Brinquedos a Pilha', 'Armas', 'Verão', 'Patinetes', 'Maletas de Pintura', 'Jogos', 'Mundo dos Dinos', 'Super Robôs', 'Jogos & Ação', 'Musicais', 'ToyKing Baby', 'Racing Club', 'Construir & Brincar'];
+            if (products.length === 0) {
+                // Fallback defaults
+                products = [
+                    { id: 'TK01001', name: 'Dino Rex Interativo', cat: 'Mundo dos Dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: 'NOVO', status: 'active' },
+                    { id: 'TK02001', name: 'Robô Alpha Interativo', cat: 'Super Robôs', age: '+3 anos', img: 'robot_toys.png', badge: 'NOVO', status: 'active' },
+                    { id: 'TK04001', name: 'Guitarra Rock Star', cat: 'Musicais', age: '+3 anos', img: 'musical_toys.png', badge: 'NOVO', status: 'active' },
+                ];
             }
-        } catch (e) { }
 
-        // Populate Category Filter
-        const catFilter = document.getElementById('filterCategory');
-        catFilter.innerHTML = '<option value="all">Todas as Categorias</option>';
-        allCategories.forEach(cat => {
-            catFilter.innerHTML += `<option value="${cat}">${cat}</option>`;
-        });
+            try {
+                const cats = await sbGetCategories();
+                allCategories = cats.map(c => c.name);
+            } catch (e) { }
+            if (allCategories.length === 0) allCategories = ['Encartelados', 'Display', 'Didáticos', 'Brinquedos a Pilha', 'Verão', 'Patinetes'];
 
-        const grid = document.getElementById('productsGrid');
-        const perPage = 12;
-        let filteredProducts = [...products];
-
-        function renderProducts(page = 1) {
-            grid.innerHTML = '';
-            const start = (page - 1) * perPage;
-            const pageProducts = filteredProducts.slice(start, start + perPage);
-            pageProducts.forEach((p, i) => {
-                const card = document.createElement('div');
-                card.className = 'product-card-full reveal';
-                card.style.transitionDelay = `${i * 0.05}s`;
-                card.style.cursor = 'pointer';
-                card.onclick = () => window.location.href = 'produto.html?id=' + p.id;
-                card.innerHTML = `
-          ${p.badge ? `<div class="product-img-wrapper"><span class="badge ${p.badge === 'NOVO' ? 'badge-new' : 'badge-hot'}">${p.badge === 'TOP' ? '🔥 TOP' : p.badge}</span>` : '<div class="product-img-wrapper">'}
-          <img src="${p.img && p.img.startsWith('data:image') ? p.img : 'assets/images/' + p.img}" alt="${p.name}" class="product-img">
-          </div>
-          <div class="product-info">
-            <h3>${p.name}</h3>
-            <p class="product-code">${p.id}</p>
-            <div class="product-tags">
-              <span class="product-tag">${p.cat}</span>
-              <span class="product-tag">${p.age}</span>
-            </div>
-          </div>`;
-                grid.appendChild(card);
+            // Populate Category Filter
+            const catFilter = document.getElementById('filterCategory');
+            catFilter.innerHTML = '<option value="all">Todas as Categorias</option>';
+            allCategories.forEach(cat => {
+                catFilter.innerHTML += `<option value="${cat}">${cat}</option>`;
             });
-            renderPagination(page);
-            // Re-observe reveals
-            document.querySelectorAll('.product-card-full.reveal').forEach(el => {
-                setTimeout(() => el.classList.add('visible'), 100);
-            });
-        }
 
-        function renderPagination(current) {
-            const pages = Math.ceil(filteredProducts.length / perPage);
-            const pag = document.getElementById('pagination');
-            pag.innerHTML = '';
-            if (pages <= 1) return;
-            const prevBtn = document.createElement('button');
-            prevBtn.className = 'page-btn arrow'; prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-            prevBtn.disabled = current === 1;
-            prevBtn.onclick = () => renderProducts(current - 1);
-            pag.appendChild(prevBtn);
-            for (let i = 1; i <= pages; i++) {
-                const btn = document.createElement('button');
-                btn.className = `page-btn ${i === current ? 'active' : ''}`;
-                btn.textContent = i; btn.onclick = () => renderProducts(i);
-                pag.appendChild(btn);
+            const grid = document.getElementById('productsGrid');
+            const perPage = 12;
+            let filteredProducts = [...products];
+
+            function renderProducts(page = 1) {
+                grid.innerHTML = '';
+                const start = (page - 1) * perPage;
+                const pageProducts = filteredProducts.slice(start, start + perPage);
+                pageProducts.forEach((p, i) => {
+                    const card = document.createElement('div');
+                    card.className = 'product-card-full reveal';
+                    card.style.transitionDelay = `${i * 0.05}s`;
+                    card.style.cursor = 'pointer';
+                    card.onclick = () => window.location.href = 'produto.html?id=' + p.id;
+                    const imgSrc = p.img && (p.img.startsWith('data:image') || p.img.startsWith('http')) ? p.img : 'assets/images/' + p.img;
+                    card.innerHTML = `
+              ${p.badge ? `<div class="product-img-wrapper"><span class="badge ${p.badge === 'NOVO' ? 'badge-new' : 'badge-hot'}">${p.badge === 'TOP' ? '🔥 TOP' : p.badge}</span>` : '<div class="product-img-wrapper">'}
+              <img src="${imgSrc}" alt="${p.name}" class="product-img">
+              </div>
+              <div class="product-info">
+                <h3>${p.name}</h3>
+                <p class="product-code">${p.id}</p>
+                <div class="product-tags">
+                  <span class="product-tag">${p.cat}</span>
+                  <span class="product-tag">${p.age}</span>
+                </div>
+              </div>`;
+                    grid.appendChild(card);
+                });
+                renderPagination(page);
+                document.querySelectorAll('.product-card-full.reveal').forEach(el => {
+                    setTimeout(() => el.classList.add('visible'), 100);
+                });
             }
-            const nextBtn = document.createElement('button');
-            nextBtn.className = 'page-btn arrow'; nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-            nextBtn.disabled = current === pages;
-            nextBtn.onclick = () => renderProducts(current + 1);
-            pag.appendChild(nextBtn);
-        }
 
-        function applyFilters() {
-            const cat = document.getElementById('filterCategory').value;
-            const search = document.getElementById('searchProducts').value.toLowerCase();
-            filteredProducts = products.filter(p => {
-                if (cat !== 'all' && p.cat !== cat) return false;
-                if (search && !p.name.toLowerCase().includes(search) && !p.id.toLowerCase().includes(search)) return false;
-                return true;
-            });
+            function renderPagination(current) {
+                const pages = Math.ceil(filteredProducts.length / perPage);
+                const pag = document.getElementById('pagination');
+                pag.innerHTML = '';
+                if (pages <= 1) return;
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'page-btn arrow'; prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                prevBtn.disabled = current === 1;
+                prevBtn.onclick = () => renderProducts(current - 1);
+                pag.appendChild(prevBtn);
+                for (let i = 1; i <= pages; i++) {
+                    const btn = document.createElement('button');
+                    btn.className = `page-btn ${i === current ? 'active' : ''}`;
+                    btn.textContent = i; btn.onclick = () => renderProducts(i);
+                    pag.appendChild(btn);
+                }
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'page-btn arrow'; nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                nextBtn.disabled = current === pages;
+                nextBtn.onclick = () => renderProducts(current + 1);
+                pag.appendChild(nextBtn);
+            }
+
+            function applyFilters() {
+                const cat = document.getElementById('filterCategory').value;
+                const search = document.getElementById('searchProducts').value.toLowerCase();
+                filteredProducts = products.filter(p => {
+                    if (cat !== 'all' && p.cat !== cat) return false;
+                    if (search && !p.name.toLowerCase().includes(search) && !p.id.toLowerCase().includes(search)) return false;
+                    return true;
+                });
+                renderProducts(1);
+            }
+
+            document.getElementById('filterCategory').addEventListener('change', applyFilters);
+            document.getElementById('filterAge').addEventListener('change', applyFilters);
+            document.getElementById('searchProducts').addEventListener('input', applyFilters);
             renderProducts(1);
         }
 
-        document.getElementById('filterCategory').addEventListener('change', applyFilters);
-        document.getElementById('filterAge').addEventListener('change', applyFilters);
-        document.getElementById('searchProducts').addEventListener('input', applyFilters);
-        renderProducts(1);
+        loadPageData();
     </script>
 </body>
 

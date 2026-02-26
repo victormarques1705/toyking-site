@@ -499,75 +499,90 @@
             </div>
             <div class="footer-bottom">
                 <p>© 2026 ToyKing 👑</p>
-            </div>
-        </div>
-    </footer>
-    <button class="scroll-top"><i class="fas fa-chevron-up"></i></button>
+                <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+                <script src="supabase-config.js"></script>
+                <script src="script.js"></script>
+                <script>
+                    async function loadProductDetail() {
+                        let products = [];
+                        try {
+                            const sbProducts = await sbGetProducts();
+                            products = sbProducts.map(p => ({
+                                id: p.product_code,
+                                name: p.name,
+                                cat: p.category,
+                                age: p.age,
+                                img: p.image_url,
+                                badge: p.badge,
+                                desc: p.description,
+                                status: p.status
+                            }));
+                        } catch (e) { console.error('Erro Supabase:', e); }
 
-    <script src="script.js"></script>
-    <script>
-        const products = JSON.parse(localStorage.getItem('tk_products') || 'null') || [
-            { id: 'TK01001', name: 'Dino Rex Interativo', cat: 'Mundo dos Dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: 'NOVO', desc: 'O Dino Rex Interativo traz toda a emoção do mundo jurássico!' },
-            { id: 'TK01002', name: 'Triceratops Colorido', cat: 'Mundo dos Dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: 'TOP', desc: 'Um triceratops colorido e amigável para brincar!' },
-            { id: 'TK02001', name: 'Robô Alpha Interativo', cat: 'Super Robôs', age: '+3 anos', img: 'robot_toys.png', badge: 'NOVO', desc: 'Robô com movimentos, sons e luzes!' },
-            { id: 'TK04001', name: 'Guitarra Rock Star', cat: 'Musicais', age: '+3 anos', img: 'musical_toys.png', badge: 'NOVO', desc: 'Guitarra musical com sons reais!' },
-        ];
+                        if (products.length === 0) {
+                            products = [
+                                { id: 'TK01001', name: 'Dino Rex Interativo', cat: 'Mundo dos Dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: 'NOVO', desc: 'O Dino Rex Interativo traz toda a emoção do mundo jurássico!' },
+                                { id: 'TK02001', name: 'Robô Alpha Interativo', cat: 'Super Robôs', age: '+3 anos', img: 'robot_toys.png', badge: 'NOVO', desc: 'Robô com movimentos, sons e luzes!' },
+                            ];
+                        }
 
-        const params = new URLSearchParams(window.location.search);
-        const pid = params.get('id') || 'TK01001';
-        const product = products.find(p => p.id === pid) || products[0];
-        const images = [product.img];
+                        const params = new URLSearchParams(window.location.search);
+                        const pid = params.get('id') || products[0].id;
+                        const product = products.find(p => p.id === pid) || products[0];
+                        const images = [product.img];
 
-        document.getElementById('pdName').textContent = product.name;
-        document.getElementById('pdCode').textContent = 'Código: ' + product.id;
-        document.getElementById('pdCat').textContent = product.cat;
-        document.getElementById('pdCatBread').textContent = product.cat;
-        document.getElementById('pdAge').textContent = product.age.replace(' anos', '').replace(' meses', 'm');
-        if (product.desc) document.getElementById('pdDesc').textContent = product.desc;
-        const imgSrc = product.img && product.img.startsWith('data:image') ? product.img : 'assets/images/' + product.img;
-        document.getElementById('mainImg').src = imgSrc;
-        document.title = product.name + ' - ToyKing';
+                        document.getElementById('pdName').textContent = product.name;
+                        document.getElementById('pdCode').textContent = 'Código: ' + product.id;
+                        document.getElementById('pdCat').textContent = product.cat;
+                        document.getElementById('pdCatBread').textContent = product.cat;
+                        document.getElementById('pdAge').textContent = product.age.replace(' anos', '').replace(' meses', 'm');
+                        if (product.desc) document.getElementById('pdDesc').textContent = product.desc;
+                        const imgSrc = product.img && (product.img.startsWith('data:image') || product.img.startsWith('http')) ? product.img : 'assets/images/' + product.img;
+                        document.getElementById('mainImg').src = imgSrc;
+                        document.title = product.name + ' - ToyKing';
 
-        let currentImg = 0;
-        const thumbsEl = document.getElementById('thumbs');
-        const navArrowsEl = document.querySelector('.pd-nav-arrows');
+                        let currentImg = 0;
+                        const thumbsEl = document.getElementById('thumbs');
+                        const navArrowsEl = document.querySelector('.pd-nav-arrows');
 
-        if (images.length <= 1) {
-            thumbsEl.style.display = 'none';
-            if (navArrowsEl) navArrowsEl.style.display = 'none';
-        }
+                        if (images.length <= 1) {
+                            thumbsEl.style.display = 'none';
+                            if (navArrowsEl) navArrowsEl.style.display = 'none';
+                        }
 
-        images.forEach((img, i) => {
-            const t = document.createElement('div');
-            t.className = 'pd-thumb' + (i === 0 ? ' active' : '');
-            const currentImgSrc = img && img.startsWith('data:image') ? img : 'assets/images/' + img;
-            t.innerHTML = `<img src="${currentImgSrc}" alt="thumb">`;
-            t.onclick = () => { currentImg = i; updateGallery(); };
-            thumbsEl.appendChild(t);
-        });
-        function updateGallery() {
-            const currentImgSrc = images[currentImg] && images[currentImg].startsWith('data:image') ? images[currentImg] : 'assets/images/' + images[currentImg];
-            document.getElementById('mainImg').src = currentImgSrc;
-            document.querySelectorAll('.pd-thumb').forEach((t, i) => t.classList.toggle('active', i === currentImg));
-        }
-        document.getElementById('prevImg').onclick = () => { currentImg = (currentImg - 1 + images.length) % images.length; updateGallery(); };
-        document.getElementById('nextImg').onclick = () => { currentImg = (currentImg + 1) % images.length; updateGallery(); };
+                        images.forEach((img, i) => {
+                            const t = document.createElement('div');
+                            t.className = 'pd-thumb' + (i === 0 ? ' active' : '');
+                            const currentImgSrc = img && (img.startsWith('data:image') || img.startsWith('http')) ? img : 'assets/images/' + img;
+                            t.innerHTML = `<img src="${currentImgSrc}" alt="thumb">`;
+                            t.onclick = () => { currentImg = i; updateGallery(); };
+                            thumbsEl.appendChild(t);
+                        });
+                        function updateGallery() {
+                            const src = images[currentImg] && (images[currentImg].startsWith('data:image') || images[currentImg].startsWith('http')) ? images[currentImg] : 'assets/images/' + images[currentImg];
+                            document.getElementById('mainImg').src = src;
+                            document.querySelectorAll('.pd-thumb').forEach((t, i) => t.classList.toggle('active', i === currentImg));
+                        }
+                        document.getElementById('prevImg').onclick = () => { currentImg = (currentImg - 1 + images.length) % images.length; updateGallery(); };
+                        document.getElementById('nextImg').onclick = () => { currentImg = (currentImg + 1) % images.length; updateGallery(); };
 
-        // Related
-        const related = products.filter(p => p.id !== pid).slice(0, 4);
-        const rg = document.getElementById('relatedGrid');
-        related.forEach(p => {
-            const card = document.createElement('div');
-            card.className = 'product-card reveal';
-            card.style.cursor = 'pointer';
-            card.onclick = () => window.location.href = 'produto.html?id=' + p.id;
-            const currentImgSrc = p.img && p.img.startsWith('data:image') ? p.img : 'assets/images/' + p.img;
-            card.innerHTML = `
-        <div class="product-img-wrapper"><img src="${currentImgSrc}" alt="${p.name}" class="product-img"></div>
-        <div class="product-info"><h3>${p.name}</h3><p class="category-tag">${p.cat}</p><span class="product-age">${p.age}</span></div>`;
-            rg.appendChild(card);
-        });
-    </script>
+                        // Related
+                        const related = products.filter(p => p.id !== pid && p.status === 'active').slice(0, 4);
+                        const rg = document.getElementById('relatedGrid');
+                        related.forEach(p => {
+                            const card = document.createElement('div');
+                            card.className = 'product-card reveal';
+                            card.style.cursor = 'pointer';
+                            card.onclick = () => window.location.href = 'produto.html?id=' + p.id;
+                            const relImgSrc = p.img && (p.img.startsWith('data:image') || p.img.startsWith('http')) ? p.img : 'assets/images/' + p.img;
+                            card.innerHTML = `
+            <div class="product-img-wrapper"><img src="${relImgSrc}" alt="${p.name}" class="product-img"></div>
+            <div class="product-info"><h3>${p.name}</h3><p class="category-tag">${p.cat}</p><span class="product-age">${p.age}</span></div>`;
+                            rg.appendChild(card);
+                        });
+                    }
+                    loadProductDetail();
+                </script>
 </body>
 
 </html>

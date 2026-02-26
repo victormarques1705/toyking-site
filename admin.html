@@ -906,53 +906,96 @@
     <!-- TOAST -->
     <div class="toast" id="toast"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
     <script>
         // ===== DATA =====
-        const defaultProducts = [
-            { id: 'TK01001', name: 'Dino Rex Interativo', cat: 'Mundo dos Dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: 'NOVO', status: 'active', desc: 'O Dino Rex Interativo traz toda a emoção do mundo jurássico para a brincadeira! Com movimentos realistas, sons incríveis e luzes LED.' },
-            { id: 'TK01002', name: 'Triceratops Colorido', cat: 'Mundo dos Dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: 'TOP', status: 'active', desc: 'Um triceratops repleto de cor e diversão.' },
-            { id: 'TK01003', name: 'Pterodáctilo Voador', cat: 'Mundo dos Dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: '', status: 'active', desc: 'Voe com o Pterodáctilo!' },
-            { id: 'TK01004', name: 'Estegossauro Musical', cat: 'Mundo dos Dinos', age: '+18 meses', img: 'dinosaur_toys.png', badge: 'NOVO', status: 'active', desc: 'Dinossauro com sons musicais.' },
-            { id: 'TK02001', name: 'Robô Alpha Interativo', cat: 'Super Robôs', age: '+3 anos', img: 'robot_toys.png', badge: 'NOVO', status: 'active', desc: 'Robô com movimentos e sons.' },
-            { id: 'TK02002', name: 'Robô Guardião Premium', cat: 'Super Robôs', age: '+5 anos', img: 'robot_toys.png', badge: 'TOP', status: 'active', desc: 'O guardião dos brinquedos.' },
-            { id: 'TK03001', name: 'Jogo da Memória Animais', cat: 'Jogos & Ação', age: '+3 anos', img: 'family_games.png', badge: 'TOP', status: 'active', desc: 'Jogo educativo.' },
-            { id: 'TK04001', name: 'Guitarra Rock Star', cat: 'Musicais', age: '+3 anos', img: 'musical_toys.png', badge: 'NOVO', status: 'active', desc: 'Guitarra com sons reais.' },
-            { id: 'TK04002', name: 'Microfone Karaokê LED', cat: 'Musicais', age: '+3 anos', img: 'musical_toys.png', badge: '', status: 'active', desc: 'Microfone com luzes LED.' },
-            { id: 'TK05001', name: 'Ursinho Fofo Pelúcia', cat: 'ToyKing Baby', age: '0+ meses', img: 'baby_toys.png', badge: 'NOVO', status: 'active', desc: 'Pelúcia macia e segura.' },
-            { id: 'TK06001', name: 'Turbo Racer Fricção', cat: 'Racing Club', age: '+3 anos', img: 'racing_cars.png', badge: 'NOVO', status: 'active', desc: 'Carro de fricção super veloz.' },
-            { id: 'TK07001', name: 'Blocos de Construção 100pcs', cat: 'Construir & Brincar', age: '+3 anos', img: 'building_blocks.png', badge: '', status: 'active', desc: '100 peças para construir.' },
-        ];
+        let products = [];
+        let categories = [];
+        let banners = [];
+        let manuals = [];
+        let settings = {};
 
-        const defaultCategories = ['Encartelados', 'Display', 'Didáticos', 'Brinquedos a Pilha', 'Armas', 'Verão', 'Patinetes', 'Maletas de Pintura', 'Jogos'];
-        const defaultBanners = [
-            { img: 'hero_banner.png', title: 'MR. Sax Dançarino 🎷', subtitle: 'Sons, Luzes e Dança! O brinquedo que encanta crianças de todas as idades' },
-            { img: 'dinosaur_toys.png', title: 'Parcele em até 12x no Cartão 💳', subtitle: 'Frete Grátis para todo o Brasil!' },
-            { img: 'robot_toys.png', title: 'Distribuidora Toy King 🏰', subtitle: 'Apaixonados por levar alegria e criatividade' },
-        ];
-        const defaultManuals = [
-            { name: 'Dino Rex Interativo', code: 'TK01001', hasManual: true, hasVideo: true },
-            { name: 'Robô Alpha Interativo', code: 'TK02001', hasManual: true, hasVideo: true },
-            { name: 'Guitarra Rock Star', code: 'TK04001', hasManual: true, hasVideo: true },
-        ];
-        const sitePages = [
-            { name: '🏠 Página Inicial', file: 'index.html' },
-            { name: 'ℹ️ Sobre Nós', file: 'quem-somos.html' },
+        const defaultPages = [
+            { name: '🏠 Início', file: 'index.html' },
+            { name: '📋 Quem Somos', file: 'quem-somos.html' },
+            { name: '📖 Manuais e Vídeos', file: 'manuais.html' },
             { name: '🧸 Produtos', file: 'produtos.html' },
             { name: '🛒 Quero Comprar', file: 'contato.html' },
             { name: '📞 Contato', file: 'contato.html' },
         ];
 
-        let products = JSON.parse(localStorage.getItem('tk_products')) || [...defaultProducts];
-        let categories = JSON.parse(localStorage.getItem('tk_categories')) || [...defaultCategories];
-        let banners = JSON.parse(localStorage.getItem('tk_banners')) || [...defaultBanners];
-        let manuals = JSON.parse(localStorage.getItem('tk_manuals')) || [...defaultManuals];
-        let settings = JSON.parse(localStorage.getItem('tk_settings')) || {};
+        // Load data from Supabase on admin open
+        async function loadAllData() {
+            try {
+                const sbProducts = await sbGetProducts();
+                products = sbProducts.map(p => ({
+                    id: p.product_code, name: p.name, cat: p.category, age: p.age,
+                    img: p.image_url, badge: p.badge || '', status: p.status,
+                    desc: p.description || '', _dbId: p.id
+                }));
+            } catch (e) { console.error(e); products = []; }
+
+            try {
+                const sbCats = await sbGetCategories();
+                categories = sbCats.map(c => c.name);
+            } catch (e) { console.error(e); categories = ['Encartelados', 'Display', 'Didáticos', 'Brinquedos a Pilha', 'Verão', 'Patinetes']; }
+
+            try {
+                const sbBanners = await sbGetBanners();
+                banners = sbBanners.map(b => ({
+                    title: b.title, subtitle: b.subtitle || '', img: b.image_url || '',
+                    link: b.link || 'produtos.html', _dbId: b.id
+                }));
+            } catch (e) { console.error(e); banners = []; }
+
+            try {
+                const sbManuals = await sbGetManuals();
+                manuals = sbManuals.map(m => ({
+                    name: m.name, code: m.product_code || '',
+                    hasManual: m.has_manual, hasVideo: m.has_video, _dbId: m.id
+                }));
+            } catch (e) { console.error(e); manuals = []; }
+
+            try {
+                const sbSettings = await sbGetSettings();
+                sbSettings.forEach(s => settings[s.key] = s.value);
+            } catch (e) { console.error(e); }
+
+            renderAll();
+            loadSettings();
+        }
+
+        async function saveProductToDB(product) {
+            await sbUpsertProduct({
+                product_code: product.id, name: product.name, category: product.cat,
+                age: product.age, image_url: product.img, badge: product.badge,
+                status: product.status, description: product.desc || '', id: product._dbId
+            });
+        }
+
+        async function saveCategoryToDB(name, oldName = null) {
+            if (oldName) {
+                await sbUpdateCategory(oldName, name);
+            } else {
+                await sbUpsertCategory({ name, sort_order: categories.indexOf(name) });
+            }
+        }
+
+        async function saveBannerToDB(banner) {
+            const data = { title: banner.title, subtitle: banner.subtitle, image_url: banner.img, link: banner.link || 'produtos.html' };
+            if (banner._dbId) data.id = banner._dbId;
+            await sbUpsertBanner(data);
+        }
+
+        async function saveManualToDB(manual) {
+            const data = { name: manual.name, product_code: manual.code, has_manual: manual.hasManual, has_video: manual.hasVideo };
+            if (manual._dbId) data.id = manual._dbId;
+            await sbUpsertManual(data);
+        }
 
         function save() {
-            localStorage.setItem('tk_products', JSON.stringify(products));
-            localStorage.setItem('tk_categories', JSON.stringify(categories));
-            localStorage.setItem('tk_banners', JSON.stringify(banners));
-            localStorage.setItem('tk_manuals', JSON.stringify(manuals));
+            // Legacy compatibility - no-op, saves happen individually now
         }
 
         // ===== NAV =====
@@ -1117,15 +1160,16 @@
             document.getElementById('modalOverlay').classList.add('show');
         }
 
-        function saveProduct(idx) {
+        async function saveProduct(idx) {
             let finalImg = tempBase64Image ? tempBase64Image : document.getElementById('mImg').value;
             const p = { id: document.getElementById('mCode').value, name: document.getElementById('mName').value, cat: document.getElementById('mCat').value, age: document.getElementById('mAge').value, img: finalImg, badge: document.getElementById('mBadge').value, status: document.getElementById('mStatus').value, desc: document.getElementById('mDesc').value };
             if (!p.name || !p.id) return showToast('Preencha nome e código!', 'error');
-            if (idx >= 0) products[idx] = p; else products.push(p);
-            save(); closeModal(); renderAll(); showToast(idx >= 0 ? 'Produto atualizado!' : 'Produto criado!');
+            if (idx >= 0) { p._dbId = products[idx]._dbId; products[idx] = p; } else products.push(p);
+            await saveProductToDB(p);
+            closeModal(); await loadAllData(); showToast(idx >= 0 ? 'Produto atualizado!' : 'Produto criado!');
         }
         function editProduct(i) { openProductModal(i); }
-        function deleteProduct(i) { if (confirm('Excluir produto ' + products[i].name + '?')) { products.splice(i, 1); save(); renderAll(); showToast('Produto excluído!'); } }
+        async function deleteProduct(i) { if (confirm('Excluir produto ' + products[i].name + '?')) { if (products[i]._dbId) await sbDeleteProduct(products[i]._dbId); await loadAllData(); showToast('Produto excluído!'); } }
 
         function openCatModal(idx = -1) {
             const c = idx >= 0 ? categories[idx] : '';
@@ -1134,15 +1178,15 @@
             document.getElementById('modalFooter').innerHTML = `<button class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="saveCat(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
             document.getElementById('modalOverlay').classList.add('show');
         }
-        function saveCat(idx) {
+        async function saveCat(idx) {
             const name = document.getElementById('mCatName').value;
             if (!name) return showToast('Preencha o nome!', 'error');
-            if (idx >= 0) { const old = categories[idx]; categories[idx] = name; products.forEach(p => { if (p.cat === old) p.cat = name; }); }
-            else categories.push(name);
-            save(); closeModal(); renderAll(); showToast('Categoria salva!');
+            if (idx >= 0) categories[idx] = name; else categories.push(name);
+            await sbUpsertCategory({ name, sort_order: idx >= 0 ? idx : categories.length - 1 });
+            closeModal(); await loadAllData(); showToast('Categoria salva!');
         }
         function editCategory(i) { openCatModal(i); }
-        function deleteCategory(i) { if (confirm('Excluir categoria?')) { categories.splice(i, 1); save(); renderAll(); showToast('Categoria excluída!'); } }
+        async function deleteCategory(i) { if (confirm('Excluir categoria?')) { const catName = categories[i]; const { data } = await supabase.from('categories').select('id').eq('name', catName).single(); if (data) await sbDeleteCategory(data.id); await loadAllData(); showToast('Categoria excluída!'); } }
 
         function openBannerModal(idx = -1) {
             tempBase64Image = null; // reset upload
@@ -1158,14 +1202,15 @@
             document.getElementById('modalFooter').innerHTML = `<button class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="saveBanner(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
             document.getElementById('modalOverlay').classList.add('show');
         }
-        function saveBanner(idx) {
+        async function saveBanner(idx) {
             let finalImg = tempBase64Image ? tempBase64Image : document.getElementById('mBImg').value;
             const b = { img: finalImg, title: document.getElementById('mBTitle').value, subtitle: document.getElementById('mBSub').value };
-            if (idx >= 0) banners[idx] = b; else banners.push(b);
-            save(); closeModal(); renderAll(); showToast('Banner salvo!');
+            if (idx >= 0) { b._dbId = banners[idx]._dbId; banners[idx] = b; } else banners.push(b);
+            await saveBannerToDB(b);
+            closeModal(); await loadAllData(); showToast('Banner salvo!');
         }
         function editBanner(i) { openBannerModal(i); }
-        function deleteBanner(i) { if (confirm('Excluir banner?')) { banners.splice(i, 1); save(); renderAll(); showToast('Banner excluído!'); } }
+        async function deleteBanner(i) { if (confirm('Excluir banner?')) { if (banners[i]._dbId) await sbDeleteBanner(banners[i]._dbId); await loadAllData(); showToast('Banner excluído!'); } }
 
         function openManualModal(idx = -1) {
             const m = idx >= 0 ? manuals[idx] : { name: '', code: '', hasManual: false, hasVideo: false };
@@ -1178,21 +1223,35 @@
             document.getElementById('modalFooter').innerHTML = `<button class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="saveManual(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
             document.getElementById('modalOverlay').classList.add('show');
         }
-        function saveManual(idx) {
+        async function saveManual(idx) {
             const m = { name: document.getElementById('mMName').value, code: document.getElementById('mMCode').value, hasManual: document.getElementById('mMManual').value === 'true', hasVideo: document.getElementById('mMVideo').value === 'true' };
-            if (idx >= 0) manuals[idx] = m; else manuals.push(m);
-            save(); closeModal(); renderAll(); showToast('Manual salvo!');
+            if (idx >= 0) { m._dbId = manuals[idx]._dbId; manuals[idx] = m; } else manuals.push(m);
+            await saveManualToDB(m);
+            closeModal(); await loadAllData(); showToast('Manual salvo!');
         }
         function editManual(i) { openManualModal(i); }
-        function deleteManual(i) { if (confirm('Excluir manual?')) { manuals.splice(i, 1); save(); renderAll(); showToast('Manual excluído!'); } }
+        async function deleteManual(i) { if (confirm('Excluir manual?')) { if (manuals[i]._dbId) await sbDeleteManual(manuals[i]._dbId); await loadAllData(); showToast('Manual excluído!'); } }
 
-        function saveSettings() {
-            settings = { siteName: document.getElementById('cfgSiteName').value, slogan: document.getElementById('cfgSlogan').value, phone: document.getElementById('cfgPhone').value, email: document.getElementById('cfgEmail').value, whatsapp: document.getElementById('cfgWhatsapp').value, address: document.getElementById('cfgAddress').value, instagram: document.getElementById('cfgInsta').value, facebook: document.getElementById('cfgFb').value, youtube: document.getElementById('cfgYt').value, color: document.getElementById('cfgColor').value };
-            localStorage.setItem('tk_settings', JSON.stringify(settings));
+        async function saveSettings() {
+            const pairs = {
+                site_name: document.getElementById('cfgSiteName').value,
+                slogan: document.getElementById('cfgSlogan').value,
+                phone: document.getElementById('cfgPhone').value,
+                email: document.getElementById('cfgEmail').value,
+                whatsapp: document.getElementById('cfgWhatsapp').value,
+                address: document.getElementById('cfgAddress').value,
+                instagram: document.getElementById('cfgInsta').value,
+                facebook: document.getElementById('cfgFb').value,
+                youtube: document.getElementById('cfgYt').value,
+                primary_color: document.getElementById('cfgColor').value
+            };
+            for (const [key, value] of Object.entries(pairs)) {
+                await sbUpsertSetting(key, value);
+            }
             showToast('Configurações salvas!');
         }
         function loadSettings() {
-            if (settings.siteName) document.getElementById('cfgSiteName').value = settings.siteName;
+            if (settings.site_name) document.getElementById('cfgSiteName').value = settings.site_name;
             if (settings.slogan) document.getElementById('cfgSlogan').value = settings.slogan;
             if (settings.phone) document.getElementById('cfgPhone').value = settings.phone;
             if (settings.email) document.getElementById('cfgEmail').value = settings.email;
@@ -1201,10 +1260,10 @@
             if (settings.instagram) document.getElementById('cfgInsta').value = settings.instagram;
             if (settings.facebook) document.getElementById('cfgFb').value = settings.facebook;
             if (settings.youtube) document.getElementById('cfgYt').value = settings.youtube;
-            if (settings.color) document.getElementById('cfgColor').value = settings.color;
+            if (settings.primary_color) document.getElementById('cfgColor').value = settings.primary_color;
         }
 
-        renderAll();
+        loadAllData();
     </script>
 </body>
 
