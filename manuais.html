@@ -152,26 +152,34 @@
 
     <script src="script.js"></script>
     <script>
-        const manuals = [
-            { name: 'Mesa Criativa Blocos', code: 'TK07003', hasManual: true, hasVideo: true, icon: '🧱' },
-            { name: 'Dino Rex Interativo', code: 'TK01001', hasManual: true, hasVideo: true, icon: '🦕' },
-            { name: 'Robô Alpha Interativo', code: 'TK02001', hasManual: true, hasVideo: true, icon: '🤖' },
-            { name: 'Guitarra Rock Star', code: 'TK04001', hasManual: true, hasVideo: true, icon: '🎸' },
-            { name: 'Microfone Karaokê LED', code: 'TK04002', hasManual: true, hasVideo: true, icon: '🎤' },
-            { name: 'Turbo Racer Fricção', code: 'TK06001', hasManual: true, hasVideo: false, icon: '🏎️' },
-            { name: 'Triceratops Colorido', code: 'TK01002', hasManual: false, hasVideo: true, icon: '🦖' },
-            { name: 'Pterodáctilo Voador', code: 'TK01003', hasManual: false, hasVideo: true, icon: '🦅' },
-            { name: 'Jogo da Memória Animais', code: 'TK03001', hasManual: true, hasVideo: false, icon: '🎲' },
-            { name: 'Estegossauro Musical', code: 'TK01004', hasManual: true, hasVideo: true, icon: '🦕' },
-            { name: 'Robô Guardião Premium', code: 'TK02002', hasManual: true, hasVideo: true, icon: '🛡️' },
-            { name: 'Bateria Musical Infantil', code: 'TK04003', hasManual: true, hasVideo: true, icon: '🥁' },
-            { name: 'Xilofone Arco-Íris', code: 'TK04004', hasManual: true, hasVideo: false, icon: '🎵' },
-            { name: 'Super Pista Radical', code: 'TK06002', hasManual: true, hasVideo: true, icon: '🏁' },
-            { name: 'Monster Truck 4x4', code: 'TK06003', hasManual: false, hasVideo: true, icon: '🚗' },
-            { name: 'Blocos de Construção 100pcs', code: 'TK07001', hasManual: true, hasVideo: false, icon: '🧱' },
-            { name: 'Ursinho Fofo Pelúcia', code: 'TK05001', hasManual: false, hasVideo: true, icon: '🧸' },
-            { name: 'Volante Simulador Divertido', code: 'TK08001', hasManual: true, hasVideo: true, icon: '🎮' },
-        ];
+        let manuals = [];
+        try {
+            const raw = localStorage.getItem('tk_manuals');
+            if (raw) manuals = JSON.parse(raw);
+        } catch (e) { }
+
+        if (manuals.length === 0) {
+            manuals = [
+                { name: 'Mesa Criativa Blocos', code: 'TK07003', hasManual: true, hasVideo: true, icon: '🧱' },
+                { name: 'Dino Rex Interativo', code: 'TK01001', hasManual: true, hasVideo: true, icon: '🦕' },
+                { name: 'Robô Alpha Interativo', code: 'TK02001', hasManual: true, hasVideo: true, icon: '🤖' },
+                { name: 'Guitarra Rock Star', code: 'TK04001', hasManual: true, hasVideo: true, icon: '🎸' },
+                { name: 'Microfone Karaokê LED', code: 'TK04002', hasManual: true, hasVideo: true, icon: '🎤' },
+                { name: 'Turbo Racer Fricção', code: 'TK06001', hasManual: true, hasVideo: false, icon: '🏎️' },
+                { name: 'Triceratops Colorido', code: 'TK01002', hasManual: false, hasVideo: true, icon: '🦖' },
+                { name: 'Pterodáctilo Voador', code: 'TK01003', hasManual: false, hasVideo: true, icon: '🦅' },
+                { name: 'Jogo da Memória Animais', code: 'TK03001', hasManual: true, hasVideo: false, icon: '🎲' },
+                { name: 'Estegossauro Musical', code: 'TK01004', hasManual: true, hasVideo: true, icon: '🦕' },
+                { name: 'Robô Guardião Premium', code: 'TK02002', hasManual: true, hasVideo: true, icon: '🛡️' },
+                { name: 'Bateria Musical Infantil', code: 'TK04003', hasManual: true, hasVideo: true, icon: '🥁' },
+                { name: 'Xilofone Arco-Íris', code: 'TK04004', hasManual: true, hasVideo: false, icon: '🎵' },
+                { name: 'Super Pista Radical', code: 'TK06002', hasManual: true, hasVideo: true, icon: '🏁' },
+                { name: 'Monster Truck 4x4', code: 'TK06003', hasManual: false, hasVideo: true, icon: '🚗' },
+                { name: 'Blocos de Construção 100pcs', code: 'TK07001', hasManual: true, hasVideo: false, icon: '🧱' },
+                { name: 'Ursinho Fofo Pelúcia', code: 'TK05001', hasManual: false, hasVideo: true, icon: '🧸' },
+                { name: 'Volante Simulador Divertido', code: 'TK08001', hasManual: true, hasVideo: true, icon: '🎮' },
+            ];
+        }
 
         const grid = document.getElementById('manualsGrid');
 
@@ -198,9 +206,10 @@
                 let actions = '';
                 if (m.hasManual) actions += `<a href="#" class="btn-manual btn-download"><i class="fas fa-download"></i> Manual</a>`;
                 if (m.hasVideo) actions += `<a href="#" class="btn-manual btn-video"><i class="fas fa-play"></i> Vídeo</a>`;
+                const icon = m.icon || '📦';
                 card.innerHTML = `
           <div class="manual-header">
-            <div class="manual-icon">${m.icon}</div>
+            <div class="manual-icon">${icon}</div>
             <div>
               <h3>${m.name}</h3>
               <div class="manual-code">${m.code}</div>

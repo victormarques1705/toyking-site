@@ -165,8 +165,8 @@
 }
 
 .product-card-full:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-hover);
+    transform: scale(1.02);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
 }
 
 .product-card-full .product-img-wrapper {
@@ -182,7 +182,7 @@
 }
 
 .product-card-full:hover .product-img {
-    transform: scale(1.08);
+    transform: scale(1.04);
 }
 
 .product-card-full .badge {
@@ -292,8 +292,8 @@
 }
 
 .manual-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-hover);
+    transform: scale(1.02);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
 }
 
 .manual-header {
@@ -444,8 +444,8 @@
 }
 
 .mission-card:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-hover);
+    transform: scale(1.02);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
 }
 
 .mission-card:nth-child(1) {
@@ -632,8 +632,8 @@
 
 .btn-submit:hover {
     background: var(--blue-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(26, 139, 214, 0.3);
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(26, 139, 214, 0.2);
 }
 
 .contact-info-side {
@@ -654,8 +654,8 @@
 }
 
 .contact-info-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-hover);
+    transform: scale(1.02);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
 }
 
 .contact-icon-circle {

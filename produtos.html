@@ -183,39 +183,52 @@
 
     <script src="script.js"></script>
     <script>
-        // Generate product cards dynamically
-        const products = [
-            { name: 'Dino Rex Interativo', code: 'TK01001', cat: 'dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: 'NOVO' },
-            { name: 'Triceratops Colorido', code: 'TK01002', cat: 'dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: 'TOP' },
-            { name: 'Pterodáctilo Voador', code: 'TK01003', cat: 'dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: '' },
-            { name: 'Estegossauro Musical', code: 'TK01004', cat: 'dinos', age: '+18 meses', img: 'dinosaur_toys.png', badge: 'NOVO' },
-            { name: 'Robô Alpha Interativo', code: 'TK02001', cat: 'robos', age: '+3 anos', img: 'robot_toys.png', badge: 'NOVO' },
-            { name: 'Robô Guardião Premium', code: 'TK02002', cat: 'robos', age: '+5 anos', img: 'robot_toys.png', badge: 'TOP' },
-            { name: 'Robô Construtor RC', code: 'TK02003', cat: 'robos', age: '+3 anos', img: 'robot_toys.png', badge: '' },
-            { name: 'Robô Dance Musical', code: 'TK02004', cat: 'robos', age: '+18 meses', img: 'robot_toys.png', badge: '' },
-            { name: 'Jogo da Memória Animais', code: 'TK03001', cat: 'jogos', age: '+3 anos', img: 'family_games.png', badge: 'TOP' },
-            { name: 'Batalha dos Heróis', code: 'TK03002', cat: 'jogos', age: '+5 anos', img: 'family_games.png', badge: '' },
-            { name: 'Quiz dos Bichos', code: 'TK03003', cat: 'jogos', age: '+3 anos', img: 'family_games.png', badge: 'NOVO' },
-            { name: 'Dominó Colorido ToyKing', code: 'TK03004', cat: 'jogos', age: '+3 anos', img: 'family_games.png', badge: '' },
-            { name: 'Guitarra Rock Star', code: 'TK04001', cat: 'musicais', age: '+3 anos', img: 'musical_toys.png', badge: 'NOVO' },
-            { name: 'Microfone Karaokê LED', code: 'TK04002', cat: 'musicais', age: '+3 anos', img: 'musical_toys.png', badge: '' },
-            { name: 'Bateria Musical Infantil', code: 'TK04003', cat: 'musicais', age: '+18 meses', img: 'musical_toys.png', badge: '' },
-            { name: 'Xilofone Arco-Íris', code: 'TK04004', cat: 'musicais', age: '+12 meses', img: 'musical_toys.png', badge: 'TOP' },
-            { name: 'Ursinho Fofo Pelúcia', code: 'TK05001', cat: 'baby', age: '0+ meses', img: 'baby_toys.png', badge: 'NOVO' },
-            { name: 'Anéis Empilháveis', code: 'TK05002', cat: 'baby', age: '+6 meses', img: 'baby_toys.png', badge: '' },
-            { name: 'Chocalho Musical Baby', code: 'TK05003', cat: 'baby', age: '0+ meses', img: 'baby_toys.png', badge: '' },
-            { name: 'Mordedor Gelado Zoo', code: 'TK05004', cat: 'baby', age: '0+ meses', img: 'baby_toys.png', badge: 'TOP' },
-            { name: 'Turbo Racer Fricção', code: 'TK06001', cat: 'racing', age: '+3 anos', img: 'racing_cars.png', badge: 'NOVO' },
-            { name: 'Super Pista Radical', code: 'TK06002', cat: 'racing', age: '+5 anos', img: 'racing_cars.png', badge: 'TOP' },
-            { name: 'Monster Truck 4x4', code: 'TK06003', cat: 'racing', age: '+3 anos', img: 'racing_cars.png', badge: '' },
-            { name: 'Carro de Corrida RC', code: 'TK06004', cat: 'racing', age: '+5 anos', img: 'racing_cars.png', badge: '' },
-            { name: 'Blocos de Construção 100pcs', code: 'TK07001', cat: 'blocos', age: '+3 anos', img: 'building_blocks.png', badge: '' },
-            { name: 'Castelo Mágico Blocos', code: 'TK07002', cat: 'blocos', age: '+3 anos', img: 'building_blocks.png', badge: 'TOP' },
-            { name: 'Mesa Criativa Blocos', code: 'TK07003', cat: 'blocos', age: '+3 anos', img: 'building_blocks.png', badge: 'NOVO' },
-            { name: 'Kit Fazendinha Blocos', code: 'TK07004', cat: 'blocos', age: '+3 anos', img: 'building_blocks.png', badge: '' },
-        ];
+        // Generate product cards dynamically from LocalStorage (Integration with Admin)
+        let storageProducts = [];
+        try {
+            const rawProds = localStorage.getItem('tk_products');
+            if (rawProds) storageProducts = JSON.parse(rawProds);
+        } catch (e) {
+            console.error('Error loading products from local storage:', e);
+        }
 
-        const catNames = { dinos: 'Mundo dos Dinos', robos: 'Super Robôs', jogos: 'Jogos & Ação', musicais: 'Musicais', baby: 'ToyKing Baby', racing: 'Racing Club', blocos: 'Construir & Brincar' };
+        if (storageProducts.length === 0) {
+            storageProducts = [
+                { id: 'TK01001', name: 'Dino Rex Interativo', cat: 'Mundo dos Dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: 'NOVO', status: 'active' },
+                { id: 'TK01002', name: 'Triceratops Colorido', cat: 'Mundo dos Dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: 'TOP', status: 'active' },
+                { id: 'TK01003', name: 'Pterodáctilo Voador', cat: 'Mundo dos Dinos', age: '+3 anos', img: 'dinosaur_toys.png', badge: '', status: 'active' },
+                { id: 'TK01004', name: 'Estegossauro Musical', cat: 'Mundo dos Dinos', age: '+18 meses', img: 'dinosaur_toys.png', badge: 'NOVO', status: 'active' },
+                { id: 'TK02001', name: 'Robô Alpha Interativo', cat: 'Super Robôs', age: '+3 anos', img: 'robot_toys.png', badge: 'NOVO', status: 'active' },
+                { id: 'TK02002', name: 'Robô Guardião Premium', cat: 'Super Robôs', age: '+5 anos', img: 'robot_toys.png', badge: 'TOP', status: 'active' },
+                { id: 'TK03001', name: 'Jogo da Memória Animais', cat: 'Jogos & Ação', age: '+3 anos', img: 'family_games.png', badge: 'TOP', status: 'active' },
+                { id: 'TK04001', name: 'Guitarra Rock Star', cat: 'Musicais', age: '+3 anos', img: 'musical_toys.png', badge: 'NOVO', status: 'active' },
+                { id: 'TK04002', name: 'Microfone Karaokê LED', cat: 'Musicais', age: '+3 anos', img: 'musical_toys.png', badge: '', status: 'active' },
+                { id: 'TK05001', name: 'Ursinho Fofo Pelúcia', cat: 'ToyKing Baby', age: '0+ meses', img: 'baby_toys.png', badge: 'NOVO', status: 'active' },
+                { id: 'TK06001', name: 'Turbo Racer Fricção', cat: 'Racing Club', age: '+3 anos', img: 'racing_cars.png', badge: 'NOVO', status: 'active' },
+                { id: 'TK07001', name: 'Blocos de Construção 100pcs', cat: 'Construir & Brincar', age: '+3 anos', img: 'building_blocks.png', badge: '', status: 'active' }
+            ];
+        }
+
+        // Use either local storage products or empty array
+        const products = storageProducts.filter(p => p.status === 'active');
+
+        let allCategories = [];
+        try {
+            const rawCats = localStorage.getItem('tk_categories');
+            if (rawCats) {
+                allCategories = JSON.parse(rawCats);
+            } else {
+                allCategories = ['Encartelados', 'Display', 'Didáticos', 'Brinquedos a Pilha', 'Armas', 'Verão', 'Patinetes', 'Maletas de Pintura', 'Jogos', 'Mundo dos Dinos', 'Super Robôs', 'Jogos & Ação', 'Musicais', 'ToyKing Baby', 'Racing Club', 'Construir & Brincar'];
+            }
+        } catch (e) { }
+
+        // Populate Category Filter
+        const catFilter = document.getElementById('filterCategory');
+        catFilter.innerHTML = '<option value="all">Todas as Categorias</option>';
+        allCategories.forEach(cat => {
+            catFilter.innerHTML += `<option value="${cat}">${cat}</option>`;
+        });
+
         const grid = document.getElementById('productsGrid');
         const perPage = 12;
         let filteredProducts = [...products];
@@ -229,16 +242,16 @@
                 card.className = 'product-card-full reveal';
                 card.style.transitionDelay = `${i * 0.05}s`;
                 card.style.cursor = 'pointer';
-                card.onclick = () => window.location.href = 'produto.html?id=' + p.code;
+                card.onclick = () => window.location.href = 'produto.html?id=' + p.id;
                 card.innerHTML = `
           ${p.badge ? `<div class="product-img-wrapper"><span class="badge ${p.badge === 'NOVO' ? 'badge-new' : 'badge-hot'}">${p.badge === 'TOP' ? '🔥 TOP' : p.badge}</span>` : '<div class="product-img-wrapper">'}
-          <img src="assets/images/${p.img}" alt="${p.name}" class="product-img">
+          <img src="${p.img && p.img.startsWith('data:image') ? p.img : 'assets/images/' + p.img}" alt="${p.name}" class="product-img">
           </div>
           <div class="product-info">
             <h3>${p.name}</h3>
-            <p class="product-code">${p.code}</p>
+            <p class="product-code">${p.id}</p>
             <div class="product-tags">
-              <span class="product-tag">${catNames[p.cat]}</span>
+              <span class="product-tag">${p.cat}</span>
               <span class="product-tag">${p.age}</span>
             </div>
           </div>`;
@@ -279,7 +292,7 @@
             const search = document.getElementById('searchProducts').value.toLowerCase();
             filteredProducts = products.filter(p => {
                 if (cat !== 'all' && p.cat !== cat) return false;
-                if (search && !p.name.toLowerCase().includes(search) && !p.code.toLowerCase().includes(search)) return false;
+                if (search && !p.name.toLowerCase().includes(search) && !p.id.toLowerCase().includes(search)) return false;
                 return true;
             });
             renderProducts(1);

@@ -1,8 +1,158 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // ===== LOADER =====
+    // ===== DYNAMIC DATA LOADING FROM ADMIN PANEL =====
+    const storedProducts = JSON.parse(localStorage.getItem('tk_products'));
+    const storedBanners = JSON.parse(localStorage.getItem('tk_banners'));
+    const storedSettings = JSON.parse(localStorage.getItem('tk_settings'));
+
+    // Apply Settings
+    if (storedSettings) {
+        if (storedSettings.siteName) document.title = document.title.replace('Toy King', storedSettings.siteName);
+        if (storedSettings.color) {
+            document.documentElement.style.setProperty('--blue', storedSettings.color);
+            document.documentElement.style.setProperty('--blue-primary', storedSettings.color);
+        }
+
+        // Update social links if exist
+        if (storedSettings.instagram) {
+            document.querySelectorAll('a[href*="instagram.com"]').forEach(a => a.href = storedSettings.instagram);
+        }
+        if (storedSettings.facebook) {
+            document.querySelectorAll('a[href*="facebook.com"]').forEach(a => a.href = storedSettings.facebook);
+        }
+        if (storedSettings.phone || storedSettings.whatsapp) {
+            const phone = storedSettings.phone || storedSettings.whatsapp;
+            const purePhone = phone.replace(/\D/g, '');
+            document.querySelectorAll('a[href^="tel:"]').forEach(a => { a.href = 'tel:' + purePhone; a.textContent = phone; });
+            document.querySelectorAll('a[href^="https://wa.me/"]').forEach(a => { a.href = 'https://wa.me/55' + purePhone; a.textContent = phone; });
+        }
+    }
+
+    // Replace Banners
+    if (storedBanners && storedBanners.length > 0) {
+        const slider = document.querySelector('.slider');
+        const dotsContainer = document.querySelector('.slider-dots');
+        if (slider && dotsContainer) {
+            slider.innerHTML = '';
+            dotsContainer.innerHTML = '';
+            storedBanners.forEach((b, i) => {
+                const activeClass = i === 0 ? 'active' : '';
+                slider.innerHTML += `
+                  <div class="slide ${activeClass}">
+                    <div class="slide-bg" style="background-image: url('${b.img && b.img.startsWith('data:image') ? b.img : 'assets/images/' + b.img}');"></div>
+                    <div class="slide-content">
+                      <h1>${b.title}</h1>
+                      <p>${b.subtitle}</p>
+                      <a href="produtos.html" class="btn-hero">Ver Produtos</a>
+                    </div>
+                  </div>
+                `;
+                dotsContainer.innerHTML += `<button class="slider-dot ${activeClass}"></button>`;
+            });
+        }
+    }
+
+    // Replace Products
+    if (storedProducts && storedProducts.length > 0) {
+        const catMap = {
+            'Encartelados': '#encartelados', 'Brinquedos a Pilha': '#pilha',
+            'Jogos': '#jogos', 'Didáticos': '#didaticos',
+            'Verão': '#verao', 'Patinetes': '#patinetes'
+        };
+
+        for (const [catName, secId] of Object.entries(catMap)) {
+            const section = document.querySelector(secId);
+            if (section) {
+                const grid = section.querySelector('.products-grid');
+                if (grid) {
+                    const prods = storedProducts.filter(p => p.cat === catName && p.status === 'active').slice(0, 4);
+                    if (prods.length > 0) {
+                        grid.innerHTML = '';
+                        prods.forEach((p, i) => {
+                            let badgeHtml = '';
+                            if (p.badge) {
+                                const badgeClass = p.badge === 'TOP' ? 'badge-hot' : 'badge-new';
+                                const badgeIcon = p.badge === 'TOP' ? '🔥 ' : '';
+                                badgeHtml = `<span class="badge ${badgeClass}">${badgeIcon}${p.badge}</span>`;
+                            }
+                            grid.innerHTML += `
+                              <div class="product-card reveal" style="transition-delay: ${0.1 + (i * 0.1)}s;">
+                                ${badgeHtml}
+                                <div class="product-img-wrapper">
+                                  <img src="${p.img && p.img.startsWith('data:image') ? p.img : 'assets/images/' + p.img}" alt="${p.name}" class="product-img">
+                                </div>
+                                <div class="product-info">
+                                  <h3>${p.name}</h3>
+                                  <p class="category-tag">${p.cat}</p>
+                                  <span class="product-age">${p.age}</span>
+                                </div>
+                              </div>
+                            `;
+                        });
+                    }
+                }
+            }
+        }
+
+        // Replace on produtos.html if the full grid exists
+        const allProductsGrid = document.querySelector('.produtos-page-grid');
+        if (allProductsGrid) {
+            const prods = storedProducts.filter(p => p.status === 'active');
+            allProductsGrid.innerHTML = '';
+            prods.forEach((p, i) => {
+                let badgeHtml = '';
+                if (p.badge) {
+                    const badgeClass = p.badge === 'TOP' ? 'badge-hot' : 'badge-new';
+                    const badgeIcon = p.badge === 'TOP' ? '🔥 ' : '';
+                    badgeHtml = `<span class="badge ${badgeClass}">${badgeIcon}${p.badge}</span>`;
+                }
+                allProductsGrid.innerHTML += `
+                  <div class="product-card reveal" style="transition-delay: 0.1s;">
+                    ${badgeHtml}
+                    <div class="product-img-wrapper">
+                      <img src="${p.img && p.img.startsWith('data:image') ? p.img : 'assets/images/' + p.img}" alt="${p.name}" class="product-img">
+                    </div>
+                    <div class="product-info">
+                      <h3>${p.name}</h3>
+                      <p class="category-tag">${p.cat}</p>
+                      <span class="product-age">${p.age}</span>
+                    </div>
+                  </div>
+                `;
+            });
+        }
+    }
+
+    // ===== LOADER E TRANSIÇÃO DE PÁGINA =====
     const loader = document.querySelector('.loader-overlay');
     window.addEventListener('load', () => {
-        setTimeout(() => { loader.classList.add('hidden'); }, 1200);
+        if (loader) setTimeout(() => { loader.classList.add('hidden'); }, 300);
+        document.body.classList.add('page-loaded');
+    });
+
+    // Resolve cache do botão voltar (BFCache)
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+            document.body.classList.remove('page-exit');
+            document.body.classList.add('page-loaded');
+        }
+    });
+
+    // Intercepta cliques para saída suave (Apple Style)
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+            const target = this.getAttribute('target');
+
+            if (!href || href.startsWith('#') || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:') || target === '_blank') return;
+
+            e.preventDefault();
+            document.body.classList.remove('page-loaded');
+            document.body.classList.add('page-exit');
+
+            setTimeout(() => {
+                window.location.href = href;
+            }, 500); // 500ms exit delay
+        });
     });
 
     // ===== HEADER SCROLL =====
@@ -74,6 +224,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     startAutoSlide();
 
+    // ===== PARALLAX HERO BACKGROUND =====
+    const heroBgs = document.querySelectorAll('.slide-bg');
+    if (heroBgs.length > 0) {
+        window.addEventListener('scroll', () => {
+            const scrollPos = window.scrollY;
+            heroBgs.forEach(bg => {
+                bg.style.transform = `translateY(${scrollPos * 0.4}px) scale(1.05)`;
+            });
+        }, { passive: true });
+    }
+
     // ===== SCROLL REVEAL ANIMATIONS =====
     const reveals = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
     const revealObserver = new IntersectionObserver((entries) => {
@@ -89,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.products-grid').forEach(grid => {
         const cards = grid.querySelectorAll('.product-card');
         cards.forEach((card, i) => {
-            card.style.transitionDelay = `${i * 0.1}s`;
+            card.style.transitionDelay = `${i * 0.1} s`;
         });
     });
 

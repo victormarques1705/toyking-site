@@ -990,8 +990,9 @@
             const tb = document.getElementById('dashProductsTable');
             tb.innerHTML = '';
             products.slice(0, 5).forEach(p => {
+                const imgSrc = p.img && p.img.startsWith('data:image') ? p.img : 'assets/images/' + p.img;
                 tb.innerHTML += `<tr>
-          <td><img src="assets/images/${p.img}" class="td-img"></td>
+          <td><img src="${imgSrc}" class="td-img"></td>
           <td>${p.name}</td><td>${p.id}</td><td>${p.cat}</td>
           <td><span class="badge-status ${p.status === 'active' ? 'badge-active' : 'badge-draft'}">${p.status === 'active' ? 'Ativo' : 'Rascunho'}</span></td>
         </tr>`;
@@ -1004,8 +1005,9 @@
             const tb = document.getElementById('productsTable');
             tb.innerHTML = '';
             filtered.forEach((p, i) => {
+                const imgSrc = p.img && p.img.startsWith('data:image') ? p.img : 'assets/images/' + p.img;
                 tb.innerHTML += `<tr>
-          <td><img src="assets/images/${p.img}" class="td-img"></td>
+          <td><img src="${imgSrc}" class="td-img"></td>
           <td><strong>${p.name}</strong></td><td>${p.id}</td><td>${p.cat}</td><td>${p.age}</td>
           <td><span class="badge-status ${p.status === 'active' ? 'badge-active' : 'badge-draft'}">${p.status === 'active' ? 'Ativo' : 'Rascunho'}</span></td>
           <td><div class="td-actions">
@@ -1045,8 +1047,9 @@
             const tb = document.getElementById('bannersTable');
             tb.innerHTML = '';
             banners.forEach((b, i) => {
+                const imgSrc = b.img && b.img.startsWith('data:image') ? b.img : 'assets/images/' + b.img;
                 tb.innerHTML += `<tr>
-          <td><img src="assets/images/${b.img}" class="td-img" style="width:80px;height:45px;border-radius:8px;"></td>
+          <td><img src="${imgSrc}" class="td-img" style="width:80px;height:45px;border-radius:8px;object-fit:cover;"></td>
           <td><strong>${b.title}</strong></td><td>${b.subtitle}</td>
           <td><div class="td-actions">
             <button class="btn btn-sm btn-outline" onclick="editBanner(${i})"><i class="fas fa-edit"></i></button>
@@ -1081,8 +1084,21 @@
         }
 
         const imgOptions = ['dinosaur_toys.png', 'robot_toys.png', 'musical_toys.png', 'family_games.png', 'baby_toys.png', 'building_blocks.png', 'racing_cars.png', 'hero_banner.png'];
+        let tempBase64Image = null;
+
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    tempBase64Image = evt.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
 
         function openProductModal(idx = -1) {
+            tempBase64Image = null; // reset upload
             const p = idx >= 0 ? products[idx] : { id: 'TK0' + (products.length + 1).toString().padStart(4, '0'), name: '', cat: categories[0], age: '+3 anos', img: imgOptions[0], badge: '', status: 'active', desc: '' };
             document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Produto' : 'Novo Produto';
             document.getElementById('modalBody').innerHTML = `
@@ -1090,7 +1106,10 @@
         <div class="form-group"><label>Código</label><input class="form-control" id="mCode" value="${p.id}"></div></div>
         <div class="form-row"><div class="form-group"><label>Categoria</label><select class="form-control" id="mCat">${categories.map(c => `<option ${c === p.cat ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
         <div class="form-group"><label>Idade</label><select class="form-control" id="mAge"><option ${p.age === '0+ meses' ? 'selected' : ''}>0+ meses</option><option ${p.age === '+6 meses' ? 'selected' : ''}>+6 meses</option><option ${p.age === '+12 meses' ? 'selected' : ''}>+12 meses</option><option ${p.age === '+18 meses' ? 'selected' : ''}>+18 meses</option><option ${p.age === '+3 anos' ? 'selected' : ''}>+3 anos</option><option ${p.age === '+5 anos' ? 'selected' : ''}>+5 anos</option></select></div></div>
-        <div class="form-row"><div class="form-group"><label>Imagem</label><select class="form-control" id="mImg">${imgOptions.map(i => `<option ${i === p.img ? 'selected' : ''}>${i}</option>`).join('')}</select></div>
+        <div class="form-row"><div class="form-group"><label>Imagem</label>
+            <input type="file" id="mImgUpload" accept="image/*" class="form-control" onchange="handleImageUpload(event)" style="margin-bottom: 8px; padding: 5px;">
+            <select class="form-control" id="mImg">${imgOptions.map(i => `<option value="${i}" ${i === p.img ? 'selected' : ''}>${i}</option>`).join('')}${p.img && p.img.startsWith('data:image') ? '<option value="' + p.img + '" selected>Upload Anterior (Mantido)</option>' : ''}</select>
+        </div>
         <div class="form-group"><label>Badge</label><select class="form-control" id="mBadge"><option value="" ${!p.badge ? 'selected' : ''}>Nenhum</option><option ${p.badge === 'NOVO' ? 'selected' : ''}>NOVO</option><option ${p.badge === 'TOP' ? 'selected' : ''}>TOP</option></select></div></div>
         <div class="form-group"><label>Status</label><select class="form-control" id="mStatus"><option value="active" ${p.status === 'active' ? 'selected' : ''}>Ativo</option><option value="draft" ${p.status === 'draft' ? 'selected' : ''}>Rascunho</option></select></div>
         <div class="form-group"><label>Descrição</label><textarea class="form-control" id="mDesc">${p.desc || ''}</textarea></div>`;
@@ -1099,7 +1118,8 @@
         }
 
         function saveProduct(idx) {
-            const p = { id: document.getElementById('mCode').value, name: document.getElementById('mName').value, cat: document.getElementById('mCat').value, age: document.getElementById('mAge').value, img: document.getElementById('mImg').value, badge: document.getElementById('mBadge').value, status: document.getElementById('mStatus').value, desc: document.getElementById('mDesc').value };
+            let finalImg = tempBase64Image ? tempBase64Image : document.getElementById('mImg').value;
+            const p = { id: document.getElementById('mCode').value, name: document.getElementById('mName').value, cat: document.getElementById('mCat').value, age: document.getElementById('mAge').value, img: finalImg, badge: document.getElementById('mBadge').value, status: document.getElementById('mStatus').value, desc: document.getElementById('mDesc').value };
             if (!p.name || !p.id) return showToast('Preencha nome e código!', 'error');
             if (idx >= 0) products[idx] = p; else products.push(p);
             save(); closeModal(); renderAll(); showToast(idx >= 0 ? 'Produto atualizado!' : 'Produto criado!');
@@ -1125,17 +1145,22 @@
         function deleteCategory(i) { if (confirm('Excluir categoria?')) { categories.splice(i, 1); save(); renderAll(); showToast('Categoria excluída!'); } }
 
         function openBannerModal(idx = -1) {
+            tempBase64Image = null; // reset upload
             const b = idx >= 0 ? banners[idx] : { img: imgOptions[0], title: '', subtitle: '' };
             document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Banner' : 'Novo Banner';
             document.getElementById('modalBody').innerHTML = `
-        <div class="form-group"><label>Imagem</label><select class="form-control" id="mBImg">${imgOptions.map(i => `<option ${i === b.img ? 'selected' : ''}>${i}</option>`).join('')}</select></div>
+        <div class="form-group"><label>Imagem</label>
+            <input type="file" accept="image/*" class="form-control" onchange="handleImageUpload(event)" style="margin-bottom: 8px; padding: 5px;">
+            <select class="form-control" id="mBImg">${imgOptions.map(i => `<option value="${i}" ${i === b.img ? 'selected' : ''}>${i}</option>`).join('')}${b.img && b.img.startsWith('data:image') ? '<option value="' + b.img + '" selected>Upload Anterior (Mantido)</option>' : ''}</select>
+        </div>
         <div class="form-group"><label>Título</label><input class="form-control" id="mBTitle" value="${b.title}"></div>
         <div class="form-group"><label>Subtítulo</label><input class="form-control" id="mBSub" value="${b.subtitle}"></div>`;
             document.getElementById('modalFooter').innerHTML = `<button class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="saveBanner(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
             document.getElementById('modalOverlay').classList.add('show');
         }
         function saveBanner(idx) {
-            const b = { img: document.getElementById('mBImg').value, title: document.getElementById('mBTitle').value, subtitle: document.getElementById('mBSub').value };
+            let finalImg = tempBase64Image ? tempBase64Image : document.getElementById('mBImg').value;
+            const b = { img: finalImg, title: document.getElementById('mBTitle').value, subtitle: document.getElementById('mBSub').value };
             if (idx >= 0) banners[idx] = b; else banners.push(b);
             save(); closeModal(); renderAll(); showToast('Banner salvo!');
         }
