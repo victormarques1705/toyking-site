@@ -31,7 +31,7 @@
         }
 
         .pd-gallery {
-            background: linear-gradient(135deg, #f0f4f8, #e8edf3);
+            background: #f7f9fc;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -41,53 +41,14 @@
             overflow: hidden;
         }
 
-        .pd-gallery::before {
-            content: '';
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            border-radius: 50%;
-            border: 2px solid rgba(26, 139, 214, 0.1);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation: pulseCircle 3s ease-in-out infinite;
-        }
-
-        .pd-gallery::after {
-            content: '';
-            position: absolute;
-            width: 320px;
-            height: 320px;
-            border-radius: 50%;
-            border: 2px dashed rgba(245, 166, 35, 0.15);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation: pulseCircle 3s ease-in-out infinite reverse;
-        }
-
-        @keyframes pulseCircle {
-
-            0%,
-            100% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 0.5;
-            }
-
-            50% {
-                transform: translate(-50%, -50%) scale(1.08);
-                opacity: 1;
-            }
-        }
-
         .pd-main-img {
-            max-width: 420px;
-            width: 100%;
+            max-width: 90%;
+            max-height: 70vh;
+            width: auto;
+            object-fit: contain;
             position: relative;
             z-index: 2;
-            animation: floatProduct 8s ease-in-out infinite;
-            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.15));
+            mix-blend-mode: darken;
             transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
             cursor: zoom-in;
         }
@@ -96,17 +57,7 @@
             transform: scale(1.03);
         }
 
-        @keyframes floatProduct {
 
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-12px);
-            }
-        }
 
         .pd-thumbs {
             display: flex;
@@ -565,7 +516,7 @@
         const params = new URLSearchParams(window.location.search);
         const pid = params.get('id') || 'TK01001';
         const product = products.find(p => p.id === pid) || products[0];
-        const images = [product.img, product.img, product.img];
+        const images = [product.img];
 
         document.getElementById('pdName').textContent = product.name;
         document.getElementById('pdCode').textContent = 'Código: ' + product.id;
@@ -579,6 +530,13 @@
 
         let currentImg = 0;
         const thumbsEl = document.getElementById('thumbs');
+        const navArrowsEl = document.querySelector('.pd-nav-arrows');
+
+        if (images.length <= 1) {
+            thumbsEl.style.display = 'none';
+            if (navArrowsEl) navArrowsEl.style.display = 'none';
+        }
+
         images.forEach((img, i) => {
             const t = document.createElement('div');
             t.className = 'pd-thumb' + (i === 0 ? ' active' : '');
