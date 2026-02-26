@@ -1186,7 +1186,7 @@
             closeModal(); await loadAllData(); showToast('Categoria salva!');
         }
         function editCategory(i) { openCatModal(i); }
-        async function deleteCategory(i) { if (confirm('Excluir categoria?')) { const catName = categories[i]; const { data } = await supabase.from('categories').select('id').eq('name', catName).single(); if (data) await sbDeleteCategory(data.id); await loadAllData(); showToast('Categoria excluída!'); } }
+        async function deleteCategory(i) { if (confirm('Excluir categoria?')) { const catName = categories[i]; const { data } = await supabaseClient.from('categories').select('id').eq('name', catName).single(); if (data) await sbDeleteCategory(data.id); await loadAllData(); showToast('Categoria excluída!'); } }
 
         function openBannerModal(idx = -1) {
             tempBase64Image = null; // reset upload
