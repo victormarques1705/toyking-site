@@ -192,23 +192,25 @@ document.addEventListener('DOMContentLoaded', () => {
     function startAutoSlide() { slideInterval = setInterval(nextSlide, 5000); }
     function resetAutoSlide() { clearInterval(slideInterval); startAutoSlide(); }
 
-    nextBtn.addEventListener('click', () => { nextSlide(); resetAutoSlide(); });
-    prevBtn.addEventListener('click', () => { prevSlide(); resetAutoSlide(); });
-    dots.forEach((d, i) => d.addEventListener('click', () => { goToSlide(i); resetAutoSlide(); }));
+    if (nextBtn) nextBtn.addEventListener('click', () => { nextSlide(); resetAutoSlide(); });
+    if (prevBtn) prevBtn.addEventListener('click', () => { prevSlide(); resetAutoSlide(); });
+    if (dots) dots.forEach((d, i) => d.addEventListener('click', () => { goToSlide(i); resetAutoSlide(); }));
 
     // Touch swipe support
     let touchStartX = 0;
     const sliderEl = document.querySelector('.slider');
-    sliderEl.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
-    sliderEl.addEventListener('touchend', e => {
-        const diff = touchStartX - e.changedTouches[0].screenX;
-        if (Math.abs(diff) > 50) {
-            diff > 0 ? nextSlide() : prevSlide();
-            resetAutoSlide();
-        }
-    }, { passive: true });
+    if (sliderEl) {
+        sliderEl.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+        sliderEl.addEventListener('touchend', e => {
+            const diff = touchStartX - e.changedTouches[0].screenX;
+            if (Math.abs(diff) > 50) {
+                diff > 0 ? nextSlide() : prevSlide();
+                resetAutoSlide();
+            }
+        }, { passive: true });
+    }
 
-    startAutoSlide();
+    if (slides && slides.length > 0) startAutoSlide();
 
     // ===== PARALLAX HERO BACKGROUND =====
     const heroBgs = document.querySelectorAll('.slide-bg');
@@ -242,12 +244,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===== SCROLL TO TOP =====
     const scrollTopBtn = document.querySelector('.scroll-top');
-    window.addEventListener('scroll', () => {
-        scrollTopBtn.classList.toggle('show', window.scrollY > 400);
-    });
-    scrollTopBtn.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+    if (scrollTopBtn) {
+        window.addEventListener('scroll', () => {
+            scrollTopBtn.classList.toggle('show', window.scrollY > 400);
+        });
+        scrollTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
 
     // ===== FLOATING PARTICLES =====
     function createParticles(container) {
