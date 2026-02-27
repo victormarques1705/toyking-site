@@ -684,6 +684,8 @@ body.page-exit {
     justify-content: flex-start;
     padding: 20px 0;
     overflow-x: auto;
+    overflow-y: hidden;
+    touch-action: pan-y;
     scroll-snap-type: x mandatory;
     scroll-padding-left: 20px;
     scrollbar-width: none;
@@ -734,16 +736,16 @@ body.page-exit {
     }
 
     .age-bubble {
-        /* Ensures exactly 2 items take up the screen comfortably */
-        width: calc(50vw - 28px);
-        max-width: 160px;
+        /* Exibe 2 de forma agradável porém com os bloquinhos maiores */
+        width: 44vw;
+        max-width: 170px;
         flex-shrink: 0;
     }
 
     .bubble-anim-wrapper {
-        /* Control the Lottie size so they don't visually overlap when 290% scaled */
-        width: 100px;
-        height: 100px;
+        /* Aumentado como solicitado */
+        width: 120px;
+        height: 120px;
     }
 }
 
