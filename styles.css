@@ -634,21 +634,19 @@ body.page-exit {
 }
 
 .age-bubble {
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
+    width: 200px;
+    height: 200px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    color: white;
+    color: var(--blue-dark);
     font-weight: 800;
     font-size: 1.1rem;
     transition: var(--transition);
-    box-shadow: var(--shadow);
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     cursor: pointer;
     z-index: 1;
 }
@@ -666,17 +664,10 @@ body.page-exit {
     text-align: center;
 }
 
-.age-bubble::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), transparent);
-}
+/* Bubble reflection removed */
 
 .age-bubble:hover {
-    transform: scale(1.04);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+    transform: scale(1.1);
 }
 
 .age-bubble .age-icon {
@@ -689,17 +680,7 @@ body.page-exit {
     margin-top: 5px;
 }
 
-.age-bubble.baby {
-    background: linear-gradient(135deg, var(--red), var(--pink));
-}
-
-.age-bubble.toddler {
-    background: linear-gradient(135deg, var(--yellow), var(--orange));
-}
-
-.age-bubble.kid {
-    background: linear-gradient(135deg, var(--green), #26A69A);
-}
+/* Legacy age bubble backgrounds removed */
 
 /* ===== CATEGORY SECTIONS ===== */
 .category-section {
