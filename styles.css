@@ -650,6 +650,20 @@ body.page-exit {
     position: relative;
     overflow: hidden;
     cursor: pointer;
+    z-index: 1;
+}
+
+.age-bubble span,
+.age-bubble .bubble-label {
+    position: relative;
+    z-index: 2;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.cat-filter {
+    padding: 80px 0 40px;
+    background: var(--blue-light);
+    text-align: center;
 }
 
 .age-bubble::before {
@@ -668,6 +682,11 @@ body.page-exit {
 .age-bubble .age-icon {
     font-size: 2.5rem;
     margin-bottom: 8px;
+}
+
+.age-bubble .bubble-label {
+    font-size: 1rem;
+    margin-top: 5px;
 }
 
 .age-bubble.baby {
