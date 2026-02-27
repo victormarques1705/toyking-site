@@ -336,26 +336,30 @@ document.addEventListener('DOMContentLoaded', () => {
             const dots = dotsContainer.querySelectorAll('.cat-dot');
             dots.forEach((d, i) => d.classList.toggle('active', i === activeIndex));
 
-            // Show/Hide arrows based on position
-            prevBtn.style.opacity = carousel.scrollLeft <= 10 ? '0' : '1';
-            prevBtn.style.pointerEvents = carousel.scrollLeft <= 10 ? 'none' : 'auto';
+            /* prev arrow check removed */
 
-            const maxScroll = carousel.scrollWidth - carousel.clientWidth;
-            nextBtn.style.opacity = carousel.scrollLeft >= maxScroll - 10 ? '0' : '1';
-            nextBtn.style.pointerEvents = carousel.scrollLeft >= maxScroll - 10 ? 'none' : 'auto';
+            /* next arrow check removed */
         });
 
-        // Arrow Navigation
+        // Arrow Navigation with Loop-back
         prevBtn.addEventListener('click', () => {
-            carousel.scrollBy({ left: -itemWidth, behavior: 'smooth' });
+            if (carousel.scrollLeft <= 10) {
+                const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+                carousel.scrollTo({ left: maxScroll, behavior: 'smooth' });
+            } else {
+                carousel.scrollBy({ left: -itemWidth, behavior: 'smooth' });
+            }
         });
         nextBtn.addEventListener('click', () => {
-            carousel.scrollBy({ left: itemWidth, behavior: 'smooth' });
+            const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+            if (carousel.scrollLeft >= maxScroll - 10) {
+                carousel.scrollTo({ left: 0, behavior: 'smooth' });
+            } else {
+                carousel.scrollBy({ left: itemWidth, behavior: 'smooth' });
+            }
         });
 
-        // Initial Arrow Check
-        prevBtn.style.opacity = '0';
-        prevBtn.style.pointerEvents = 'none';
+        /* Initial check removed */
 
         // Drag support (finite)
         let isDown = false, startX, scrollL;
