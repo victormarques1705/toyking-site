@@ -771,12 +771,14 @@ body.page-exit {
     text-align: center;
 }
 
-.age-bubble:hover {
-    transform: scale(1.15);
-}
+@media (hover: hover) {
+    .age-bubble:hover {
+        transform: scale(1.15);
+    }
 
-.age-bubble:hover .bubble-anim-wrapper .age-icon {
-    transform: translateY(-8px);
+    .age-bubble:hover .bubble-anim-wrapper .age-icon {
+        transform: translateY(-8px);
+    }
 }
 
 /* Bolinhas ao redor */
