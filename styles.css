@@ -665,18 +665,17 @@ body.page-exit {
         flex-wrap: nowrap;
         justify-content: flex-start;
         overflow-x: auto;
-        padding: 20px;
+        padding: 20px calc(50% - 75px);
         scroll-snap-type: x mandatory;
         scrollbar-width: none;
-        /* Firefox */
         -ms-overflow-style: none;
-        /* IE/Edge */
         -webkit-overflow-scrolling: touch;
+        scroll-behavior: auto;
+        /* Instant jump for infinite loop */
     }
 
     .age-bubbles::-webkit-scrollbar {
         display: none;
-        /* Safari and Chrome */
     }
 
     .age-bubble {
@@ -687,6 +686,12 @@ body.page-exit {
     .bubble-anim-wrapper {
         width: 140px;
         height: 140px;
+    }
+}
+
+@media (min-width: 769px) {
+    .age-bubble.is-clone {
+        display: none !important;
     }
 }
 

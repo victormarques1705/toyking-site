@@ -302,4 +302,68 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
+
+    // ===== MOBILE INFINITE CAROUSEL =====
+    function setupMobileInfiniteCarousel() {
+        const carousel = document.querySelector('.age-bubbles');
+        if (!carousel) return;
+
+        const originalItems = Array.from(carousel.children);
+        if (originalItems.length === 0) return;
+
+        const itemCount = originalItems.length;
+
+        // Clone items sequentially for infinite scroll loop
+        originalItems.forEach(item => {
+            const clone = item.cloneNode(true);
+            clone.classList.add('is-clone');
+            carousel.appendChild(clone);
+        });
+
+        // Prepend clones sequentially
+        originalItems.slice().reverse().forEach(item => {
+            const clone = item.cloneNode(true);
+            clone.classList.add('is-clone');
+            carousel.insertBefore(clone, carousel.firstChild);
+        });
+
+        let scrollTimeout;
+        const S = 180; // width 150 + gap 30
+
+        const initScroll = () => {
+            if (window.innerWidth <= 768) {
+                // Teleport to the start of original items
+                carousel.style.scrollBehavior = 'auto'; // allow instant jump
+                carousel.scrollLeft = itemCount * S;
+            }
+        };
+
+        // Delay init to allow CSS layout to complete
+        setTimeout(initScroll, 100);
+        window.addEventListener('resize', initScroll);
+
+        carousel.addEventListener('scroll', () => {
+            if (window.innerWidth > 768) return;
+            clearTimeout(scrollTimeout);
+
+            // Check for edge wrap when user completely stops scrolling
+            scrollTimeout = setTimeout(() => {
+                const snapIndex = Math.round(carousel.scrollLeft / S);
+
+                // If scrolling into the far left boundary clones
+                if (snapIndex < itemCount) {
+                    carousel.style.scrollBehavior = 'auto';
+                    carousel.scrollLeft += itemCount * S;
+                }
+                // If scrolling into the far right boundary clones
+                else if (snapIndex >= itemCount * 2) {
+                    carousel.style.scrollBehavior = 'auto';
+                    carousel.scrollLeft -= itemCount * S;
+                }
+            }, 150);
+        });
+    }
+
+    // Initialize
+    setupMobileInfiniteCarousel();
 });
