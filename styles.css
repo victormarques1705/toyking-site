@@ -661,8 +661,27 @@ body.page-exit {
 }
 
 @media (max-width: 768px) {
+    .age-bubbles {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding: 20px;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        /* Firefox */
+        -ms-overflow-style: none;
+        /* IE/Edge */
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .age-bubbles::-webkit-scrollbar {
+        display: none;
+        /* Safari and Chrome */
+    }
+
     .age-bubble {
         width: 150px;
+        scroll-snap-align: center;
     }
 
     .bubble-anim-wrapper {
