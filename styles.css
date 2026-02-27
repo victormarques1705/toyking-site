@@ -34,6 +34,7 @@
 html {
     scroll-behavior: smooth;
     font-size: 16px;
+    overflow-x: hidden;
 }
 
 body {
@@ -41,6 +42,8 @@ body {
     color: var(--dark);
     background: var(--white);
     overflow-x: hidden;
+    width: 100%;
+    position: relative;
     line-height: 1.6;
     opacity: 0;
     transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
@@ -665,13 +668,12 @@ body.page-exit {
         flex-wrap: nowrap;
         justify-content: flex-start;
         overflow-x: auto;
-        padding: 20px calc(50% - 75px);
+        padding: 20px;
         scroll-snap-type: x mandatory;
+        scroll-padding-left: 20px;
         scrollbar-width: none;
         -ms-overflow-style: none;
         -webkit-overflow-scrolling: touch;
-        scroll-behavior: auto;
-        /* Instant jump for infinite loop */
     }
 
     .age-bubbles::-webkit-scrollbar {
@@ -679,13 +681,16 @@ body.page-exit {
     }
 
     .age-bubble {
-        width: 150px;
-        scroll-snap-align: center;
+        width: 42vw;
+        max-width: 180px;
+        scroll-snap-align: start;
     }
 
     .bubble-anim-wrapper {
-        width: 140px;
-        height: 140px;
+        width: 32vw;
+        height: 32vw;
+        max-width: 140px;
+        max-height: 140px;
     }
 }
 
