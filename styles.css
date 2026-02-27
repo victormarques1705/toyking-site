@@ -634,9 +634,15 @@ body.page-exit {
     padding: 20px 0;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    scroll-behavior: auto;
-    /* Disable smooth scroll during jump */
+    scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+}
+
+@media (min-width: 1300px) {
+    .age-bubbles {
+        justify-content: center;
+    }
 }
 
 .age-bubbles::-webkit-scrollbar {
@@ -659,6 +665,7 @@ body.page-exit {
     position: relative;
     overflow: visible;
     z-index: 1;
+    scroll-snap-align: center;
 }
 
 .age-bubble span,

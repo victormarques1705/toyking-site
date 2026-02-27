@@ -361,16 +361,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         /* Initial check removed */
 
-        // Drag support (finite)
+        // Drag support (Desktop only, let native touch handle mobile scrolling smoothly)
         let isDown = false, startX, scrollL;
         carousel.addEventListener('mousedown', (e) => {
+            // Disable drag if it's a touch device (often detected via matchMedia or relying on touch events)
+            if (window.matchMedia("(pointer: coarse)").matches) return;
             isDown = true;
-            carousel.style.scrollBehavior = 'auto';
+            carousel.style.scrollBehavior = 'auto'; // Disable smooth snap during drag
             startX = e.pageX - carousel.offsetLeft;
             scrollL = carousel.scrollLeft;
         });
-        carousel.addEventListener('mouseleave', () => { isDown = false; carousel.style.scrollBehavior = 'smooth'; });
-        carousel.addEventListener('mouseup', () => { isDown = false; carousel.style.scrollBehavior = 'smooth'; });
+        carousel.addEventListener('mouseleave', () => {
+            if (!isDown) return;
+            isDown = false;
+            carousel.style.scrollBehavior = 'smooth';
+        });
+        carousel.addEventListener('mouseup', () => {
+            if (!isDown) return;
+            isDown = false;
+            carousel.style.scrollBehavior = 'smooth';
+            // Trigger snap
+            const snapIndex = Math.round(carousel.scrollLeft / itemWidth);
+            carousel.scrollTo({ left: snapIndex * itemWidth, behavior: 'smooth' });
+        });
         carousel.addEventListener('mousemove', (e) => {
             if (!isDown) return;
             e.preventDefault();
