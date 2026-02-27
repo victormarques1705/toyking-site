@@ -635,27 +635,39 @@ body.page-exit {
 }
 
 .age-bubble {
-    width: 200px;
-    height: 200px;
+    width: 160px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     text-decoration: none;
     color: var(--blue-dark);
     font-weight: 800;
-    font-size: 1.2rem;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     overflow: visible;
     z-index: 1;
 }
 
+.bubble-anim-wrapper {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
 @media (max-width: 768px) {
     .age-bubble {
-        width: 220px;
-        height: 220px;
+        width: 150px;
+    }
+
+    .bubble-anim-wrapper {
+        width: 140px;
+        height: 140px;
     }
 }
 
@@ -666,27 +678,29 @@ body.page-exit {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.age-bubble .age-icon {
-    font-size: 2.5rem;
-    margin-bottom: 8px;
+.bubble-anim-wrapper .age-icon {
+    font-size: 3.5rem;
+    position: relative;
+    z-index: 2;
     transition: transform 0.3s ease;
 }
 
 .age-bubble .bubble-label {
     font-size: 1.1rem;
     margin-top: 5px;
+    text-align: center;
 }
 
 .age-bubble:hover {
     transform: scale(1.15);
 }
 
-.age-bubble:hover .age-icon {
+.age-bubble:hover .bubble-anim-wrapper .age-icon {
     transform: translateY(-8px);
 }
 
 /* Bolinhas ao redor */
-.age-bubble .bubble-decor {
+.bubble-anim-wrapper .bubble-decor {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -696,7 +710,7 @@ body.page-exit {
     z-index: 0;
 }
 
-.age-bubble .bubble-decor span {
+.bubble-anim-wrapper .bubble-decor span {
     position: absolute;
     width: 8px;
     height: 8px;
@@ -705,28 +719,28 @@ body.page-exit {
     opacity: 0.6;
 }
 
-.age-bubble .bubble-decor span:nth-child(1) {
+.bubble-anim-wrapper .bubble-decor span:nth-child(1) {
     top: 10%;
     left: 20%;
     width: 6px;
     height: 6px;
 }
 
-.age-bubble .bubble-decor span:nth-child(2) {
+.bubble-anim-wrapper .bubble-decor span:nth-child(2) {
     top: 20%;
     right: 15%;
     width: 10px;
     height: 10px;
 }
 
-.age-bubble .bubble-decor span:nth-child(3) {
+.bubble-anim-wrapper .bubble-decor span:nth-child(3) {
     bottom: 25%;
     left: 10%;
     width: 5px;
     height: 5px;
 }
 
-.age-bubble .bubble-decor span:nth-child(4) {
+.bubble-anim-wrapper .bubble-decor span:nth-child(4) {
     bottom: 15%;
     right: 30%;
     width: 7px;
