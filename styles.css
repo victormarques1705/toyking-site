@@ -729,20 +729,21 @@ body.page-exit {
     }
 
     .age-bubbles {
-        padding: 20px;
+        padding: 20px 20px;
         gap: 16px;
     }
 
     .age-bubble {
-        width: 42vw;
-        max-width: 180px;
+        /* Ensures exactly 2 items take up the screen comfortably */
+        width: calc(50vw - 28px);
+        max-width: 160px;
+        flex-shrink: 0;
     }
 
     .bubble-anim-wrapper {
-        width: 32vw;
-        height: 32vw;
-        max-width: 140px;
-        max-height: 140px;
+        /* Control the Lottie size so they don't visually overlap when 290% scaled */
+        width: 100px;
+        height: 100px;
     }
 }
 
