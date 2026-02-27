@@ -684,8 +684,6 @@ body.page-exit {
     justify-content: flex-start;
     padding: 20px 0;
     overflow-x: auto;
-    overflow-y: hidden;
-    touch-action: pan-y;
     scroll-snap-type: x mandatory;
     scroll-padding-left: 20px;
     scrollbar-width: none;
