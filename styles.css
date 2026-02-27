@@ -687,6 +687,7 @@ body.page-exit {
     margin: -40px 0;
     /* Compensate visually so the layout doesn't break */
     overflow-x: auto;
+    touch-action: pan-x;
     scroll-snap-type: x mandatory;
     scroll-padding-left: 20px;
     scrollbar-width: none;
