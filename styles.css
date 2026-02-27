@@ -689,12 +689,6 @@ body.page-exit {
     }
 }
 
-@media (min-width: 769px) {
-    .age-bubble.is-clone {
-        display: none !important;
-    }
-}
-
 .age-bubble span,
 .age-bubble .bubble-label {
     position: relative;
