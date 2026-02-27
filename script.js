@@ -296,8 +296,59 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!heroSection) return;
         const scrolled = window.scrollY;
         const bgs = heroSection.querySelectorAll('.slide-bg');
-        bgs.forEach(bg => {
-            bg.style.transform = `translateY(${scrolled * 0.3}px)`;
-        });
+        if (bgs) {
+            bgs.forEach(bg => {
+                bg.style.transform = `translateY(${scrolled * 0.3}px)`;
+            });
+        }
     });
+
+    // ===== INFINITE CATEGORY CAROUSEL =====
+    function setupInfiniteCarousel() {
+        const carousel = document.querySelector('.age-bubbles');
+        if (!carousel) return;
+
+        const items = Array.from(carousel.children);
+        if (items.length === 0) return;
+
+        // Clone items for infinite effect
+        items.forEach(item => {
+            const cloneAfter = item.cloneNode(true);
+            const cloneBefore = item.cloneNode(true);
+            carousel.appendChild(cloneAfter);
+            carousel.prepend(cloneBefore);
+        });
+
+        setTimeout(() => {
+            const itemWidth = items[0].offsetWidth + 30;
+            const totalWidth = itemWidth * items.length;
+            carousel.scrollLeft = totalWidth;
+
+            carousel.addEventListener('scroll', () => {
+                if (carousel.scrollLeft <= 5) {
+                    carousel.scrollLeft = totalWidth + 5;
+                } else if (carousel.scrollLeft >= totalWidth * 2 - 5) {
+                    carousel.scrollLeft = totalWidth - 5;
+                }
+            });
+        }, 200);
+
+        // Drag support
+        let isDown = false, startX, scrollL;
+        carousel.addEventListener('mousedown', (e) => {
+            isDown = true;
+            startX = e.pageX - carousel.offsetLeft;
+            scrollL = carousel.scrollLeft;
+        });
+        carousel.addEventListener('mouseleave', () => isDown = false);
+        carousel.addEventListener('mouseup', () => isDown = false);
+        carousel.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - carousel.offsetLeft;
+            const walk = (x - startX) * 2;
+            carousel.scrollLeft = scrollL - walk;
+        });
+    }
+    setupInfiniteCarousel();
 });
