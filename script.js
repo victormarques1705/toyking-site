@@ -296,10 +296,55 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!heroSection) return;
         const scrolled = window.scrollY;
         const bgs = heroSection.querySelectorAll('.slide-bg');
-        if (bgs) {
+        if (bgs && bgs.length > 0) {
             bgs.forEach(bg => {
                 bg.style.transform = `translateY(${scrolled * 0.3}px)`;
             });
         }
     });
+
+    // ===== CAROUSEL NAVIGATION (DESKTOP) =====
+    const carouselWrapper = document.querySelector('.cat-carousel-wrapper');
+    if (carouselWrapper) {
+        const carousel = carouselWrapper.querySelector('.age-bubbles');
+        const prevBtn = carouselWrapper.querySelector('.cat-nav-btn.prev');
+        const nextBtn = carouselWrapper.querySelector('.cat-nav-btn.next');
+
+        if (carousel && prevBtn && nextBtn) {
+            const scrollAmount = 350; // Approximations for scrolling a few items
+
+            prevBtn.addEventListener('click', () => {
+                carousel.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+            });
+
+            nextBtn.addEventListener('click', () => {
+                carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            });
+
+            // Optional: Hide buttons if at start or end
+            const updateButtons = () => {
+                const maxScrollLeft = carousel.scrollWidth - carousel.clientWidth;
+                if (carousel.scrollLeft <= 0) {
+                    prevBtn.style.opacity = '0.3';
+                    prevBtn.style.pointerEvents = 'none';
+                } else {
+                    prevBtn.style.opacity = '1';
+                    prevBtn.style.pointerEvents = 'auto';
+                }
+
+                if (carousel.scrollLeft >= maxScrollLeft - 10) {
+                    nextBtn.style.opacity = '0.3';
+                    nextBtn.style.pointerEvents = 'none';
+                } else {
+                    nextBtn.style.opacity = '1';
+                    nextBtn.style.pointerEvents = 'auto';
+                }
+            };
+
+            carousel.addEventListener('scroll', updateButtons);
+            // Initial check
+            setTimeout(updateButtons, 100);
+            window.addEventListener('resize', updateButtons);
+        }
+    }
 });
