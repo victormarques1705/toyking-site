@@ -313,19 +313,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const itemCount = originalItems.length;
 
-        // Clone items sequentially for infinite scroll loop
-        originalItems.forEach(item => {
-            const clone = item.cloneNode(true);
-            clone.classList.add('is-clone');
-            carousel.appendChild(clone);
-        });
+        // Clone items sequentially multiple times to create a massive buffer
+        // This prevents the "blank white space" issue on fast swipes
+        const sets = 3;
 
-        // Prepend clones sequentially
-        originalItems.slice().reverse().forEach(item => {
-            const clone = item.cloneNode(true);
-            clone.classList.add('is-clone');
-            carousel.insertBefore(clone, carousel.firstChild);
-        });
+        for (let i = 0; i < sets; i++) {
+            originalItems.forEach(item => {
+                const clone = item.cloneNode(true);
+                clone.classList.add('is-clone');
+                carousel.appendChild(clone);
+            });
+        }
+
+        for (let i = 0; i < sets; i++) {
+            originalItems.slice().reverse().forEach(item => {
+                const clone = item.cloneNode(true);
+                clone.classList.add('is-clone');
+                carousel.insertBefore(clone, carousel.firstChild);
+            });
+        }
 
         let scrollTimeout;
         const S = 180; // width 150 + gap 30
@@ -334,7 +340,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.innerWidth <= 768) {
                 // Teleport to the start of original items
                 carousel.style.scrollBehavior = 'auto'; // allow instant jump
-                carousel.scrollLeft = itemCount * S;
+                // Move past the 'sets' number of prepended groups
+                carousel.scrollLeft = (itemCount * sets) * S;
             }
         };
 
@@ -350,13 +357,13 @@ document.addEventListener('DOMContentLoaded', () => {
             scrollTimeout = setTimeout(() => {
                 const snapIndex = Math.round(carousel.scrollLeft / S);
 
-                // If scrolling into the far left boundary clones
-                if (snapIndex < itemCount) {
+                // If scrolling into the far left boundary (too close to start)
+                if (snapIndex < itemCount * (sets - 1)) {
                     carousel.style.scrollBehavior = 'auto';
                     carousel.scrollLeft += itemCount * S;
                 }
-                // If scrolling into the far right boundary clones
-                else if (snapIndex >= itemCount * 2) {
+                // If scrolling into the far right boundary
+                else if (snapIndex >= itemCount * (sets + 1)) {
                     carousel.style.scrollBehavior = 'auto';
                     carousel.scrollLeft -= itemCount * S;
                 }
