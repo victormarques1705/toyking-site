@@ -306,42 +306,85 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===== INFINITE CATEGORY CAROUSEL =====
     function setupInfiniteCarousel() {
         const carousel = document.querySelector('.age-bubbles');
-        if (!carousel) return;
+        const prevBtn = document.querySelector('.cat-nav-btn.prev');
+        const nextBtn = document.querySelector('.cat-nav-btn.next');
+        const dotsContainer = document.querySelector('.cat-dots');
 
-        const items = Array.from(carousel.children);
-        if (items.length === 0) return;
+        if (!carousel || !prevBtn || !nextBtn || !dotsContainer) return;
+
+        const originalItems = Array.from(carousel.children);
+        if (originalItems.length === 0) return;
+
+        // Create dots based on original items
+        originalItems.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.classList.add('cat-dot');
+            if (i === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => {
+                const itemWidth = originalItems[0].offsetWidth + 30;
+                const targetScroll = (originalItems.length + i) * itemWidth;
+                carousel.scrollTo({ left: targetScroll, behavior: 'smooth' });
+            });
+            dotsContainer.appendChild(dot);
+        });
 
         // Clone items for infinite effect
-        items.forEach(item => {
+        originalItems.forEach(item => {
             const cloneAfter = item.cloneNode(true);
             const cloneBefore = item.cloneNode(true);
             carousel.appendChild(cloneAfter);
             carousel.prepend(cloneBefore);
         });
 
+        let isJumping = false;
+        let itemWidth, totalWidth;
+
         setTimeout(() => {
-            const itemWidth = items[0].offsetWidth + 30;
-            const totalWidth = itemWidth * items.length;
+            itemWidth = originalItems[0].offsetWidth + 30;
+            totalWidth = itemWidth * originalItems.length;
             carousel.scrollLeft = totalWidth;
 
             carousel.addEventListener('scroll', () => {
-                if (carousel.scrollLeft <= 5) {
-                    carousel.scrollLeft = totalWidth + 5;
-                } else if (carousel.scrollLeft >= totalWidth * 2 - 5) {
-                    carousel.scrollLeft = totalWidth - 5;
+                if (isJumping) return;
+
+                const scrollPos = carousel.scrollLeft;
+
+                // Jump logic
+                if (scrollPos <= 10) {
+                    isJumping = true;
+                    carousel.scrollLeft = totalWidth + 10;
+                    setTimeout(() => isJumping = false, 50);
+                } else if (scrollPos >= totalWidth * 2 - 10) {
+                    isJumping = true;
+                    carousel.scrollLeft = totalWidth - 10;
+                    setTimeout(() => isJumping = false, 50);
                 }
+
+                // Update dots
+                const activeIndex = Math.round((carousel.scrollLeft % totalWidth) / itemWidth) % originalItems.length;
+                const dots = dotsContainer.querySelectorAll('.cat-dot');
+                dots.forEach((d, i) => d.classList.toggle('active', i === activeIndex));
             });
-        }, 200);
+        }, 300);
+
+        // Arrow Navigation
+        prevBtn.addEventListener('click', () => {
+            carousel.scrollBy({ left: -itemWidth, behavior: 'smooth' });
+        });
+        nextBtn.addEventListener('click', () => {
+            carousel.scrollBy({ left: itemWidth, behavior: 'smooth' });
+        });
 
         // Drag support
         let isDown = false, startX, scrollL;
         carousel.addEventListener('mousedown', (e) => {
             isDown = true;
+            carousel.style.scrollBehavior = 'auto';
             startX = e.pageX - carousel.offsetLeft;
             scrollL = carousel.scrollLeft;
         });
-        carousel.addEventListener('mouseleave', () => isDown = false);
-        carousel.addEventListener('mouseup', () => isDown = false);
+        carousel.addEventListener('mouseleave', () => { isDown = false; carousel.style.scrollBehavior = 'smooth'; });
+        carousel.addEventListener('mouseup', () => { isDown = false; carousel.style.scrollBehavior = 'smooth'; });
         carousel.addEventListener('mousemove', (e) => {
             if (!isDown) return;
             e.preventDefault();
