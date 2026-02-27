@@ -303,8 +303,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ===== INFINITE CATEGORY CAROUSEL =====
-    function setupInfiniteCarousel() {
+    // ===== FINITE CATEGORY CAROUSEL =====
+    function setupFiniteCarousel() {
         const carousel = document.querySelector('.age-bubbles');
         const prevBtn = document.querySelector('.cat-nav-btn.prev');
         const nextBtn = document.querySelector('.cat-nav-btn.next');
@@ -312,60 +312,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!carousel || !prevBtn || !nextBtn || !dotsContainer) return;
 
-        const originalItems = Array.from(carousel.children);
-        if (originalItems.length === 0) return;
+        const items = Array.from(carousel.children);
+        if (items.length === 0) return;
 
-        // Create dots based on original items
-        originalItems.forEach((_, i) => {
+        // Clear and rebuild dots for exact count
+        dotsContainer.innerHTML = '';
+        items.forEach((_, i) => {
             const dot = document.createElement('div');
             dot.classList.add('cat-dot');
             if (i === 0) dot.classList.add('active');
             dot.addEventListener('click', () => {
-                const itemWidth = originalItems[0].offsetWidth + 30;
-                const targetScroll = (originalItems.length + i) * itemWidth;
-                carousel.scrollTo({ left: targetScroll, behavior: 'smooth' });
+                const itemWidth = items[0].offsetWidth + 30;
+                carousel.scrollTo({ left: i * itemWidth, behavior: 'smooth' });
             });
             dotsContainer.appendChild(dot);
         });
 
-        // Clone items for infinite effect
-        originalItems.forEach(item => {
-            const cloneAfter = item.cloneNode(true);
-            const cloneBefore = item.cloneNode(true);
-            carousel.appendChild(cloneAfter);
-            carousel.prepend(cloneBefore);
+        const itemWidth = items[0].offsetWidth + 30;
+
+        // Update UI based on scroll
+        carousel.addEventListener('scroll', () => {
+            const activeIndex = Math.round(carousel.scrollLeft / itemWidth);
+            const dots = dotsContainer.querySelectorAll('.cat-dot');
+            dots.forEach((d, i) => d.classList.toggle('active', i === activeIndex));
+
+            // Show/Hide arrows based on position
+            prevBtn.style.opacity = carousel.scrollLeft <= 10 ? '0' : '1';
+            prevBtn.style.pointerEvents = carousel.scrollLeft <= 10 ? 'none' : 'auto';
+
+            const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+            nextBtn.style.opacity = carousel.scrollLeft >= maxScroll - 10 ? '0' : '1';
+            nextBtn.style.pointerEvents = carousel.scrollLeft >= maxScroll - 10 ? 'none' : 'auto';
         });
-
-        let isJumping = false;
-        let itemWidth, totalWidth;
-
-        setTimeout(() => {
-            itemWidth = originalItems[0].offsetWidth + 30;
-            totalWidth = itemWidth * originalItems.length;
-            carousel.scrollLeft = totalWidth;
-
-            carousel.addEventListener('scroll', () => {
-                if (isJumping) return;
-
-                const scrollPos = carousel.scrollLeft;
-
-                // Jump logic
-                if (scrollPos <= 10) {
-                    isJumping = true;
-                    carousel.scrollLeft = totalWidth + 10;
-                    setTimeout(() => isJumping = false, 50);
-                } else if (scrollPos >= totalWidth * 2 - 10) {
-                    isJumping = true;
-                    carousel.scrollLeft = totalWidth - 10;
-                    setTimeout(() => isJumping = false, 50);
-                }
-
-                // Update dots
-                const activeIndex = Math.round((carousel.scrollLeft % totalWidth) / itemWidth) % originalItems.length;
-                const dots = dotsContainer.querySelectorAll('.cat-dot');
-                dots.forEach((d, i) => d.classList.toggle('active', i === activeIndex));
-            });
-        }, 300);
 
         // Arrow Navigation
         prevBtn.addEventListener('click', () => {
@@ -375,7 +353,11 @@ document.addEventListener('DOMContentLoaded', () => {
             carousel.scrollBy({ left: itemWidth, behavior: 'smooth' });
         });
 
-        // Drag support
+        // Initial Arrow Check
+        prevBtn.style.opacity = '0';
+        prevBtn.style.pointerEvents = 'none';
+
+        // Drag support (finite)
         let isDown = false, startX, scrollL;
         carousel.addEventListener('mousedown', (e) => {
             isDown = true;
@@ -393,5 +375,5 @@ document.addEventListener('DOMContentLoaded', () => {
             carousel.scrollLeft = scrollL - walk;
         });
     }
-    setupInfiniteCarousel();
+    setupFiniteCarousel();
 });
