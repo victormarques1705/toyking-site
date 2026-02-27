@@ -748,7 +748,7 @@ body.page-exit {
 }
 
 .cat-filter {
-    padding: 0 0 30px;
+    padding: 60px 0 30px;
     background: var(--white);
     text-align: center;
     overflow: hidden;
