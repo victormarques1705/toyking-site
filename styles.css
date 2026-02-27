@@ -682,7 +682,10 @@ body.page-exit {
     gap: 30px;
     flex-wrap: nowrap;
     justify-content: flex-start;
-    padding: 20px 0;
+    padding: 60px 0;
+    /* Huge vertical padding prevents absolute Lotties from overflowing the container and causing vertical scrolling */
+    margin: -40px 0;
+    /* Compensate visually so the layout doesn't break */
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scroll-padding-left: 20px;
@@ -729,7 +732,8 @@ body.page-exit {
     }
 
     .age-bubbles {
-        padding: 20px 20px;
+        padding: 50px 20px;
+        margin: -30px 0;
         gap: 16px;
     }
 
