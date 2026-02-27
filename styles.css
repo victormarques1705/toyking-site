@@ -630,12 +630,33 @@ body.page-exit {
     display: flex;
     justify-content: center;
     gap: 30px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 20px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.age-bubbles::-webkit-scrollbar {
+    display: none;
+}
+
+@media (max-width: 1024px) {
+    .age-bubbles {
+        justify-content: flex-start;
+        padding-left: 30px;
+        padding-right: 30px;
+    }
 }
 
 .age-bubble {
-    width: 200px;
-    height: 200px;
+    width: 220px;
+    /* Aumentado para o tamanho das "bolas" anteriores */
+    height: 220px;
+    flex-shrink: 0;
+    scroll-snap-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -643,7 +664,7 @@ body.page-exit {
     text-decoration: none;
     color: var(--blue-dark);
     font-weight: 800;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     transition: var(--transition);
     position: relative;
     overflow: visible;
@@ -659,9 +680,11 @@ body.page-exit {
 }
 
 .cat-filter {
-    padding: 80px 0 40px;
+    padding: 30px 0 20px;
+    /* Espaço reduzido em cima */
     background: var(--blue-light);
     text-align: center;
+    overflow: hidden;
 }
 
 /* Bubble reflection removed */
