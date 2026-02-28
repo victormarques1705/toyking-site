@@ -42,9 +42,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     banners.forEach((b, i) => {
                         const activeClass = i === 0 ? 'active' : '';
                         const imgSrc = b.image_url && (b.image_url.startsWith('data:image') || b.image_url.startsWith('http')) ? b.image_url : 'assets/images/' + b.image_url;
+                        const hasMobile = b.image_mobile_url && b.image_mobile_url.trim() !== '';
+                        const imgMobileSrc = hasMobile ? ((b.image_mobile_url.startsWith('data:image') || b.image_mobile_url.startsWith('http')) ? b.image_mobile_url : 'assets/images/' + b.image_mobile_url) : imgSrc;
+                        const uniqueId = b.id || i;
+
                         slider.innerHTML += `
+                          <style>
+                            .slide-bg-${uniqueId} { background-image: url('${imgSrc}'); }
+                            @media (max-width: 768px) { .slide-bg-${uniqueId} { background-image: url('${imgMobileSrc}'); } }
+                          </style>
                           <div class="slide ${activeClass}">
-                            <div class="slide-bg" style="background-image: url('${imgSrc}');"></div>
+                            <div class="slide-bg slide-bg-${uniqueId}"></div>
                             <div class="slide-content">
                               <h1>${b.title}</h1>
                               <p>${b.subtitle || ''}</p>

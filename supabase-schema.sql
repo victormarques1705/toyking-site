@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS banners (
     title TEXT NOT NULL,
     subtitle TEXT DEFAULT '',
     image_url TEXT DEFAULT '',
+    image_mobile_url TEXT DEFAULT '',
     link TEXT DEFAULT 'produtos.html',
     sort_order INT DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW()

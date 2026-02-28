@@ -944,7 +944,7 @@
             try {
                 const sbBanners = await sbGetBanners();
                 banners = sbBanners.map(b => ({
-                    title: b.title, subtitle: b.subtitle || '', img: b.image_url || '',
+                    title: b.title, subtitle: b.subtitle || '', img: b.image_url || '', img_mobile: b.image_mobile_url || '',
                     link: b.link || 'produtos.html', _dbId: b.id
                 }));
             } catch (e) { console.error(e); banners = []; }
@@ -983,7 +983,7 @@
         }
 
         async function saveBannerToDB(banner) {
-            const data = { title: banner.title, subtitle: banner.subtitle, image_url: banner.img, link: banner.link || 'produtos.html' };
+            const data = { title: banner.title, subtitle: banner.subtitle, image_url: banner.img, image_mobile_url: banner.img_mobile, link: banner.link || 'produtos.html' };
             if (banner._dbId) data.id = banner._dbId;
             await sbUpsertBanner(data);
         }
@@ -1140,6 +1140,16 @@
             }
         }
 
+        let tempBase64MobileImage = null;
+        function handleMobileImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (evt) { tempBase64MobileImage = evt.target.result; };
+                reader.readAsDataURL(file);
+            }
+        }
+
         function openProductModal(idx = -1) {
             tempBase64Image = null; // reset upload
             const p = idx >= 0 ? products[idx] : { id: 'TK0' + (products.length + 1).toString().padStart(4, '0'), name: '', cat: categories[0], age: '+3 anos', img: imgOptions[0], badge: '', status: 'active', desc: '' };
@@ -1190,12 +1200,19 @@
 
         function openBannerModal(idx = -1) {
             tempBase64Image = null; // reset upload
-            const b = idx >= 0 ? banners[idx] : { img: imgOptions[0], title: '', subtitle: '' };
+            tempBase64MobileImage = null;
+            const b = idx >= 0 ? banners[idx] : { img: imgOptions[0], img_mobile: '', title: '', subtitle: '' };
             document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Banner' : 'Novo Banner';
             document.getElementById('modalBody').innerHTML = `
-        <div class="form-group"><label>Imagem</label>
-            <input type="file" accept="image/*" class="form-control" onchange="handleImageUpload(event)" style="margin-bottom: 8px; padding: 5px;">
-            <select class="form-control" id="mBImg">${imgOptions.map(i => `<option value="${i}" ${i === b.img ? 'selected' : ''}>${i}</option>`).join('')}${b.img && b.img.startsWith('data:image') ? '<option value="' + b.img + '" selected>Upload Anterior (Mantido)</option>' : ''}</select>
+        <div class="form-row">
+            <div class="form-group"><label>Banner Web (Desktop)</label>
+                <input type="file" accept="image/*" class="form-control" onchange="handleImageUpload(event)" style="margin-bottom: 8px; padding: 5px;">
+                <select class="form-control" id="mBImg">${imgOptions.map(i => '<option value="' + i + '" ' + (i === b.img ? 'selected' : '') + '>' + i + '</option>').join('')}${b.img && b.img.startsWith('data:image') ? '<option value="' + b.img + '" selected>Upload Anterior (Mantido)</option>' : ''}</select>
+            </div>
+            <div class="form-group"><label>Banner Mobile (Apenas Celular)</label>
+                <input type="file" accept="image/*" class="form-control" onchange="handleMobileImageUpload(event)" style="margin-bottom: 8px; padding: 5px;">
+                <select class="form-control" id="mBMobileImg"><option value="">Usar o Mesmo do Web</option>${imgOptions.map(i => '<option value="' + i + '" ' + (i === b.img_mobile ? 'selected' : '') + '>' + i + '</option>').join('')}${b.img_mobile && b.img_mobile.startsWith('data:image') ? '<option value="' + b.img_mobile + '" selected>Upload Anterior (Mantido)</option>' : ''}</select>
+            </div>
         </div>
         <div class="form-group"><label>Título</label><input class="form-control" id="mBTitle" value="${b.title}"></div>
         <div class="form-group"><label>Subtítulo</label><input class="form-control" id="mBSub" value="${b.subtitle}"></div>`;
@@ -1204,7 +1221,8 @@
         }
         async function saveBanner(idx) {
             let finalImg = tempBase64Image ? tempBase64Image : document.getElementById('mBImg').value;
-            const b = { img: finalImg, title: document.getElementById('mBTitle').value, subtitle: document.getElementById('mBSub').value };
+            let finalMobileImg = tempBase64MobileImage ? tempBase64MobileImage : document.getElementById('mBMobileImg').value;
+            const b = { img: finalImg, img_mobile: finalMobileImg, title: document.getElementById('mBTitle').value, subtitle: document.getElementById('mBSub').value };
             if (idx >= 0) { b._dbId = banners[idx]._dbId; banners[idx] = b; } else banners.push(b);
             await saveBannerToDB(b);
             closeModal(); await loadAllData(); showToast('Banner salvo!');
