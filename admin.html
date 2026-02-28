@@ -1080,7 +1080,7 @@
         function renderPages() {
             const tb = document.getElementById('pagesTable');
             tb.innerHTML = '';
-            sitePages.forEach(p => {
+            defaultPages.forEach(p => {
                 tb.innerHTML += `<tr><td><strong>${p.name}</strong></td><td>${p.file}</td>
           <td><a href="${p.file}" class="btn btn-sm btn-outline" target="_blank"><i class="fas fa-external-link-alt"></i> Abrir</a></td></tr>`;
             });
