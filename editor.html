@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor Visual Shopify - Toy King</title>
+    <link rel="icon" href="assets/images/logo.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f4f6f8;
+            color: #202223;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ===== TOPBAR ===== */
+        .topbar {
+            height: 56px;
+            background: white;
+            border-bottom: 1px solid #e1e3e5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 16px;
+            flex-shrink: 0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            cursor: pointer;
+            color: #5c5f62;
+            padding: 8px;
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #f1f2f3;
+        }
+
+        .topbar-center {
+            display: flex;
+            gap: 4px;
+            background: #f3f3f3;
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .device-btn {
+            background: none;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #5c5f62;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+
+        .device-btn.active {
+            background: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            color: #1a1a1a;
+        }
+
+        .save-btn {
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-family: 'Inter';
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .save-btn:hover {
+            background: #333;
+        }
+
+        .save-btn.saving {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* ===== LAYOUT ===== */
+        .main-workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 340px;
+            background: #fff;
+            border-right: 1px solid #e1e3e5;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            z-index: 5;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02);
+        }
+
+        .sidebar-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #e1e3e5;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #5c5f62;
+            letter-spacing: 0.5px;
+        }
+
+        .section-item {
+            border-bottom: 1px solid #e1e3e5;
+        }
+
+        .section-title {
+            padding: 18px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+
+        .section-title i {
+            font-size: 0.8rem;
+            color: #8c9196;
+            transition: transform 0.3s;
+        }
+
+        .section-title:hover {
+            background: #f9fafb;
+        }
+
+        .section-content {
+            display: none;
+            padding: 20px;
+            background: #fafbfc;
+            border-top: 1px solid #e1e3e5;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .section-item.active .section-content {
+            display: flex;
+        }
+
+        .section-item.active .section-title i {
+            transform: rotate(180deg);
+        }
+
+        /* ===== FORMS ===== */
+        label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 6px;
+            color: #202223;
+        }
+
+        input[type="text"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #c9cccf;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: white;
+        }
+
+        input[type="text"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #000;
+            box-shadow: 0 0 0 1px #000;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 44px;
+            padding: 2px;
+            border: 1px solid #c9cccf;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* ===== BANNER CARDS ===== */
+        .banner-card {
+            background: white;
+            border: 1px solid #e1e3e5;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .banner-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+        }
+
+        .btn-remove {
+            background: #ffebee;
+            color: #d32f2f;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .btn-add {
+            width: 100%;
+            background: #f1f2f3;
+            border: 1px dashed #c9cccf;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Inter';
+            color: #202223;
+            transition: 0.2s;
+        }
+
+        .btn-add:hover {
+            background: #e9ecef;
+            border-color: #a4a7ab;
+        }
+
+        /* ===== LIVE PREVIEW ===== */
+        .preview-area {
+            flex: 1;
+            background: #f4f6f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .iframe-container {
+            width: 100%;
+            height: 100%;
+            background: white;
+            box-shadow: 0 0 0 1px rgba(63, 63, 68, 0.05), 0 5px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .iframe-container.mobile {
+            width: 390px;
+            height: 844px;
+            border-radius: 36px;
+            padding: 12px;
+            background: #000;
+            box-shadow: 0 0 0 2px #333, 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .iframe-container.mobile iframe {
+            border-radius: 24px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+            transition: opacity 0.3s;
+        }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translate(-50%, 100px);
+            background: #1a1a1a;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .toast.show {
+            transform: translate(-50%, 0);
+            opacity: 1;
+        }
+
+        .toast i {
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .help-text {
+            font-size: 0.75rem;
+            color: #5c5f62;
+            margin-top: 4px;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <button class="back-btn" onclick="window.location.href='admin.html'" title="Voltar ao Admin"><i
+                    class="fas fa-arrow-left"></i></button>
+            <span style="font-weight:600; font-size: 1.05rem;">Theme Editor (Visual)</span>
+        </div>
+        <div class="topbar-center">
+            <button class="device-btn active" onclick="setDevice('desktop')" id="btnDesktop" title="Tela de PC"><i
+                    class="fas fa-desktop"></i></button>
+            <button class="device-btn" onclick="setDevice('mobile')" id="btnMobile" title="Celular (Mobile)"><i
+                    class="fas fa-mobile-alt"></i></button>
+        </div>
+        <div>
+            <button class="save-btn" id="btnSave" onclick="saveAllThemes()"><i class="fas fa-save"></i> Salvar
+                Alterações</button>
+        </div>
+    </div>
+
+    <div class="main-workspace">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">Seções e Estrutura</div>
+
+            <!-- Banners Section -->
+            <div class="section-item" id="accBanners">
+                <div class="section-title" onclick="toggleAcc('accBanners')">
+                    <span><i class="fas fa-images" style="margin-right:8px; color:#1a1a1a"></i> Slideshow (Hero)</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="section-content">
+                    <div id="bannersList">
+                        <!-- Povoado por JS -->
+                    </div>
+                    <button class="btn-add" onclick="addNewBanner()"><i class="fas fa-plus"></i> Adicionar
+                        Slide</button>
+                </div>
+            </div>
+
+            <!-- Colors Section -->
+            <div class="section-item" id="accColors">
+                <div class="section-title" onclick="toggleAcc('accColors')">
+                    <span><i class="fas fa-paint-brush" style="margin-right:8px; color:#1a1a1a"></i> Cores e
+                        Estilos</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="section-content">
+                    <div class="form-group">
+                        <label>Cor Primária do Design</label>
+                        <input type="color" id="cfgColor">
+                        <span class="help-text">Altera botões e destaques principais da loja.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Global Settings Section -->
+            <div class="section-item" id="accConfig">
+                <div class="section-title" onclick="toggleAcc('accConfig')">
+                    <span><i class="fas fa-cog" style="margin-right:8px; color:#1a1a1a"></i> Dados e Rodapé</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="section-content">
+                    <div class="form-group">
+                        <label>Nome do Site</label>
+                        <input type="text" id="cfgSiteName">
+                    </div>
+                    <div class="form-group">
+                        <label>Slogan (Letreiro)</label>
+                        <input type="text" id="cfgSlogan">
+                    </div>
+                    <div class="form-group">
+                        <label>WhatsApp</label>
+                        <input type="text" id="cfgWhatsapp">
+                    </div>
+                    <div class="form-group">
+                        <label>Telefone</label>
+                        <input type="text" id="cfgPhone">
+                    </div>
+                    <div class="form-group">
+                        <label>Endereço / Loja Física</label>
+                        <textarea id="cfgAddress" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Instagram</label>
+                        <input type="text" id="cfgInsta">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Live Preview Iframe -->
+        <div class="preview-area">
+            <div class="iframe-container" id="iframeBox">
+                <iframe src="index.html" id="previewIframe"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script>
+        let banners = [];
+        let settings = {};
+        const imgOptions = ['dinosaur_toys.png', 'robot_toys.png', 'musical_toys.png', 'family_games.png', 'baby_toys.png', 'building_blocks.png', 'racing_cars.png', 'hero_banner.png'];
+
+        // Core Functions
+        async function loadThemeData() {
+            // Load settings
+            const { data: stData } = await supabaseClient.from('settings').select('*');
+            if (stData) {
+                stData.forEach(s => settings[s.key] = s.value);
+                document.getElementById('cfgSiteName').value = settings.site_name || '';
+                document.getElementById('cfgSlogan').value = settings.slogan || '';
+                document.getElementById('cfgWhatsapp').value = settings.whatsapp || '';
+                document.getElementById('cfgPhone').value = settings.phone || '';
+                document.getElementById('cfgAddress').value = settings.address || '';
+                document.getElementById('cfgInsta').value = settings.instagram || '';
+                document.getElementById('cfgColor').value = settings.primary_color || '#1A8BD6';
+            }
+
+            // Load banners
+            const { data: bData } = await supabaseClient.from('banners').select('*').order('id', { ascending: true });
+            if (bData) {
+                banners = bData.map(b => ({ _dbId: b.id, img: b.image_url, img_mobile: b.image_mobile_url, title: b.title, subtitle: b.subtitle }));
+            }
+            renderBannersList();
+        }
+
+        // Accordion behavior
+        function toggleAcc(id) {
+            document.querySelectorAll('.section-item').forEach(el => {
+                if (el.id !== id) el.classList.remove('active');
+            });
+            document.getElementById(id).classList.toggle('active');
+        }
+
+        // Device Switcher
+        function setDevice(mode) {
+            document.getElementById('btnDesktop').classList.remove('active');
+            document.getElementById('btnMobile').classList.remove('active');
+
+            if (mode === 'desktop') {
+                document.getElementById('btnDesktop').classList.add('active');
+                document.getElementById('iframeBox').className = 'iframe-container';
+            } else {
+                document.getElementById('btnMobile').classList.add('active');
+                document.getElementById('iframeBox').className = 'iframe-container mobile';
+            }
+        }
+
+        // Render Banners List
+        function renderBannersList() {
+            const list = document.getElementById('bannersList');
+            list.innerHTML = '';
+            banners.forEach((b, idx) => {
+                let optionsHtmlDesktop = imgOptions.map(i => `<option value="${i}" ${i === b.img ? 'selected' : ''}>${i}</option>`).join('');
+                if (b.img && b.img.startsWith('http')) optionsHtmlDesktop += `<option value="${b.img}" selected>Url Nuvem / Upload</option>`;
+
+                let optionsHtmlMobile = imgOptions.map(i => `<option value="${i}" ${i === b.img_mobile ? 'selected' : ''}>${i}</option>`).join('');
+                if (b.img_mobile && b.img_mobile.startsWith('http')) optionsHtmlMobile += `<option value="${b.img_mobile}" selected>Url Nuvem / Upload</option>`;
+
+                list.innerHTML += `
+                    <div class="banner-card">
+                        <div class="banner-card-header">
+                            Slide ${idx + 1}
+                            <button class="btn-remove" onclick="removeBanner(${idx})"><i class="fas fa-trash"></i></button>
+                        </div>
+                        <div class="form-group">
+                            <label>Imagem (Desktop)</label>
+                            <select onchange="updateBannerObj(${idx}, 'img', this.value)">${optionsHtmlDesktop}</select>
+                        </div>
+                        <div class="form-group">
+                            <label>Imagem (Celular)</label>
+                            <select onchange="updateBannerObj(${idx}, 'img_mobile', this.value)"><option value="">(Usar o mesmo de PC)</option>${optionsHtmlMobile}</select>
+                        </div>
+                        <div class="form-group">
+                            <label>Título (Grande)</label>
+                            <input type="text" value="${b.title || ''}" oninput="updateBannerObj(${idx}, 'title', this.value)">
+                        </div>
+                        <div class="form-group">
+                            <label>Subtítulo (Pequeno)</label>
+                            <input type="text" value="${b.subtitle || ''}" oninput="updateBannerObj(${idx}, 'subtitle', this.value)">
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateBannerObj(idx, key, val) {
+            banners[idx][key] = val;
+        }
+
+        function addNewBanner() {
+            banners.push({ img: imgOptions[0], img_mobile: '', title: 'Novo Slide', subtitle: '' });
+            renderBannersList();
+        }
+
+        async function removeBanner(idx) {
+            if (confirm('Excluir este slide?')) {
+                if (banners[idx]._dbId) {
+                    await sbDeleteBanner(banners[idx]._dbId);
+                }
+                banners.splice(idx, 1);
+                renderBannersList();
+            }
+        }
+
+        // Toast Messages
+        function showToast(msg, isSuccess = true) {
+            const t = document.getElementById('toast');
+            t.innerHTML = `<i class="fas ${isSuccess ? 'fa-check-circle' : 'fa-exclamation-circle'}" style="color:${isSuccess ? '#43A047' : '#E53935'}"></i> ${msg}`;
+            t.className = 'toast show';
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        // Publish to Supabase
+        async function saveAllThemes() {
+            const btn = document.getElementById('btnSave');
+            btn.classList.add('saving');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publicando...';
+
+            try {
+                // Settings
+                const pairs = {
+                    site_name: document.getElementById('cfgSiteName').value,
+                    slogan: document.getElementById('cfgSlogan').value,
+                    phone: document.getElementById('cfgPhone').value,
+                    whatsapp: document.getElementById('cfgWhatsapp').value,
+                    address: document.getElementById('cfgAddress').value,
+                    instagram: document.getElementById('cfgInsta').value,
+                    primary_color: document.getElementById('cfgColor').value
+                };
+                for (const [key, value] of Object.entries(pairs)) {
+                    await sbUpsertSetting(key, value);
+                }
+
+                // Banners: update existing, insert new
+                for (let b of banners) {
+                    const data = { title: b.title, subtitle: b.subtitle, image_url: b.img, image_mobile_url: b.img_mobile, link: 'produtos.html' };
+                    if (b._dbId) data.id = b._dbId;
+                    await sbUpsertBanner(data);
+                }
+
+                showToast('Tema e configurações salvos!');
+                reloadPreview();
+            } catch (err) {
+                console.error(err);
+                showToast('Erro ao salvar.', false);
+            }
+
+            btn.classList.remove('saving');
+            btn.innerHTML = '<i class="fas fa-save"></i> Salvar Alterações';
+        }
+
+        function reloadPreview() {
+            // Flash the iframe opacity to signify reload
+            const iframe = document.getElementById('previewIframe');
+            iframe.style.opacity = '0.5';
+            setTimeout(() => {
+                iframe.contentWindow.location.reload();
+                iframe.onload = () => iframe.style.opacity = '1';
+            }, 300);
+        }
+
+        window.onload = loadThemeData;
+    </script>
+</body>
+
+</html>
