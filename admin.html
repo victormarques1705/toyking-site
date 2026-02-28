@@ -1423,6 +1423,7 @@
             if (hideBtn) document.querySelector('.bp-btn').style.display = hideBtn.checked ? 'none' : 'block';
         };
         async function saveBanner(idx) {
+            if (cropper) applyCrop();
             let finalImg = tempBase64Image ? tempBase64Image : document.getElementById('mBImg').value;
             let finalMobileImg = tempBase64MobileImage ? tempBase64MobileImage : document.getElementById('mBMobileImg').value;
             const b = { img: finalImg, img_mobile: finalMobileImg, title: document.getElementById('mBTitle').value, subtitle: document.getElementById('mBSub').value, link: document.getElementById('mBHideBtn').checked ? 'none' : 'produtos.html' };
