@@ -7,6 +7,7 @@
     <title>Admin - Toy King Painel</title>
     <link rel="icon" href="assets/images/logo.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap');
 
@@ -679,6 +680,23 @@
             border-color: var(--blue-primary);
         }
 
+        /* ===== CROPPER ===== */
+        .cropper-wrap {
+            display: none;
+            background: #333;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            max-height: 400px;
+        }
+
+        .cropper-actions {
+            display: none;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
         /* ===== MOBILE ===== */
         @media(max-width:768px) {
             .sidebar {
@@ -1225,51 +1243,63 @@
         let tempBase64Image = null;
         let tempBase64MobileImage = null;
 
-        function resizeImageUpload(file, maxWidth, callback) {
+        let cropper = null;
+        let cropType = 'desktop'; // or 'mobile'
+
+        function startCrop(e, type) {
+            const file = e.target.files[0];
             if (!file) return;
+            cropType = type;
             const reader = new FileReader();
             reader.onload = function (evt) {
-                const img = new Image();
-                img.onload = function () {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
+                document.getElementById('cropperWrap').style.display = 'block';
+                document.getElementById('cropperActions').style.display = 'flex';
+                const image = document.getElementById('cropperImage');
+                image.src = evt.target.result;
 
-                    if (width > maxWidth) {
-                        height = Math.round((height * maxWidth) / width);
-                        width = maxWidth;
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    // Compress to WebP at 80% quality
-                    const dataUrl = canvas.toDataURL('image/webp', 0.8);
-                    callback(dataUrl);
-                };
-                img.src = evt.target.result;
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(image, {
+                    aspectRatio: type === 'desktop' ? (1920 / 520) : (1080 / 1080),
+                    viewMode: 2,
+                    dragMode: 'move',
+                    background: false,
+                    modal: true,
+                });
             };
             reader.readAsDataURL(file);
         }
 
         function handleImageUpload(e) {
-            // Resize Desktop images to max 1920 width
-            resizeImageUpload(e.target.files[0], 1920, (dataUrl) => {
-                tempBase64Image = dataUrl;
-                updateBannerPreview();
-                showToast('Imagem Redimensionada para Web', 'success');
-            });
+            startCrop(e, 'desktop');
         }
 
         function handleMobileImageUpload(e) {
-            // Resize Mobile images to max 1080 width
-            resizeImageUpload(e.target.files[0], 1080, (dataUrl) => {
-                tempBase64MobileImage = dataUrl;
-                updateBannerPreview();
-                showToast('Imagem Redimensionada para Celular', 'success');
+            startCrop(e, 'mobile');
+        }
+
+        function applyCrop() {
+            if (!cropper) return;
+            const canvas = cropper.getCroppedCanvas({
+                maxWidth: cropType === 'desktop' ? 1920 : 1080,
             });
+            const dataUrl = canvas.toDataURL('image/webp', 0.85);
+
+            if (cropType === 'desktop') {
+                tempBase64Image = dataUrl;
+                showToast('Banner Web ajustado e recortado!', 'success');
+            } else {
+                tempBase64MobileImage = dataUrl;
+                showToast('Banner Celular ajustado e recortado!', 'success');
+            }
+
+            cancelCrop();
+            updateBannerPreview();
+        }
+
+        function cancelCrop() {
+            if (cropper) { cropper.destroy(); cropper = null; }
+            document.getElementById('cropperWrap').style.display = 'none';
+            document.getElementById('cropperActions').style.display = 'none';
         }
 
         function openProductModal(idx = -1) {
@@ -1326,6 +1356,11 @@
             const b = idx >= 0 ? banners[idx] : { img: imgOptions[0], img_mobile: '', title: '', subtitle: '' };
             document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Banner' : 'Novo Banner';
             document.getElementById('modalBody').innerHTML = `
+        <div class="cropper-wrap" id="cropperWrap"><img id="cropperImage" src="" style="max-width: 100%;"></div>
+        <div class="cropper-actions" id="cropperActions">
+            <button type="button" class="btn btn-outline" onclick="cancelCrop()"><i class="fas fa-times"></i> Cancelar Ajuste</button>
+            <button type="button" class="btn btn-success" onclick="applyCrop()"><i class="fas fa-crop"></i> Finalizar Recorte</button>
+        </div>
         <div class="banner-preview-box">
             <div class="bp-toggles">
                 <button type="button" class="active" id="btnPreviewDesktop" onclick="setPreviewMode('desktop')"><i class="fas fa-desktop"></i> Web</button>
@@ -1444,6 +1479,7 @@
 
         loadAllData();
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 </body>
 
 </html>
