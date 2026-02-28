@@ -746,9 +746,7 @@
             <button class="nav-item" data-section="categories"><i class="fas fa-tags"></i> Categorias</button>
             <div class="nav-label">Conteúdo</div>
             <button class="nav-item" data-section="pages"><i class="fas fa-file-alt"></i> Páginas</button>
-            <a href="editor.html" class="nav-item" style="color:var(--orange)"><i class="fas fa-object-group"></i>
-                Editor Visual do Site</a>
-            <button class="nav-item" data-section="banners"><i class="fas fa-images"></i> Banners Antigos</button>
+            <button class="nav-item" data-section="banners"><i class="fas fa-images"></i> Banners</button>
             <button class="nav-item" data-section="manuals"><i class="fas fa-book"></i> Manuais</button>
             <div class="nav-label">Configurações</div>
             <button class="nav-item" data-section="settings"><i class="fas fa-cog"></i> Configurações</button>
@@ -1388,7 +1386,11 @@
             </div>
         </div>
         <div class="form-group"><label>Título</label><input class="form-control" id="mBTitle" oninput="updateBannerPreview()" value="${b.title}"></div>
-        <div class="form-group"><label>Subtítulo</label><input class="form-control" id="mBSub" oninput="updateBannerPreview()" value="${b.subtitle}"></div>`;
+        <div class="form-group"><label>Subtítulo</label><input class="form-control" id="mBSub" oninput="updateBannerPreview()" value="${b.subtitle}"></div>
+        <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+            <input type="checkbox" id="mBHideBtn" style="width:16px; height:16px; cursor:pointer;" onchange="updateBannerPreview()" ${b.link === 'none' ? 'checked' : ''}>
+            <label for="mBHideBtn" style="margin:0; cursor:pointer;">Ocultar botão "Ver Produtos"?</label>
+        </div>`;
             document.getElementById('modalFooter').innerHTML = `<button class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="saveBanner(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
             document.getElementById('modalOverlay').classList.add('show');
             setTimeout(updateBannerPreview, 50);
@@ -1416,11 +1418,14 @@
             let finalImg = previewMode === 'desktop' ? deskImg : mobImg;
             let finalSrc = finalImg && (finalImg.startsWith('data:image') || finalImg.startsWith('http')) ? finalImg : 'assets/images/' + finalImg;
             document.getElementById('bpBg').style.backgroundImage = `url('${finalSrc}')`;
+
+            const hideBtn = document.getElementById('mBHideBtn');
+            if (hideBtn) document.querySelector('.bp-btn').style.display = hideBtn.checked ? 'none' : 'block';
         };
         async function saveBanner(idx) {
             let finalImg = tempBase64Image ? tempBase64Image : document.getElementById('mBImg').value;
             let finalMobileImg = tempBase64MobileImage ? tempBase64MobileImage : document.getElementById('mBMobileImg').value;
-            const b = { img: finalImg, img_mobile: finalMobileImg, title: document.getElementById('mBTitle').value, subtitle: document.getElementById('mBSub').value };
+            const b = { img: finalImg, img_mobile: finalMobileImg, title: document.getElementById('mBTitle').value, subtitle: document.getElementById('mBSub').value, link: document.getElementById('mBHideBtn').checked ? 'none' : 'produtos.html' };
             if (idx >= 0) { b._dbId = banners[idx]._dbId; banners[idx] = b; } else banners.push(b);
             await saveBannerToDB(b);
             closeModal(); await loadAllData(); showToast('Banner salvo!');
