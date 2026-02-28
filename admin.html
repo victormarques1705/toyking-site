@@ -584,6 +584,101 @@
             background: var(--red);
         }
 
+        /* ===== RESPONSIVE / BANNER PREVIEW ===== */
+        .banner-preview-box {
+            background: #e9ecef;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .banner-preview-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            transition: all 0.3s ease;
+        }
+
+        .banner-preview-container.desktop {
+            width: 100%;
+            aspect-ratio: 1920/520;
+        }
+
+        .banner-preview-container.mobile {
+            width: 200px;
+            max-width: 100%;
+            aspect-ratio: 1080/1080;
+        }
+
+        .bp-bg {
+            position: absolute;
+            top: -10%;
+            left: 0;
+            width: 100%;
+            height: 120%;
+            background-size: cover;
+            background-position: center;
+            filter: brightness(0.6);
+        }
+
+        .bp-content {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+            text-align: center;
+        }
+
+        .bp-content h1 {
+            font-family: 'Fredoka One', cursive;
+            font-size: min(2rem, 5vw);
+            margin-bottom: 8px;
+            text-shadow: 2px 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .bp-content p {
+            font-size: min(1rem, 3.5vw);
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .bp-btn {
+            background: var(--orange);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: min(0.9rem, 3vw);
+        }
+
+        .bp-toggles {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .bp-toggles button {
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+        }
+
+        .bp-toggles button.active {
+            background: var(--blue-primary);
+            color: white;
+            border-color: var(--blue-primary);
+        }
+
         /* ===== MOBILE ===== */
         @media(max-width:768px) {
             .sidebar {
@@ -1163,6 +1258,7 @@
             // Resize Desktop images to max 1920 width
             resizeImageUpload(e.target.files[0], 1920, (dataUrl) => {
                 tempBase64Image = dataUrl;
+                updateBannerPreview();
                 showToast('Imagem Redimensionada para Web', 'success');
             });
         }
@@ -1171,6 +1267,7 @@
             // Resize Mobile images to max 1080 width
             resizeImageUpload(e.target.files[0], 1080, (dataUrl) => {
                 tempBase64MobileImage = dataUrl;
+                updateBannerPreview();
                 showToast('Imagem Redimensionada para Celular', 'success');
             });
         }
@@ -1229,21 +1326,60 @@
             const b = idx >= 0 ? banners[idx] : { img: imgOptions[0], img_mobile: '', title: '', subtitle: '' };
             document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Banner' : 'Novo Banner';
             document.getElementById('modalBody').innerHTML = `
+        <div class="banner-preview-box">
+            <div class="bp-toggles">
+                <button type="button" class="active" id="btnPreviewDesktop" onclick="setPreviewMode('desktop')"><i class="fas fa-desktop"></i> Web</button>
+                <button type="button" id="btnPreviewMobile" onclick="setPreviewMode('mobile')"><i class="fas fa-mobile-alt"></i> Celular</button>
+            </div>
+            <div class="banner-preview-container desktop" id="bpContainer">
+                <div class="bp-bg" id="bpBg"></div>
+                <div class="bp-content">
+                    <h1 id="bpH1"></h1>
+                    <p id="bpP"></p>
+                    <div class="bp-btn">Ver Produtos</div>
+                </div>
+            </div>
+        </div>
         <div class="form-row">
             <div class="form-group"><label>Banner Web (Desktop)</label>
                 <input type="file" accept="image/*" class="form-control" onchange="handleImageUpload(event)" style="margin-bottom: 8px; padding: 5px;">
-                <select class="form-control" id="mBImg">${imgOptions.map(i => '<option value="' + i + '" ' + (i === b.img ? 'selected' : '') + '>' + i + '</option>').join('')}${b.img && b.img.startsWith('data:image') ? '<option value="' + b.img + '" selected>Upload Anterior (Mantido)</option>' : ''}</select>
+                <select class="form-control" id="mBImg" onchange="updateBannerPreview()">${imgOptions.map(i => '<option value="' + i + '" ' + (i === b.img ? 'selected' : '') + '>' + i + '</option>').join('')}${b.img && b.img.startsWith('data:image') ? '<option value="' + b.img + '" selected>Upload Anterior (Mantido)</option>' : ''}</select>
             </div>
             <div class="form-group"><label>Banner Mobile (Apenas Celular)</label>
                 <input type="file" accept="image/*" class="form-control" onchange="handleMobileImageUpload(event)" style="margin-bottom: 8px; padding: 5px;">
-                <select class="form-control" id="mBMobileImg"><option value="">Usar o Mesmo do Web</option>${imgOptions.map(i => '<option value="' + i + '" ' + (i === b.img_mobile ? 'selected' : '') + '>' + i + '</option>').join('')}${b.img_mobile && b.img_mobile.startsWith('data:image') ? '<option value="' + b.img_mobile + '" selected>Upload Anterior (Mantido)</option>' : ''}</select>
+                <select class="form-control" id="mBMobileImg" onchange="updateBannerPreview()"><option value="">Usar o Mesmo do Web</option>${imgOptions.map(i => '<option value="' + i + '" ' + (i === b.img_mobile ? 'selected' : '') + '>' + i + '</option>').join('')}${b.img_mobile && b.img_mobile.startsWith('data:image') ? '<option value="' + b.img_mobile + '" selected>Upload Anterior (Mantido)</option>' : ''}</select>
             </div>
         </div>
-        <div class="form-group"><label>Título</label><input class="form-control" id="mBTitle" value="${b.title}"></div>
-        <div class="form-group"><label>Subtítulo</label><input class="form-control" id="mBSub" value="${b.subtitle}"></div>`;
+        <div class="form-group"><label>Título</label><input class="form-control" id="mBTitle" oninput="updateBannerPreview()" value="${b.title}"></div>
+        <div class="form-group"><label>Subtítulo</label><input class="form-control" id="mBSub" oninput="updateBannerPreview()" value="${b.subtitle}"></div>`;
             document.getElementById('modalFooter').innerHTML = `<button class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="saveBanner(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
             document.getElementById('modalOverlay').classList.add('show');
+            setTimeout(updateBannerPreview, 50);
         }
+
+        let previewMode = 'desktop';
+        window.setPreviewMode = function (mode) {
+            previewMode = mode;
+            document.getElementById('btnPreviewDesktop').classList.toggle('active', mode === 'desktop');
+            document.getElementById('btnPreviewMobile').classList.toggle('active', mode === 'mobile');
+            document.getElementById('bpContainer').className = 'banner-preview-container ' + mode;
+            updateBannerPreview();
+        };
+
+        window.updateBannerPreview = function () {
+            const titleInput = document.getElementById('mBTitle');
+            if (!titleInput) return;
+            document.getElementById('bpH1').textContent = titleInput.value || 'Título de Exemplo';
+            document.getElementById('bpP').textContent = document.getElementById('mBSub').value || '';
+
+            let deskImg = tempBase64Image || document.getElementById('mBImg').value;
+            let mobImgInput = document.getElementById('mBMobileImg').value;
+            let mobImg = tempBase64MobileImage || (mobImgInput ? mobImgInput : deskImg);
+
+            let finalImg = previewMode === 'desktop' ? deskImg : mobImg;
+            let finalSrc = finalImg && (finalImg.startsWith('data:image') || finalImg.startsWith('http')) ? finalImg : 'assets/images/' + finalImg;
+            document.getElementById('bpBg').style.backgroundImage = `url('${finalSrc}')`;
+        };
         async function saveBanner(idx) {
             let finalImg = tempBase64Image ? tempBase64Image : document.getElementById('mBImg').value;
             let finalMobileImg = tempBase64MobileImage ? tempBase64MobileImage : document.getElementById('mBMobileImg').value;
@@ -1259,11 +1395,11 @@
             const m = idx >= 0 ? manuals[idx] : { name: '', code: '', hasManual: false, hasVideo: false };
             document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Manual' : 'Novo Manual';
             document.getElementById('modalBody').innerHTML = `
-        <div class="form-row"><div class="form-group"><label>Produto</label><input class="form-control" id="mMName" value="${m.name}"></div>
-        <div class="form-group"><label>Código</label><input class="form-control" id="mMCode" value="${m.code}"></div></div>
-        <div class="form-row"><div class="form-group"><label>Tem Manual?</label><select class="form-control" id="mMManual"><option value="true" ${m.hasManual ? 'selected' : ''}>Sim</option><option value="false" ${!m.hasManual ? 'selected' : ''}>Não</option></select></div>
-        <div class="form-group"><label>Tem Vídeo?</label><select class="form-control" id="mMVideo"><option value="true" ${m.hasVideo ? 'selected' : ''}>Sim</option><option value="false" ${!m.hasVideo ? 'selected' : ''}>Não</option></select></div></div>`;
-            document.getElementById('modalFooter').innerHTML = `<button class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="saveManual(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
+                < div class="form-row" ><div class="form-group"><label>Produto</label><input class="form-control" id="mMName" value="${m.name}"></div>
+        <div class="form-group"><label>Código</label><input class="form-control" id="mMCode" value="${m.code}"></div></div >
+                <div class="form-row"><div class="form-group"><label>Tem Manual?</label><select class="form-control" id="mMManual"><option value="true" ${m.hasManual ? 'selected' : ''}>Sim</option><option value="false" ${!m.hasManual ? 'selected' : ''}>Não</option></select></div>
+                    <div class="form-group"><label>Tem Vídeo?</label><select class="form-control" id="mMVideo"><option value="true" ${m.hasVideo ? 'selected' : ''}>Sim</option><option value="false" ${!m.hasVideo ? 'selected' : ''}>Não</option></select></div></div>`;
+            document.getElementById('modalFooter').innerHTML = `< button class="btn btn-outline" onclick = "closeModal()" > Cancelar</button > <button class="btn btn-success" onclick="saveManual(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
             document.getElementById('modalOverlay').classList.add('show');
         }
         async function saveManual(idx) {
