@@ -1128,26 +1128,51 @@
 
         const imgOptions = ['dinosaur_toys.png', 'robot_toys.png', 'musical_toys.png', 'family_games.png', 'baby_toys.png', 'building_blocks.png', 'racing_cars.png', 'hero_banner.png'];
         let tempBase64Image = null;
+        let tempBase64MobileImage = null;
 
-        function handleImageUpload(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (evt) {
-                    tempBase64Image = evt.target.result;
+        function resizeImageUpload(file, maxWidth, callback) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (evt) {
+                const img = new Image();
+                img.onload = function () {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Compress to WebP at 80% quality
+                    const dataUrl = canvas.toDataURL('image/webp', 0.8);
+                    callback(dataUrl);
                 };
-                reader.readAsDataURL(file);
-            }
+                img.src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
         }
 
-        let tempBase64MobileImage = null;
+        function handleImageUpload(e) {
+            // Resize Desktop images to max 1920 width
+            resizeImageUpload(e.target.files[0], 1920, (dataUrl) => {
+                tempBase64Image = dataUrl;
+                showToast('Imagem Redimensionada para Web', 'success');
+            });
+        }
+
         function handleMobileImageUpload(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function (evt) { tempBase64MobileImage = evt.target.result; };
-                reader.readAsDataURL(file);
-            }
+            // Resize Mobile images to max 1080 width
+            resizeImageUpload(e.target.files[0], 1080, (dataUrl) => {
+                tempBase64MobileImage = dataUrl;
+                showToast('Imagem Redimensionada para Celular', 'success');
+            });
         }
 
         function openProductModal(idx = -1) {
