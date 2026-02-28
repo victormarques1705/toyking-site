@@ -1406,7 +1406,8 @@ body.page-exit {
 
 @media (max-width: 768px) {
     .slider {
-        height: 350px;
+        height: 100vw;
+        max-height: 600px;
     }
 
     .slide-content h1 {
