@@ -39,17 +39,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (slider && dotsContainer) {
                     slider.innerHTML = '';
                     dotsContainer.innerHTML = '';
-                    banners.forEach((b, i) => {
+
+                    let isMobile = window.innerWidth <= 768;
+                    let displayBanners = isMobile
+                        ? banners.filter(b => b.image_url === 'mobile_only' || (b.image_mobile_url && b.image_mobile_url.trim() !== ''))
+                        : banners.filter(b => b.image_url !== 'mobile_only');
+
+                    if (displayBanners.length === 0) displayBanners = banners;
+
+                    displayBanners.forEach((b, i) => {
                         const activeClass = i === 0 ? 'active' : '';
-                        const imgSrc = b.image_url && (b.image_url.startsWith('data:image') || b.image_url.startsWith('http')) ? b.image_url : 'assets/images/' + b.image_url;
-                        const hasMobile = b.image_mobile_url && b.image_mobile_url.trim() !== '';
-                        const imgMobileSrc = hasMobile ? ((b.image_mobile_url.startsWith('data:image') || b.image_mobile_url.startsWith('http')) ? b.image_mobile_url : 'assets/images/' + b.image_mobile_url) : imgSrc;
                         const uniqueId = b.id || i;
+
+                        let finalSrc = '';
+                        if (isMobile) {
+                            let mbUrl = (b.image_mobile_url && b.image_mobile_url.trim() !== '') ? b.image_mobile_url : b.image_url;
+                            finalSrc = (mbUrl.startsWith('data:image') || mbUrl.startsWith('http')) ? mbUrl : 'assets/images/' + mbUrl;
+                        } else {
+                            finalSrc = (b.image_url.startsWith('data:image') || b.image_url.startsWith('http')) ? b.image_url : 'assets/images/' + b.image_url;
+                        }
 
                         slider.innerHTML += `
                           <style>
-                            .slide-bg-${uniqueId} { background-image: url('${imgSrc}'); }
-                            @media (max-width: 768px) { .slide-bg-${uniqueId} { background-image: url('${imgMobileSrc}'); } }
+                            .slide-bg-${uniqueId} { background-image: url('${finalSrc}'); }
                           </style>
                           <div class="slide ${activeClass}">
                             <div class="slide-bg slide-bg-${uniqueId}"></div>
@@ -62,6 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         `;
                         dotsContainer.innerHTML += `<button class="slider-dot ${activeClass}"></button>`;
                     });
+
+                    if (window.initSliderCore) window.initSliderCore();
                 }
             }
         } catch (e) { console.error('Erro ao carregar banners:', e); }
@@ -181,55 +195,75 @@ document.addEventListener('DOMContentLoaded', () => {
     mobileNav.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobile));
 
     // ===== HERO SLIDER =====
-    const slides = document.querySelectorAll('.slide');
-    const dots = document.querySelectorAll('.slider-dot');
-    const prevBtn = document.querySelector('.slider-prev');
-    const nextBtn = document.querySelector('.slider-next');
-    let currentSlide = 0;
+    let isSliderInitialized = false;
     let slideInterval;
+    let currentSlide = 0;
 
-    function goToSlide(idx) {
-        slides[currentSlide].classList.remove('active');
-        dots[currentSlide].classList.remove('active');
-        currentSlide = (idx + slides.length) % slides.length;
-        slides[currentSlide].classList.add('active');
-        dots[currentSlide].classList.add('active');
-    }
-    function nextSlide() { goToSlide(currentSlide + 1); }
-    function prevSlide() { goToSlide(currentSlide - 1); }
-    function startAutoSlide() { slideInterval = setInterval(nextSlide, 5000); }
-    function resetAutoSlide() { clearInterval(slideInterval); startAutoSlide(); }
+    window.initSliderCore = function () {
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.slider-dot');
+        const prevBtn = document.querySelector('.slider-prev');
+        const nextBtn = document.querySelector('.slider-next');
+        const sliderEl = document.querySelector('.slider');
 
-    if (nextBtn) nextBtn.addEventListener('click', () => { nextSlide(); resetAutoSlide(); });
-    if (prevBtn) prevBtn.addEventListener('click', () => { prevSlide(); resetAutoSlide(); });
-    if (dots) dots.forEach((d, i) => d.addEventListener('click', () => { goToSlide(i); resetAutoSlide(); }));
+        // Clear interval if already exists
+        if (slideInterval) clearInterval(slideInterval);
+        currentSlide = 0;
 
-    // Touch swipe support
-    let touchStartX = 0;
-    const sliderEl = document.querySelector('.slider');
-    if (sliderEl) {
-        sliderEl.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
-        sliderEl.addEventListener('touchend', e => {
-            const diff = touchStartX - e.changedTouches[0].screenX;
-            if (Math.abs(diff) > 50) {
-                diff > 0 ? nextSlide() : prevSlide();
-                resetAutoSlide();
+        function goToSlide(idx) {
+            if (!slides.length) return;
+            if (slides[currentSlide]) slides[currentSlide].classList.remove('active');
+            if (dots[currentSlide]) dots[currentSlide].classList.remove('active');
+            currentSlide = (idx + slides.length) % slides.length;
+            if (slides[currentSlide]) slides[currentSlide].classList.add('active');
+            if (dots[currentSlide]) dots[currentSlide].classList.add('active');
+        }
+        function nextSlide() { goToSlide(currentSlide + 1); }
+        function prevSlide() { goToSlide(currentSlide - 1); }
+        function startAutoSlide() { slideInterval = setInterval(nextSlide, 5000); }
+        function resetAutoSlide() { clearInterval(slideInterval); startAutoSlide(); }
+
+        if (!isSliderInitialized) {
+            if (nextBtn) nextBtn.addEventListener('click', () => { nextSlide(); resetAutoSlide(); });
+            if (prevBtn) prevBtn.addEventListener('click', () => { prevSlide(); resetAutoSlide(); });
+
+            // Touch swipe support
+            let touchStartX = 0;
+            if (sliderEl) {
+                sliderEl.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+                sliderEl.addEventListener('touchend', e => {
+                    const diff = touchStartX - e.changedTouches[0].screenX;
+                    if (Math.abs(diff) > 50) {
+                        diff > 0 ? nextSlide() : prevSlide();
+                        resetAutoSlide();
+                    }
+                }, { passive: true });
             }
-        }, { passive: true });
-    }
+            isSliderInitialized = true;
+        }
 
-    if (slides && slides.length > 0) startAutoSlide();
+        // Dots are recreated, so they need listeners attached every time
+        if (dots) dots.forEach((d, i) => d.addEventListener('click', () => { goToSlide(i); resetAutoSlide(); }));
 
-    // ===== PARALLAX HERO BACKGROUND =====
-    const heroBgs = document.querySelectorAll('.slide-bg');
-    if (heroBgs.length > 0) {
-        window.addEventListener('scroll', () => {
-            const scrollPos = window.scrollY;
-            heroBgs.forEach(bg => {
-                bg.style.transform = `translateY(${scrollPos * 0.4}px) scale(1.05)`;
-            });
-        }, { passive: true });
-    }
+        if (slides && slides.length > 0) {
+            goToSlide(0);
+            startAutoSlide();
+        }
+
+        // ===== PARALLAX HERO BACKGROUND =====
+        const heroBgs = document.querySelectorAll('.slide-bg');
+        if (heroBgs.length > 0) {
+            window.addEventListener('scroll', () => {
+                const scrollPos = window.scrollY;
+                heroBgs.forEach(bg => {
+                    bg.style.transform = `translateY(${scrollPos * 0.4}px) scale(1.05)`;
+                });
+            }, { passive: true });
+        }
+    };
+
+    // Call it initially in case there are static hardcoded slides before loading
+    window.initSliderCore();
 
     // ===== SCROLL REVEAL ANIMATIONS =====
     const reveals = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');

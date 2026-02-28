@@ -908,11 +908,11 @@
 
             <!-- BANNERS -->
             <div class="section" id="sec-banners">
-                <div class="panel">
+                <div class="panel" style="margin-bottom: 20px;">
                     <div class="panel-header">
-                        <h2>🖼️ Banners do Slider</h2>
-                        <button class="btn btn-primary" onclick="openBannerModal()"><i class="fas fa-plus"></i> Novo
-                            Banner</button>
+                        <h2>🖼️ Banners (Computador)</h2>
+                        <button class="btn btn-primary" onclick="openBannerModal(-1, 'desktop')"><i
+                                class="fas fa-plus"></i> Novo Banner PC</button>
                     </div>
                     <div class="panel-body">
                         <div class="table-wrap">
@@ -925,7 +925,29 @@
                                         <th>Ações</th>
                                     </tr>
                                 </thead>
-                                <tbody id="bannersTable"></tbody>
+                                <tbody id="webBannersTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2>📱 Banners (Celular)</h2>
+                        <button class="btn btn-primary" onclick="openBannerModal(-1, 'mobile')"><i
+                                class="fas fa-plus"></i> Novo Banner Celular</button>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Imagem</th>
+                                        <th>Título</th>
+                                        <th>Subtítulo</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mobileBannersTable"></tbody>
                             </table>
                         </div>
                     </div>
@@ -1200,18 +1222,24 @@
         }
 
         function renderBanners() {
-            const tb = document.getElementById('bannersTable');
-            tb.innerHTML = '';
+            const tbWeb = document.getElementById('webBannersTable');
+            const tbMob = document.getElementById('mobileBannersTable');
+            if (tbWeb) tbWeb.innerHTML = '';
+            if (tbMob) tbMob.innerHTML = '';
             banners.forEach((b, i) => {
-                const imgSrc = b.img && b.img.startsWith('data:image') ? b.img : 'assets/images/' + b.img;
-                tb.innerHTML += `<tr>
+                const isMobOnly = b.img === 'mobile_only';
+                const imgSrc = !isMobOnly && b.img && b.img.startsWith('data:image') ? b.img : (!isMobOnly ? 'assets/images/' + b.img : (b.img_mobile && b.img_mobile.startsWith('data:image') ? b.img_mobile : 'assets/images/' + b.img_mobile));
+
+                const html = `<tr>
           <td><img src="${imgSrc}" class="td-img" style="width:80px;height:45px;border-radius:8px;object-fit:cover;"></td>
           <td><strong>${b.title}</strong></td><td>${b.subtitle}</td>
           <td><div class="td-actions">
-            <button class="btn btn-sm btn-outline" onclick="editBanner(${i})"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-sm btn-outline" onclick="openBannerModal(${i}, '${isMobOnly ? 'mobile' : 'desktop'}')"><i class="fas fa-edit"></i></button>
             <button class="btn btn-sm btn-danger" onclick="deleteBanner(${i})"><i class="fas fa-trash"></i></button>
           </div></td>
         </tr>`;
+                if (isMobOnly && tbMob) tbMob.innerHTML += html;
+                else if (!isMobOnly && tbWeb) tbWeb.innerHTML += html;
             });
         }
 
@@ -1350,11 +1378,18 @@
         function editCategory(i) { openCatModal(i); }
         async function deleteCategory(i) { if (confirm('Excluir categoria?')) { const catName = categories[i]; const { data } = await supabaseClient.from('categories').select('id').eq('name', catName).single(); if (data) await sbDeleteCategory(data.id); await loadAllData(); showToast('Categoria excluída!'); } }
 
-        function openBannerModal(idx = -1) {
+        let currentEditingBannerType = 'desktop';
+
+        function openBannerModal(idx = -1, type = 'desktop') {
             tempBase64Image = null; // reset upload
             tempBase64MobileImage = null;
-            const b = idx >= 0 ? banners[idx] : { img: imgOptions[0], img_mobile: '', title: '', subtitle: '' };
-            document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Banner' : 'Novo Banner';
+            currentEditingBannerType = type;
+            const b = idx >= 0 ? banners[idx] : { img: type === 'desktop' ? imgOptions[0] : 'mobile_only', img_mobile: type === 'mobile' ? imgOptions[0] : '', title: '', subtitle: '', link: 'produtos.html' };
+            document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Banner ' + (type === 'desktop' ? 'Web' : 'Celular') : 'Novo Banner ' + (type === 'desktop' ? 'Web' : 'Celular');
+
+            let displayDesktop = type === 'desktop' ? '' : 'display:none;';
+            let displayMobile = type === 'mobile' ? '' : 'display:none;';
+
             document.getElementById('modalBody').innerHTML = `
         <div class="cropper-wrap" id="cropperWrap"><img id="cropperImage" src="" style="max-width: 100%;"></div>
         <div class="cropper-actions" id="cropperActions">
@@ -1362,11 +1397,7 @@
             <button type="button" class="btn btn-success" onclick="applyCrop()"><i class="fas fa-crop"></i> Finalizar Recorte</button>
         </div>
         <div class="banner-preview-box">
-            <div class="bp-toggles">
-                <button type="button" class="active" id="btnPreviewDesktop" onclick="setPreviewMode('desktop')"><i class="fas fa-desktop"></i> Web</button>
-                <button type="button" id="btnPreviewMobile" onclick="setPreviewMode('mobile')"><i class="fas fa-mobile-alt"></i> Celular</button>
-            </div>
-            <div class="banner-preview-container desktop" id="bpContainer">
+            <div class="banner-preview-container ${type}" id="bpContainer">
                 <div class="bp-bg" id="bpBg"></div>
                 <div class="bp-content">
                     <h1 id="bpH1"></h1>
@@ -1376,13 +1407,13 @@
             </div>
         </div>
         <div class="form-row">
-            <div class="form-group"><label>Banner Web (Desktop)</label>
+            <div class="form-group" style="${displayDesktop}"><label>Imagem do Banner (Web)</label>
                 <input type="file" accept="image/*" class="form-control" onchange="handleImageUpload(event)" style="margin-bottom: 8px; padding: 5px;">
-                <select class="form-control" id="mBImg" onchange="updateBannerPreview()">${imgOptions.map(i => '<option value="' + i + '" ' + (i === b.img ? 'selected' : '') + '>' + i + '</option>').join('')}${b.img && b.img.startsWith('data:image') ? '<option value="' + b.img + '" selected>Upload Anterior (Mantido)</option>' : ''}</select>
+                <select class="form-control" id="mBImg" onchange="updateBannerPreview()">${imgOptions.map(i => '<option value="' + i + '" ' + (i === b.img ? 'selected' : '') + '>' + i + '</option>').join('')}${b.img && b.img.startsWith('data:image') && b.img !== 'mobile_only' ? '<option value="' + b.img + '" selected>Upload Anterior (Mantido)</option>' : ''}</select>
             </div>
-            <div class="form-group"><label>Banner Mobile (Apenas Celular)</label>
+            <div class="form-group" style="${displayMobile}"><label>Imagem do Banner (Celular)</label>
                 <input type="file" accept="image/*" class="form-control" onchange="handleMobileImageUpload(event)" style="margin-bottom: 8px; padding: 5px;">
-                <select class="form-control" id="mBMobileImg" onchange="updateBannerPreview()"><option value="">Usar o Mesmo do Web</option>${imgOptions.map(i => '<option value="' + i + '" ' + (i === b.img_mobile ? 'selected' : '') + '>' + i + '</option>').join('')}${b.img_mobile && b.img_mobile.startsWith('data:image') ? '<option value="' + b.img_mobile + '" selected>Upload Anterior (Mantido)</option>' : ''}</select>
+                <select class="form-control" id="mBMobileImg" onchange="updateBannerPreview()">${imgOptions.map(i => '<option value="' + i + '" ' + (i === b.img_mobile ? 'selected' : '') + '>' + i + '</option>').join('')}${b.img_mobile && b.img_mobile.startsWith('data:image') ? '<option value="' + b.img_mobile + '" selected>Upload Anterior (Mantido)</option>' : ''}</select>
             </div>
         </div>
         <div class="form-group"><label>Título</label><input class="form-control" id="mBTitle" oninput="updateBannerPreview()" value="${b.title}"></div>
@@ -1391,19 +1422,10 @@
             <input type="checkbox" id="mBHideBtn" style="width:16px; height:16px; cursor:pointer;" onchange="updateBannerPreview()" ${b.link === 'none' ? 'checked' : ''}>
             <label for="mBHideBtn" style="margin:0; cursor:pointer;">Ocultar botão "Ver Produtos"?</label>
         </div>`;
-            document.getElementById('modalFooter').innerHTML = `<button class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="saveBanner(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
+            document.getElementById('modalFooter').innerHTML = `<button class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="saveBanner(${idx}, '${type}')"><i class="fas fa-save"></i> Salvar</button>`;
             document.getElementById('modalOverlay').classList.add('show');
             setTimeout(updateBannerPreview, 50);
         }
-
-        let previewMode = 'desktop';
-        window.setPreviewMode = function (mode) {
-            previewMode = mode;
-            document.getElementById('btnPreviewDesktop').classList.toggle('active', mode === 'desktop');
-            document.getElementById('btnPreviewMobile').classList.toggle('active', mode === 'mobile');
-            document.getElementById('bpContainer').className = 'banner-preview-container ' + mode;
-            updateBannerPreview();
-        };
 
         window.updateBannerPreview = function () {
             const titleInput = document.getElementById('mBTitle');
@@ -1411,27 +1433,31 @@
             document.getElementById('bpH1').textContent = titleInput.value || 'Título de Exemplo';
             document.getElementById('bpP').textContent = document.getElementById('mBSub').value || '';
 
-            let deskImg = tempBase64Image || document.getElementById('mBImg').value;
-            let mobImgInput = document.getElementById('mBMobileImg').value;
-            let mobImg = tempBase64MobileImage || (mobImgInput ? mobImgInput : deskImg);
+            let deskImg = tempBase64Image || (document.getElementById('mBImg') ? document.getElementById('mBImg').value : 'mobile_only');
+            let mobImgInput = document.getElementById('mBMobileImg') ? document.getElementById('mBMobileImg').value : '';
+            let mobImg = tempBase64MobileImage || mobImgInput;
 
-            let finalImg = previewMode === 'desktop' ? deskImg : mobImg;
+            let finalImg = currentEditingBannerType === 'desktop' ? deskImg : mobImg;
             let finalSrc = finalImg && (finalImg.startsWith('data:image') || finalImg.startsWith('http')) ? finalImg : 'assets/images/' + finalImg;
             document.getElementById('bpBg').style.backgroundImage = `url('${finalSrc}')`;
 
             const hideBtn = document.getElementById('mBHideBtn');
             if (hideBtn) document.querySelector('.bp-btn').style.display = hideBtn.checked ? 'none' : 'block';
         };
-        async function saveBanner(idx) {
+
+        async function saveBanner(idx, type) {
             if (cropper) applyCrop();
-            let finalImg = tempBase64Image ? tempBase64Image : document.getElementById('mBImg').value;
-            let finalMobileImg = tempBase64MobileImage ? tempBase64MobileImage : document.getElementById('mBMobileImg').value;
+            let finalImg = tempBase64Image ? tempBase64Image : (document.getElementById('mBImg') ? document.getElementById('mBImg').value : 'mobile_only');
+            if (type === 'mobile') finalImg = 'mobile_only'; // force it for mobile type
+
+            let finalMobileImg = tempBase64MobileImage ? tempBase64MobileImage : (document.getElementById('mBMobileImg') ? document.getElementById('mBMobileImg').value : '');
+
             const b = { img: finalImg, img_mobile: finalMobileImg, title: document.getElementById('mBTitle').value, subtitle: document.getElementById('mBSub').value, link: document.getElementById('mBHideBtn').checked ? 'none' : 'produtos.html' };
             if (idx >= 0) { b._dbId = banners[idx]._dbId; banners[idx] = b; } else banners.push(b);
             await saveBannerToDB(b);
             closeModal(); await loadAllData(); showToast('Banner salvo!');
         }
-        function editBanner(i) { openBannerModal(i); }
+
         async function deleteBanner(i) { if (confirm('Excluir banner?')) { if (banners[i]._dbId) await sbDeleteBanner(banners[i]._dbId); await loadAllData(); showToast('Banner excluído!'); } }
 
         function openManualModal(idx = -1) {
