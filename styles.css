@@ -484,7 +484,7 @@ body.page-exit {
     background-size: cover;
     background-position: center;
     will-change: transform;
-    transform: scale(1.05);
+    transform: scale(1);
 }
 
 .slide.active .slide-bg {
@@ -1463,10 +1463,6 @@ body.page-exit {
 }
 
 @media (max-width: 480px) {
-    .slider {
-        height: 300px;
-    }
-
     .slide-content {
         padding: 20px;
     }
