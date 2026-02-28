@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="slide-content">
                               <h1>${b.title}</h1>
                               <p>${b.subtitle || ''}</p>
-                              <a href="${b.link || 'produtos.html'}" class="btn-hero">Ver Produtos</a>
+                              <a href="${b.link && b.link !== 'none' ? b.link : 'produtos.html'}" class="btn-hero" ${b.link === 'none' ? 'style="display:none;"' : ''}>Ver Produtos</a>
                             </div>
                           </div>
                         `;

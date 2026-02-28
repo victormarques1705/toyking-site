@@ -483,7 +483,6 @@ body.page-exit {
     height: 100%;
     background-size: cover;
     background-position: center;
-    filter: brightness(0.6);
     will-change: transform;
     transform: scale(1.05);
 }
