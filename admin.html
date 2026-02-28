@@ -1409,11 +1409,13 @@
         <div class="form-row">
             <div class="form-group" style="${displayDesktop}"><label>Imagem do Banner (Web)</label>
                 <input type="file" accept="image/*" class="form-control" onchange="handleImageUpload(event)" style="margin-bottom: 8px; padding: 5px;">
-                <select class="form-control" id="mBImg" onchange="updateBannerPreview()">${imgOptions.map(i => '<option value="' + i + '" ' + (i === b.img ? 'selected' : '') + '>' + i + '</option>').join('')}${b.img && b.img.startsWith('data:image') && b.img !== 'mobile_only' ? '<option value="' + b.img + '" selected>Upload Anterior (Mantido)</option>' : ''}</select>
+                <input type="hidden" id="mBImg" value="${b.img && b.img !== 'mobile_only' ? b.img : ''}">
+                ${b.img && b.img.startsWith('data:image') && b.img !== 'mobile_only' ? '<small style="color:var(--green);"><i class="fas fa-check"></i> Upload Anterior Mantido</small>' : ''}
             </div>
             <div class="form-group" style="${displayMobile}"><label>Imagem do Banner (Celular)</label>
                 <input type="file" accept="image/*" class="form-control" onchange="handleMobileImageUpload(event)" style="margin-bottom: 8px; padding: 5px;">
-                <select class="form-control" id="mBMobileImg" onchange="updateBannerPreview()">${imgOptions.map(i => '<option value="' + i + '" ' + (i === b.img_mobile ? 'selected' : '') + '>' + i + '</option>').join('')}${b.img_mobile && b.img_mobile.startsWith('data:image') ? '<option value="' + b.img_mobile + '" selected>Upload Anterior (Mantido)</option>' : ''}</select>
+                <input type="hidden" id="mBMobileImg" value="${b.img_mobile ? b.img_mobile : ''}">
+                ${b.img_mobile && b.img_mobile.startsWith('data:image') ? '<small style="color:var(--green);"><i class="fas fa-check"></i> Upload Anterior Mantido</small>' : ''}
             </div>
         </div>
         <div class="form-group"><label>Título</label><input class="form-control" id="mBTitle" oninput="updateBannerPreview()" value="${b.title}"></div>
