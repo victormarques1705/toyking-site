@@ -1566,36 +1566,64 @@
 
                 // Upload product image to Supabase if newly cropped
                 if (tempBase64Image && tempBase64Image.startsWith('data:image')) {
-                    showToast('Processando a imagem do produto...', 'info');
+                    showToast('Processando a imagem... Aguarde.', 'info');
                     try {
                         const res = await fetch(tempBase64Image);
                         const blob = await res.blob();
                         const fileName = 'prod_' + Date.now() + '.webp';
-                        // Using 'banners' bucket because it is already configured with public read/write RLS in Supabase
                         const uploadedUrl = await sbUploadImage('banners', fileName, blob);
                         if (uploadedUrl) {
                             finalImgUrl = uploadedUrl;
-                            showToast('Foto salva na nuvem!', 'success');
+                            showToast('Foto processada!', 'success');
                         } else {
-                            console.warn('Fallback to base64 due to missing Supabase Storage configuration');
                             finalImgUrl = tempBase64Image;
-                            showToast('Foto salva apenas localmente.', 'info');
                         }
                     } catch (err) {
-                        console.warn('Fallback to base64 due to network error');
                         finalImgUrl = tempBase64Image;
-                        showToast('Foto salva apenas localmente.', 'info');
                     }
                 }
 
-                const p = { id: document.getElementById('mCode').value, name: document.getElementById('mName').value, cat: document.getElementById('mCat').value, age: document.getElementById('mAge').value, img: finalImgUrl, badge: document.getElementById('mBadge').value, status: document.getElementById('mStatus').value, desc: document.getElementById('mDesc').value };
-                if (!p.name || !p.id) return showToast('Preencha nome e código!', 'error');
-                if (idx >= 0) { p._dbId = products[idx]._dbId; products[idx] = p; } else products.push(p);
-                await saveProductToDB(p);
-                closeModal(); await loadAllData(); showToast(idx >= 0 ? 'Produto atualizado!' : 'Produto criado!');
+                const pCode = document.getElementById('mCode').value;
+                const pName = document.getElementById('mName').value;
+                if (!pName || !pCode) return showToast('Preencha nome e código!', 'error');
+
+                const newProductData = {
+                    id: pCode,
+                    name: pName,
+                    cat: document.getElementById('mCat').value,
+                    age: document.getElementById('mAge').value,
+                    img: finalImgUrl,
+                    badge: document.getElementById('mBadge').value,
+                    status: document.getElementById('mStatus').value,
+                    desc: document.getElementById('mDesc').value
+                };
+
+                // If editing an existing loaded product, carry over its database ID
+                if (idx >= 0 && products[idx] && products[idx]._dbId) {
+                    newProductData._dbId = products[idx]._dbId;
+                }
+
+                showToast('Salvando no banco de dados...', 'info');
+                await saveProductToDB(newProductData);
+
+                closeModal();
+                await loadAllData();
+
+                showToast(idx >= 0 ? 'Produto atualizado com sucesso!' : 'Novo produto criado!');
             }
+
             function editProduct(i) { openProductModal(i); }
-            async function deleteProduct(i) { if (confirm('Excluir produto ' + products[i].name + '?')) { if (products[i]._dbId) await sbDeleteProduct(products[i]._dbId); await loadAllData(); showToast('Produto excluído!'); } }
+
+            async function deleteProduct(i) {
+                if (confirm('Excluir produto ' + products[i].name + '?')) {
+                    if (products[i]._dbId) {
+                        showToast('Excluindo do banco...', 'info');
+                        await sbDeleteProduct(products[i]._dbId);
+                    }
+                    await loadAllData();
+                    showToast('Produto excluído!');
+                }
+            }
 
             async function handleExcelUpload(event) {
                 const file = event.target.files[0];
