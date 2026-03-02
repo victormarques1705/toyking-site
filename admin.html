@@ -1566,7 +1566,7 @@
 
                 // Upload product image to Supabase if newly cropped
                 if (tempBase64Image && tempBase64Image.startsWith('data:image')) {
-                    showToast('Fazendo upload da imagem do produto...', 'info');
+                    showToast('Processando a imagem do produto...', 'info');
                     try {
                         const res = await fetch(tempBase64Image);
                         const blob = await res.blob();
@@ -1575,11 +1575,16 @@
                         const uploadedUrl = await sbUploadImage('banners', fileName, blob);
                         if (uploadedUrl) {
                             finalImgUrl = uploadedUrl;
+                            showToast('Foto salva na nuvem!', 'success');
                         } else {
-                            return showToast('Falha no upload! Tente de novo.', 'error');
+                            console.warn('Fallback to base64 due to missing Supabase Storage configuration');
+                            finalImgUrl = tempBase64Image;
+                            showToast('Foto salva apenas localmente.', 'info');
                         }
                     } catch (err) {
-                        return showToast('Erro de conexão ao salvar foto.', 'error');
+                        console.warn('Fallback to base64 due to network error');
+                        finalImgUrl = tempBase64Image;
+                        showToast('Foto salva apenas localmente.', 'info');
                     }
                 }
 
