@@ -1405,9 +1405,53 @@
         </div>
         <div class="form-group"><label>Badge</label><select class="form-control" id="mBadge"><option value="" ${!p.badge ? 'selected' : ''}>Nenhum</option><option ${p.badge === 'NOVO' ? 'selected' : ''}>NOVO</option><option ${p.badge === 'TOP' ? 'selected' : ''}>TOP</option></select></div></div>
         <div class="form-group"><label>Status</label><select class="form-control" id="mStatus"><option value="active" ${p.status === 'active' ? 'selected' : ''}>Ativo</option><option value="draft" ${p.status === 'draft' ? 'selected' : ''}>Rascunho</option></select></div>
-        <div class="form-group"><label>Descrição</label><textarea class="form-control" id="mDesc">${p.desc || ''}</textarea></div>`;
+        <div class="form-group">
+            <label style="display:flex; justify-content:space-between; align-items:center;">
+                Descrição
+                <button class="btn btn-sm btn-outline" style="font-size: 11px; padding: 2px 6px;" onclick="autoFixDescription()">✨ Melhorar txt c/ IA</button>
+            </label>
+            <textarea class="form-control" id="mDesc" rows="4">${p.desc || ''}</textarea>
+        </div>`;
             document.getElementById('modalFooter').innerHTML = `<button class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="saveProduct(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
             document.getElementById('modalOverlay').classList.add('show');
+        }
+
+        async function autoFixDescription() {
+            const tempBtn = event.target;
+            const originalText = tempBtn.innerHTML;
+            const descEl = document.getElementById('mDesc');
+            let content = descEl.value;
+
+            if (!content.trim()) return showToast('A descrição está vazia', 'error');
+
+            tempBtn.innerHTML = '✨ Processando...';
+            tempBtn.disabled = true;
+
+            try {
+                // A logic heuristic to clean and prettify extracted texts quickly without requiring a paid API 
+
+                // 1. Clean duplicated pipes
+                content = content.replace(/\|\s*\|/g, '|').trim();
+
+                // 2. Add line breaks based on pipes separator
+                content = content.split('|').map(item => item.trim()).filter(item => item.length > 0).join('\n• ');
+                if (content.length > 0) content = '• ' + content;
+
+                // 3. Fix casings (Capitalize first letters of bullet points)
+                content = content.replace(/•\s([a-z])/g, (match, p1) => `• ${p1.toUpperCase()}`);
+
+                // 4. Ensure acronyms stay upper case
+                content = content.replace(/dim:/i, 'DIM:');
+
+                descEl.value = content;
+                showToast('Descrição formatada com sucesso!');
+
+            } catch (err) {
+                showToast('Erro ao formatar', 'error');
+            } finally {
+                tempBtn.innerHTML = originalText;
+                tempBtn.disabled = false;
+            }
         }
 
         async function saveProduct(idx) {
