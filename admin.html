@@ -1735,11 +1735,20 @@
                             });
 
                             if (!response.ok) {
+                                let errorMsg = 'Falha de Comunicação com OpenAI';
+                                try {
+                                    const errData = await response.json();
+                                    console.error('OpenAI Error:', errData);
+                                    if (errData.error && errData.error.message) {
+                                        errorMsg = errData.error.message;
+                                    }
+                                } catch (e) { }
+
                                 if (response.status === 401) {
                                     localStorage.removeItem('openAIKey');
-                                    throw new Error('Sua Chave OpenAI é inválida.');
+                                    throw new Error('Sua Chave OpenAI é inválida: ' + errorMsg);
                                 }
-                                throw new Error('Falha de Comunicação com OpenAI');
+                                throw new Error(response.status + ' - ' + errorMsg);
                             }
 
                             const data = await response.json();
