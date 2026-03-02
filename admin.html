@@ -1566,7 +1566,14 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            showToast('Lendo arquivo PDF...', 'info');
+            let apiKey = localStorage.getItem('openAIKey');
+            if (!apiKey || apiKey.trim() === '') {
+                apiKey = prompt('Para usar OCR Avançado com IA, insira sua Chave de API da OpenAI (sk-...):');
+                if (!apiKey) return showToast('Chave de API requerida!', 'error');
+                localStorage.setItem('openAIKey', apiKey);
+            }
+
+            showToast('Lendo arquivo PDF para IA...', 'info');
 
             if (typeof pdfjsLib === 'undefined') {
                 showToast('Carregando biblioteca PDF...', 'info');
@@ -1580,6 +1587,8 @@
                 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
             }
 
+            const scale = 1.5;
+
             const reader = new FileReader();
             reader.onload = async function (e) {
                 try {
@@ -1589,123 +1598,104 @@
 
                     let allProducts = [];
 
-                    const junkPatterns = [/atualizado em/i, /página/i, /^toy king$/i];
-
                     for (let i = 1; i <= numPages; i++) {
+                        showToast(`Analisando layout (Pág ${i}/${numPages})...`, 'info');
                         const page = await pdf.getPage(i);
-                        const content = await page.getTextContent();
+                        const viewport = page.getViewport({ scale: scale });
 
-                        // item.transform[4] is X coordinate, item.transform[5] is Y coordinate
-                        // We will group text that shares roughly the same Y line (within a small threshold)
-                        let lines = [];
-                        content.items.forEach(item => {
-                            const str = item.str.trim();
-                            if (!str) return;
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
 
-                            // Skip junk and standalone prices
-                            if (junkPatterns.some(p => p.test(str))) return;
-                            const isStandalonePrice = str.match(/^R\$\s*\d+,\d{2}$/i) || str.match(/^R\s*\$$/) || str.match(/^\d+,\d{2}$/);
-                            if (isStandalonePrice) return;
+                        await page.render({
+                            canvasContext: context,
+                            viewport: viewport
+                        }).promise;
 
-                            const y = item.transform[5];
-                            let added = false;
+                        const base64Image = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
 
-                            for (let l of lines) {
-                                // If within 5 points vertically, group them in the same line
-                                if (Math.abs(l.y - y) < 5) {
-                                    l.texts.push(str);
-                                    added = true;
-                                    break;
-                                }
-                            }
-                            if (!added) {
-                                lines.push({ y: y, texts: [str] });
-                            }
+                        showToast(`IA lendo Pág ${i}...`, 'info');
+
+                        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${apiKey}`
+                            },
+                            body: JSON.stringify({
+                                model: 'gpt-4o',
+                                messages: [
+                                    {
+                                        role: 'system',
+                                        content: "Você é um extrator de dados de catálogos OCR. Analise o layout (entenda colunas, blocos, títulos azuis, códigos em vermelho). Extraia todos os produtos visíveis. Retorne APENAS um array JSON puro, sem markdown, contendo esta exata estrutura para cada produto: [{\"code\": \"TK-123...\", \"name\": \"Nome do produto\", \"desc\": \"Descrição completa. Ignore preços visíveis.\"}]"
+                                    },
+                                    {
+                                        role: 'user',
+                                        content: [
+                                            { type: "text", text: "Extraia os produtos desta página." },
+                                            { type: "image_url", image_url: { url: `data:image/jpeg;base64,${base64Image}` } }
+                                        ]
+                                    }
+                                ],
+                                max_tokens: 3000,
+                                temperature: 0.1
+                            })
                         });
 
-                        // Sort lines from top to bottom (highest Y is top of page in PDF coords)
-                        lines.sort((a, b) => b.y - a.y);
-
-                        let currentProduct = null;
-
-                        for (let l = 0; l < lines.length; l++) {
-                            const lineStr = lines[l].texts.join(' ').trim();
-
-                            // Does this line contain a code?
-                            const codeMatch = lineStr.match(/TK-[\w\d\-]+/i);
-
-                            if (codeMatch) {
-                                if (currentProduct) allProducts.push(currentProduct);
-
-                                const code = codeMatch[0];
-                                // Usually the title is the very line *above* the code in a catalog layout.
-                                // Because lines are sorted top-to-bottom, the line immediately above is at index l-1
-                                let name = 'Produto';
-                                if (l > 0) {
-                                    name = lines[l - 1].texts.join(' ').trim();
-                                    // If the above line was junk or looks like a description of a previous product
-                                    if (name.length > 50 || name.includes('DIM:') || name.includes('Quantidade') || name.includes('|')) {
-                                        name = 'Produto ' + code;
-                                    }
-                                }
-
-                                currentProduct = {
-                                    product_code: code,
-                                    name: name,
-                                    category: categories[0] || 'Geral',
-                                    age: '+3 anos',
-                                    image_url: 'mobile_only',
-                                    badge: '',
-                                    status: 'active',
-                                    description: ''
-                                };
-                            } else if (currentProduct) {
-                                // Accumulate description for the active product (anything that comes after the code)
-                                // Only add if it's not a price embedded in text (just in case)
-                                let cleanLine = lineStr.replace(/R\$\s*\d+,\d{2}/gi, '').trim();
-                                if (cleanLine) {
-                                    if (currentProduct.description) currentProduct.description += ' | ';
-                                    currentProduct.description += cleanLine;
-                                }
+                        if (!response.ok) {
+                            if (response.status === 401) {
+                                localStorage.removeItem('openAIKey');
+                                throw new Error('Sua Chave OpenAI é inválida.');
                             }
+                            throw new Error('Falha de Comunicação com OpenAI');
                         }
 
-                        if (currentProduct) allProducts.push(currentProduct);
+                        const data = await response.json();
+                        let rawJson = data.choices[0].message.content.trim();
+                        if (rawJson.startsWith('```')) {
+                            rawJson = rawJson.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+                        }
+
+                        try {
+                            const productsOnPage = JSON.parse(rawJson);
+                            if (Array.isArray(productsOnPage)) {
+                                allProducts = allProducts.concat(productsOnPage);
+                            }
+                        } catch (e) { console.error('Erro no Parse JSON da IA', rawJson) }
                     }
 
                     if (allProducts.length === 0) {
-                        showToast('Nenhum código TK- encontrado no PDF!', 'error');
+                        showToast('Nenhum produto reconhecido pela IA!', 'error');
                         return;
                     }
 
-                    showToast(`Importando ${allProducts.length} produtos do PDF...`);
+                    showToast(`Salvando ${allProducts.length} produtos estruturados...`);
 
                     let successCount = 0;
                     for (const p of allProducts) {
-                        if (p.name === 'Produto' || p.name.length < 2) {
-                            p.name = "Produto " + p.product_code;
-                        }
+                        if (!p.code || !p.code.match(/tk/i)) continue;
 
                         await sbUpsertProduct({
-                            product_code: p.product_code,
-                            name: p.name,
-                            category: p.category,
-                            age: p.age,
-                            image_url: p.image_url,
-                            badge: p.badge,
-                            status: p.status,
-                            description: p.description
+                            product_code: p.code.trim(),
+                            name: (p.name && p.name.length > 2) ? p.name : "Produto " + p.code,
+                            category: categories[0] || 'Geral',
+                            age: '+3 anos',
+                            image_url: 'mobile_only',
+                            badge: '',
+                            status: 'active',
+                            description: p.desc ? p.desc.trim() : ''
                         });
                         successCount++;
                     }
 
-                    showToast(`Concluído! ${successCount} produtos importados.`);
+                    showToast(`Concluído! ${successCount} produtos importados via IA OCR.`);
                     await loadAllData();
                     document.getElementById('mPdfUpload').value = '';
 
                 } catch (err) {
-                    console.error('Erro ao ler PDF', err);
-                    showToast('Erro ao processar o PDF.', 'error');
+                    console.error('Erro na extração IA:', err);
+                    showToast('Erro: ' + err.message, 'error');
                 }
             };
             reader.readAsArrayBuffer(file);
