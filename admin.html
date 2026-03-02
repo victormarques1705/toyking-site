@@ -8,6 +8,7 @@
     <link rel="icon" href="assets/images/logo.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap');
 
@@ -830,8 +831,16 @@
                 <div class="panel">
                     <div class="panel-header">
                         <h2>📦 Gestão de Produtos</h2>
-                        <button class="btn btn-primary" onclick="openProductModal()"><i class="fas fa-plus"></i> Novo
-                            Produto</button>
+                        <div style="display:flex; gap:10px;">
+                            <label for="mExcelUpload" class="btn btn-outline" style="cursor:pointer; margin:0;">
+                                <i class="fas fa-file-excel"></i> Importar Excel
+                            </label>
+                            <input type="file" id="mExcelUpload" accept=".xlsx, .xls" style="display:none;"
+                                onchange="handleExcelUpload(event)">
+                            <button class="btn btn-primary" onclick="openProductModal()"><i class="fas fa-plus"></i>
+                                Novo
+                                Produto</button>
+                        </div>
                     </div>
                     <div class="panel-body">
                         <div style="margin-bottom:16px;">
@@ -1360,6 +1369,68 @@
         }
         function editProduct(i) { openProductModal(i); }
         async function deleteProduct(i) { if (confirm('Excluir produto ' + products[i].name + '?')) { if (products[i]._dbId) await sbDeleteProduct(products[i]._dbId); await loadAllData(); showToast('Produto excluído!'); } }
+
+        async function handleExcelUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showToast('Lendo arquivo Excel...', 'info');
+            const reader = new FileReader();
+
+            reader.onload = async function (e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+                    if (json.length === 0) {
+                        showToast('Planilha vazia!', 'error');
+                        return;
+                    }
+
+                    showToast(`Importando ${json.length} produtos... Aguarde.`);
+
+                    let successCount = 0;
+                    for (const row of json) {
+                        const product_code = row['Código'] || row['codigo'] || row['Codigo'] || row['CÓDIGO'] || row['id'];
+                        const name = row['Nome'] || row['nome'] || row['NOME'];
+
+                        if (!product_code || !name) continue; // Skip corrupted rows without essential IDs
+
+                        const category = row['Categoria'] || row['categoria'] || row['CATEGORIA'] || categories[0];
+                        const age = row['Idade'] || row['idade'] || row['IDADE'] || '+3 anos';
+                        const badge = row['Badge'] || row['badge'] || row['BADGE'] || '';
+                        const status = row['Status'] || row['status'] || row['STATUS'] || 'active';
+                        const desc = row['Descrição'] || row['descricao'] || row['Descricao'] || row['DESCRIÇÃO'] || '';
+                        const image_url = row['Imagem'] || row['imagem'] || row['IMAGEM'] || '';
+
+                        await sbUpsertProduct({
+                            product_code: String(product_code).trim(),
+                            name: String(name).trim(),
+                            category: String(category).trim(),
+                            age: String(age).trim(),
+                            image_url: String(image_url).trim() || 'mobile_only',
+                            badge: String(badge).trim(),
+                            status: String(status).trim() || 'active',
+                            description: String(desc).trim()
+                        });
+                        successCount++;
+                    }
+
+                    showToast(`Concluído! ${successCount} produtos importados.`);
+                    await loadAllData();
+                    document.getElementById('mExcelUpload').value = ''; // clear input
+
+                } catch (err) {
+                    console.error('Erro ao ler Excel', err);
+                    showToast('Erro ao ler a planilha. Verifique o formato.', 'error');
+                }
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
 
         function openCatModal(idx = -1) {
             const c = idx >= 0 ? categories[idx] : '';
