@@ -1468,6 +1468,8 @@
 
                     let allProducts = [];
                     let currentProduct = null;
+                    let currentDesc = [];
+                    let pendingTitle = '';
 
                     for (let i = 1; i <= numPages; i++) {
                         const page = await pdf.getPage(i);
@@ -1477,39 +1479,57 @@
                         for (let j = 0; j < items.length; j++) {
                             const text = items[j];
 
-                            // Check for Product Code (e.g. TK-AB8710, TK-1600)
-                            const codeMatch = text.match(/TK-[\w\d]+/i);
+                            // Check for Product Code (Red in catalog)
+                            const isCode = text.match(/^TK-[\w\d\-]+$/i);
 
-                            if (codeMatch) {
-                                let name = j > 0 ? items[j - 1] : 'Produto Desconhecido';
-
-                                if (name.includes('R$') || name.includes('DIM') || name.match(/TK-/)) {
-                                    name = 'Nome não extraído';
+                            if (isCode) {
+                                if (currentProduct) {
+                                    // The last item read before a new code is actually its Title (Blue in catalog)
+                                    if (currentDesc.length > 0) pendingTitle = currentDesc.pop();
+                                    currentProduct.description = currentDesc.filter(d => d).join(' | ');
+                                    allProducts.push(currentProduct);
                                 }
 
-                                if (currentProduct) allProducts.push(currentProduct);
+                                let title = pendingTitle || (j > 0 ? items[j - 1] : 'Produto');
+                                if (title.match(/R\$/) || title.includes('DIM')) title = 'Produto Desconhecido';
 
                                 currentProduct = {
-                                    product_code: codeMatch[0],
-                                    name: name,
-                                    category: categories[0],
+                                    product_code: text,
+                                    name: title,
+                                    category: categories.length > 0 ? categories[0] : 'Geral',
                                     age: '+3 anos',
                                     image_url: 'mobile_only',
                                     badge: '',
                                     status: 'active',
-                                    description: '',
-                                    price: ''
+                                    description: ''
                                 };
-                            } else if (currentProduct) {
-                                if (text.match(/R\$\s*\d+,\d{2}/i)) {
-                                    currentProduct.price = text;
-                                } else if (!text.includes('R$') && text.length > 2) {
-                                    currentProduct.description += text + ' | ';
+                                currentDesc = [];
+                                pendingTitle = '';
+
+                            } else if (text.match(/R\$\s*\d+,\d{2}/i) || text.match(/^R\s*\$$/)) {
+                                // Ignore prices completely (Green in catalog)
+                                continue;
+                            } else if (text.match(/^\d+,\d{2}$/) && j > 0 && items[j - 1].match(/^R\s*\$$/)) {
+                                // Ignore numbers that were split from R$ (Green in catalog)
+                                continue;
+                            } else {
+                                // Accumulate Description (Black in catalog)
+                                if (currentProduct) {
+                                    if (!text.toLowerCase().includes('atualizado em')) {
+                                        currentDesc.push(text);
+                                    }
+                                } else {
+                                    if (!text.toLowerCase().includes('atualizado em')) {
+                                        pendingTitle = text;
+                                    }
                                 }
                             }
                         }
                     }
-                    if (currentProduct) allProducts.push(currentProduct);
+                    if (currentProduct) {
+                        currentProduct.description = currentDesc.filter(d => d).join(' | ');
+                        allProducts.push(currentProduct);
+                    }
 
                     if (allProducts.length === 0) {
                         showToast('Nenhum código TK- encontrado no PDF!', 'error');
@@ -1520,20 +1540,7 @@
 
                     let successCount = 0;
                     for (const p of allProducts) {
-                        let finalDesc = p.description.trim();
-                        if (finalDesc.endsWith('|')) finalDesc = finalDesc.slice(0, -1).trim();
-                        if (p.price) finalDesc = `Preço: ${p.price} | ` + finalDesc;
-
-                        await sbUpsertProduct({
-                            product_code: p.product_code,
-                            name: p.name,
-                            category: p.category,
-                            age: p.age,
-                            image_url: p.image_url,
-                            badge: p.badge,
-                            status: p.status,
-                            description: finalDesc
-                        });
+                        await sbUpsertProduct(p);
                         successCount++;
                     }
 
