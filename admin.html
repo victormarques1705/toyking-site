@@ -835,7 +835,10 @@
                 <div class="panel">
                     <div class="panel-header">
                         <h2>📦 Gestão de Produtos</h2>
-                        <div style="display:flex; gap:10px;">
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <button class="btn btn-danger" id="btnDeleteSelected" style="display:none;"
+                                onclick="deleteSelectedProducts()"><i class="fas fa-trash"></i> Excluir
+                                Selecionados</button>
                             <label for="mPdfUpload" class="btn btn-outline" style="cursor:pointer; margin:0;"
                                 title="Extrai os produtos e códigos de um catálogo PDF e importa">
                                 <i class="fas fa-file-pdf"></i> Importar PDF
@@ -860,6 +863,10 @@
                             <table>
                                 <thead>
                                     <tr>
+                                        <th style="width:40px; text-align:center;">
+                                            <input type="checkbox" id="selectAllProds" onchange="toggleAllProds(this)"
+                                                style="cursor:pointer; width:16px; height:16px;">
+                                        </th>
                                         <th>Img</th>
                                         <th>Nome</th>
                                         <th>Código</th>
@@ -1200,19 +1207,54 @@
             const filtered = products.filter(p => !search || p.name.toLowerCase().includes(search) || p.id.toLowerCase().includes(search));
             const tb = document.getElementById('productsTable');
             tb.innerHTML = '';
-            filtered.forEach((p, i) => {
+            filtered.forEach((p) => {
+                const originalIdx = products.indexOf(p);
                 const imgSrc = p.img && p.img.startsWith('data:image') ? p.img : 'assets/images/' + p.img;
                 tb.innerHTML += `<tr>
+          <td style="text-align:center;">
+              <input type="checkbox" class="prod-checkbox" value="${p._dbId}" onchange="toggleDeleteBtn()" style="cursor:pointer; width:16px; height:16px;">
+          </td>
           <td><img src="${imgSrc}" class="td-img"></td>
           <td><strong>${p.name}</strong></td><td>${p.id}</td><td>${p.cat}</td><td>${p.age}</td>
           <td><span class="badge-status ${p.status === 'active' ? 'badge-active' : 'badge-draft'}">${p.status === 'active' ? 'Ativo' : 'Rascunho'}</span></td>
           <td><div class="td-actions">
-            <button class="btn btn-sm btn-outline" onclick="editProduct(${i})"><i class="fas fa-edit"></i></button>
-            <button class="btn btn-sm btn-danger" onclick="deleteProduct(${i})"><i class="fas fa-trash"></i></button>
+            <button class="btn btn-sm btn-outline" onclick="editProduct(${originalIdx})"><i class="fas fa-edit"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="deleteProduct(${originalIdx})"><i class="fas fa-trash"></i></button>
             <a href="produto.html?id=${p.id}" class="btn btn-sm btn-outline" target="_blank"><i class="fas fa-eye"></i></a>
           </div></td>
         </tr>`;
             });
+            toggleDeleteBtn();
+        }
+
+        function toggleAllProds(ns) {
+            document.querySelectorAll('.prod-checkbox').forEach(cb => cb.checked = ns.checked);
+            toggleDeleteBtn();
+        }
+
+        function toggleDeleteBtn() {
+            const anyChecked = document.querySelectorAll('.prod-checkbox:checked').length > 0;
+            const btn = document.getElementById('btnDeleteSelected');
+            if (btn) btn.style.display = anyChecked ? 'inline-flex' : 'none';
+        }
+
+        async function deleteSelectedProducts() {
+            const checkedBoxes = Array.from(document.querySelectorAll('.prod-checkbox:checked'));
+            if (checkedBoxes.length === 0) return;
+            if (confirm(`Excluir permanentemente ${checkedBoxes.length} produto(s) selecionado(s)?`)) {
+                showToast(`Excluindo ${checkedBoxes.length} produtos...`, 'info');
+                for (const box of checkedBoxes) {
+                    const dbId = box.value;
+                    if (dbId && dbId !== 'undefined') {
+                        await sbDeleteProduct(dbId);
+                    }
+                }
+                showToast('Produtos excluídos com sucesso!');
+                const selectAll = document.getElementById('selectAllProds');
+                if (selectAll) selectAll.checked = false;
+                toggleDeleteBtn();
+                await loadAllData();
+            }
         }
 
         function renderCategories() {
