@@ -733,484 +733,575 @@
             }
         }
     </style>
+    <style>
+        .login-screen {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #f0f2f5 0%, #e0e5ec 100%);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: opacity 0.4s ease;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-card img {
+            height: 60px;
+            margin-bottom: 20px;
+        }
+
+        .login-card h3 {
+            font-size: 1.4rem;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .login-card p {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #eaeaea;
+            border-radius: 12px;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            outline: none;
+            transition: border-color 0.2s;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .login-input:focus {
+            border-color: var(--blue);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--blue);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .login-btn:hover {
+            background: var(--blue-dark);
+        }
+    </style>
 </head>
 
 <body>
-    <!-- SIDEBAR -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <img src="assets/images/logo.png" alt="Toy King">
-            <div>
-                <h2>ToyKing</h2><span>Painel Admin</span>
-            </div>
-        </div>
-        <nav class="sidebar-nav">
-            <div class="nav-label">Principal</div>
-            <button class="nav-item active" data-section="dashboard"><i class="fas fa-chart-pie"></i> Dashboard</button>
-            <button class="nav-item" data-section="products"><i class="fas fa-boxes-stacked"></i> Produtos</button>
-            <button class="nav-item" data-section="categories"><i class="fas fa-tags"></i> Categorias</button>
-            <div class="nav-label">Conteúdo</div>
-            <button class="nav-item" data-section="pages"><i class="fas fa-file-alt"></i> Páginas</button>
-            <button class="nav-item" data-section="banners"><i class="fas fa-images"></i> Banners</button>
-            <button class="nav-item" data-section="manuals"><i class="fas fa-book"></i> Manuais</button>
-            <div class="nav-label">Configurações</div>
-            <button class="nav-item" data-section="settings"><i class="fas fa-cog"></i> Configurações</button>
-        </nav>
-        <div class="sidebar-footer">
-            <a href="index.html"><i class="fas fa-external-link-alt"></i> Ver Site</a>
-        </div>
-    </aside>
-
-    <!-- MAIN -->
-    <div class="main">
-        <div class="topbar">
-            <div class="topbar-left">
-                <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
-                <h1 id="pageTitle">📊 Dashboard</h1>
-            </div>
-            <div class="topbar-right">
-                <button class="topbar-btn"><i class="fas fa-bell"></i></button>
-                <div class="avatar">TK</div>
-            </div>
-        </div>
-
-        <div class="content">
-            <!-- DASHBOARD -->
-            <div class="section active" id="sec-dashboard">
-                <div class="stat-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon blue"><i class="fas fa-box"></i></div>
-                        <div class="stat-info">
-                            <h3 id="statProducts">0</h3>
-                            <p>Produtos</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon orange"><i class="fas fa-tags"></i></div>
-                        <div class="stat-info">
-                            <h3 id="statCategories">0</h3>
-                            <p>Categorias</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon green"><i class="fas fa-eye"></i></div>
-                        <div class="stat-info">
-                            <h3>1.2K</h3>
-                            <p>Visitas Hoje</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon red"><i class="fas fa-book"></i></div>
-                        <div class="stat-info">
-                            <h3 id="statManuals">0</h3>
-                            <p>Manuais</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="panel">
-                    <div class="panel-header">
-                        <h2>📦 Últimos Produtos</h2>
-                    </div>
-                    <div class="panel-body">
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Img</th>
-                                        <th>Nome</th>
-                                        <th>Código</th>
-                                        <th>Categoria</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="dashProductsTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PRODUCTS -->
-            <div class="section" id="sec-products">
-                <div class="panel">
-                    <div class="panel-header">
-                        <h2>📦 Gestão de Produtos</h2>
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <button class="btn btn-danger" id="btnDeleteSelected" style="display:none;"
-                                onclick="deleteSelectedProducts()"><i class="fas fa-trash"></i> Excluir
-                                Selecionados</button>
-                            <label for="mPdfUpload" class="btn btn-outline" style="cursor:pointer; margin:0;"
-                                title="Extrai os produtos e códigos de um catálogo PDF e importa">
-                                <i class="fas fa-file-pdf"></i> Importar PDF
-                            </label>
-                            <input type="file" id="mPdfUpload" accept=".pdf" style="display:none;"
-                                onchange="handlePdfUpload(event)">
-                            <label for="mExcelUpload" class="btn btn-outline" style="cursor:pointer; margin:0;">
-                                <i class="fas fa-file-excel"></i> Importar Excel
-                            </label>
-                            <input type="file" id="mExcelUpload" accept=".xlsx, .xls" style="display:none;"
-                                onchange="handleExcelUpload(event)">
-                            <button class="btn btn-primary" onclick="openProductModal()"><i class="fas fa-plus"></i>
-                                Novo Produto</button>
-                        </div>
-                    </div>
-                    <div class="panel-body">
-                        <div style="margin-bottom:16px;">
-                            <input type="text" class="form-control" placeholder="🔍 Buscar produtos..." id="searchProd"
-                                oninput="renderProducts()" style="max-width:350px;">
-                        </div>
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th style="width:40px; text-align:center;">
-                                            <input type="checkbox" id="selectAllProds" onchange="toggleAllProds(this)"
-                                                style="cursor:pointer; width:16px; height:16px;">
-                                        </th>
-                                        <th>Img</th>
-                                        <th>Nome</th>
-                                        <th>Código</th>
-                                        <th>Categoria</th>
-                                        <th>Idade</th>
-                                        <th>Status</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="productsTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CATEGORIES -->
-            <div class="section" id="sec-categories">
-                <div class="panel">
-                    <div class="panel-header">
-                        <h2>🏷️ Categorias</h2>
-                        <button class="btn btn-primary" onclick="openCatModal()"><i class="fas fa-plus"></i> Nova
-                            Categoria</button>
-                    </div>
-                    <div class="panel-body">
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Nome</th>
-                                        <th>Qtd Produtos</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="catsTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PAGES -->
-            <div class="section" id="sec-pages">
-                <div class="panel">
-                    <div class="panel-header">
-                        <h2>📄 Páginas do Site</h2>
-                    </div>
-                    <div class="panel-body">
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Página</th>
-                                        <th>Arquivo</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="pagesTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- BANNERS -->
-            <div class="section" id="sec-banners">
-                <div class="panel" style="margin-bottom: 20px;">
-                    <div class="panel-header">
-                        <h2>🖼️ Banners (Computador)</h2>
-                        <button class="btn btn-primary" onclick="openBannerModal(-1, 'desktop')"><i
-                                class="fas fa-plus"></i> Novo Banner PC</button>
-                    </div>
-                    <div class="panel-body">
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Imagem</th>
-                                        <th>Título</th>
-                                        <th>Subtítulo</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="webBannersTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <div class="panel">
-                    <div class="panel-header">
-                        <h2>📱 Banners (Celular)</h2>
-                        <button class="btn btn-primary" onclick="openBannerModal(-1, 'mobile')"><i
-                                class="fas fa-plus"></i> Novo Banner Celular</button>
-                    </div>
-                    <div class="panel-body">
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Imagem</th>
-                                        <th>Título</th>
-                                        <th>Subtítulo</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="mobileBannersTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- MANUALS -->
-            <div class="section" id="sec-manuals">
-                <div class="panel">
-                    <div class="panel-header">
-                        <h2>📖 Manuais e Vídeos</h2>
-                        <button class="btn btn-primary" onclick="openManualModal()"><i class="fas fa-plus"></i> Novo
-                            Manual</button>
-                    </div>
-                    <div class="panel-body">
-                        <div class="table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Produto</th>
-                                        <th>Código</th>
-                                        <th>Manual</th>
-                                        <th>Vídeo</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="manualsTable"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- SETTINGS -->
-            <div class="section" id="sec-settings">
-                <div class="panel">
-                    <div class="panel-header">
-                        <h2>⚙️ Configurações do Site</h2>
-                    </div>
-                    <div class="panel-body">
-                        <div class="form-row">
-                            <div class="form-group"><label>Nome do Site</label><input type="text" class="form-control"
-                                    id="cfgSiteName" value="ToyKing"></div>
-                            <div class="form-group"><label>Slogan</label><input type="text" class="form-control"
-                                    id="cfgSlogan" value="Distribuidora de Brinquedos"></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group"><label>Telefone</label><input type="text" class="form-control"
-                                    id="cfgPhone" value="(11) 3227-1441"></div>
-                            <div class="form-group"><label>E-mail</label><input type="text" class="form-control"
-                                    id="cfgEmail" value="contato@toyking.com.br"></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group"><label>WhatsApp</label><input type="text" class="form-control"
-                                    id="cfgWhatsapp" value="(11) 3227-1441"></div>
-                            <div class="form-group"><label>Endereço</label><input type="text" class="form-control"
-                                    id="cfgAddress" value="Avenida das Américas, 2000, Rio de Janeiro, RJ"></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group"><label>Instagram</label><input type="text" class="form-control"
-                                    id="cfgInsta" value="https://www.instagram.com/toykingoficial"></div>
-                            <div class="form-group"><label>Facebook</label><input type="text" class="form-control"
-                                    id="cfgFb" value="https://www.facebook.com/Toykingoficial"></div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group"><label>YouTube</label><input type="text" class="form-control"
-                                    id="cfgYt" value=""></div>
-                            <div class="form-group"><label>Cor Primária</label><input type="color" class="form-control"
-                                    id="cfgColor" value="#1A8BD6" style="height:42px;padding:4px;"></div>
-                        </div>
-                        <button class="btn btn-success" onclick="saveSettings()"><i class="fas fa-save"></i> Salvar
-                            Configurações</button>
-                    </div>
-                </div>
-            </div>
+    <div id="loginScreen" class="login-screen">
+        <div class="login-card">
+            <img src="assets/images/logo.png" alt="Toy King Logo">
+            <h3>Acesso Restrito</h3>
+            <p>Por favor, insira a senha para acessar o painel administrativo.</p>
+            <input type="password" id="adminPwd" class="login-input" placeholder="••••••••"
+                onkeypress="if(event.key === 'Enter') attemptLogin()">
+            <button class="login-btn" onclick="attemptLogin()">Entrar</button>
         </div>
     </div>
 
-    <!-- MODAL -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 id="modalTitle">Novo Produto</h3><button class="modal-close" onclick="closeModal()"><i
-                        class="fas fa-times"></i></button>
+    <!-- MAIN APP WRAPPER -->
+    <div id="appContainer" style="display: none; width: 100%;">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <img src="assets/images/logo.png" alt="Toy King">
+                <div>
+                    <h2>ToyKing</h2><span>Painel Admin</span>
+                </div>
             </div>
-            <div class="modal-body" id="modalBody"></div>
-            <div class="modal-footer" id="modalFooter"></div>
+            <nav class="sidebar-nav">
+                <div class="nav-label">Principal</div>
+                <button class="nav-item active" data-section="dashboard"><i class="fas fa-chart-pie"></i>
+                    Dashboard</button>
+                <button class="nav-item" data-section="products"><i class="fas fa-boxes-stacked"></i> Produtos</button>
+                <button class="nav-item" data-section="categories"><i class="fas fa-tags"></i> Categorias</button>
+                <div class="nav-label">Conteúdo</div>
+                <button class="nav-item" data-section="pages"><i class="fas fa-file-alt"></i> Páginas</button>
+                <button class="nav-item" data-section="banners"><i class="fas fa-images"></i> Banners</button>
+                <button class="nav-item" data-section="manuals"><i class="fas fa-book"></i> Manuais</button>
+                <div class="nav-label">Configurações</div>
+                <button class="nav-item" data-section="settings"><i class="fas fa-cog"></i> Configurações</button>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="index.html"><i class="fas fa-external-link-alt"></i> Ver Site</a>
+            </div>
+        </aside>
+
+        <!-- MAIN -->
+        <div class="main">
+            <div class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+                    <h1 id="pageTitle">📊 Dashboard</h1>
+                </div>
+                <div class="topbar-right">
+                    <button class="topbar-btn"><i class="fas fa-bell"></i></button>
+                    <div class="avatar">TK</div>
+                </div>
+            </div>
+
+            <div class="content">
+                <!-- DASHBOARD -->
+                <div class="section active" id="sec-dashboard">
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue"><i class="fas fa-box"></i></div>
+                            <div class="stat-info">
+                                <h3 id="statProducts">0</h3>
+                                <p>Produtos</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange"><i class="fas fa-tags"></i></div>
+                            <div class="stat-info">
+                                <h3 id="statCategories">0</h3>
+                                <p>Categorias</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green"><i class="fas fa-eye"></i></div>
+                            <div class="stat-info">
+                                <h3>1.2K</h3>
+                                <p>Visitas Hoje</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon red"><i class="fas fa-book"></i></div>
+                            <div class="stat-info">
+                                <h3 id="statManuals">0</h3>
+                                <p>Manuais</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>📦 Últimos Produtos</h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Img</th>
+                                            <th>Nome</th>
+                                            <th>Código</th>
+                                            <th>Categoria</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dashProductsTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PRODUCTS -->
+                <div class="section" id="sec-products">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>📦 Gestão de Produtos</h2>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <button class="btn btn-danger" id="btnDeleteSelected" style="display:none;"
+                                    onclick="deleteSelectedProducts()"><i class="fas fa-trash"></i> Excluir
+                                    Selecionados</button>
+                                <label for="mPdfUpload" class="btn btn-outline" style="cursor:pointer; margin:0;"
+                                    title="Extrai os produtos e códigos de um catálogo PDF e importa">
+                                    <i class="fas fa-file-pdf"></i> Importar PDF
+                                </label>
+                                <input type="file" id="mPdfUpload" accept=".pdf" style="display:none;"
+                                    onchange="handlePdfUpload(event)">
+                                <label for="mExcelUpload" class="btn btn-outline" style="cursor:pointer; margin:0;">
+                                    <i class="fas fa-file-excel"></i> Importar Excel
+                                </label>
+                                <input type="file" id="mExcelUpload" accept=".xlsx, .xls" style="display:none;"
+                                    onchange="handleExcelUpload(event)">
+                                <button class="btn btn-primary" onclick="openProductModal()"><i class="fas fa-plus"></i>
+                                    Novo Produto</button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div style="margin-bottom:16px;">
+                                <input type="text" class="form-control" placeholder="🔍 Buscar produtos..."
+                                    id="searchProd" oninput="renderProducts()" style="max-width:350px;">
+                            </div>
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th style="width:40px; text-align:center;">
+                                                <input type="checkbox" id="selectAllProds"
+                                                    onchange="toggleAllProds(this)"
+                                                    style="cursor:pointer; width:16px; height:16px;">
+                                            </th>
+                                            <th>Img</th>
+                                            <th>Nome</th>
+                                            <th>Código</th>
+                                            <th>Categoria</th>
+                                            <th>Idade</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="productsTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CATEGORIES -->
+                <div class="section" id="sec-categories">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>🏷️ Categorias</h2>
+                            <button class="btn btn-primary" onclick="openCatModal()"><i class="fas fa-plus"></i> Nova
+                                Categoria</button>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Nome</th>
+                                            <th>Qtd Produtos</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="catsTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGES -->
+                <div class="section" id="sec-pages">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>📄 Páginas do Site</h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Página</th>
+                                            <th>Arquivo</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pagesTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BANNERS -->
+                <div class="section" id="sec-banners">
+                    <div class="panel" style="margin-bottom: 20px;">
+                        <div class="panel-header">
+                            <h2>🖼️ Banners (Computador)</h2>
+                            <button class="btn btn-primary" onclick="openBannerModal(-1, 'desktop')"><i
+                                    class="fas fa-plus"></i> Novo Banner PC</button>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Imagem</th>
+                                            <th>Título</th>
+                                            <th>Subtítulo</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="webBannersTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>📱 Banners (Celular)</h2>
+                            <button class="btn btn-primary" onclick="openBannerModal(-1, 'mobile')"><i
+                                    class="fas fa-plus"></i> Novo Banner Celular</button>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Imagem</th>
+                                            <th>Título</th>
+                                            <th>Subtítulo</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="mobileBannersTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MANUALS -->
+                <div class="section" id="sec-manuals">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>📖 Manuais e Vídeos</h2>
+                            <button class="btn btn-primary" onclick="openManualModal()"><i class="fas fa-plus"></i> Novo
+                                Manual</button>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Produto</th>
+                                            <th>Código</th>
+                                            <th>Manual</th>
+                                            <th>Vídeo</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="manualsTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SETTINGS -->
+                <div class="section" id="sec-settings">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>⚙️ Configurações do Site</h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-row">
+                                <div class="form-group"><label>Nome do Site</label><input type="text"
+                                        class="form-control" id="cfgSiteName" value="ToyKing"></div>
+                                <div class="form-group"><label>Slogan</label><input type="text" class="form-control"
+                                        id="cfgSlogan" value="Distribuidora de Brinquedos"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Telefone</label><input type="text" class="form-control"
+                                        id="cfgPhone" value="(11) 3227-1441"></div>
+                                <div class="form-group"><label>E-mail</label><input type="text" class="form-control"
+                                        id="cfgEmail" value="contato@toyking.com.br"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>WhatsApp</label><input type="text" class="form-control"
+                                        id="cfgWhatsapp" value="(11) 3227-1441"></div>
+                                <div class="form-group"><label>Endereço</label><input type="text" class="form-control"
+                                        id="cfgAddress" value="Avenida das Américas, 2000, Rio de Janeiro, RJ"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>Instagram</label><input type="text" class="form-control"
+                                        id="cfgInsta" value="https://www.instagram.com/toykingoficial"></div>
+                                <div class="form-group"><label>Facebook</label><input type="text" class="form-control"
+                                        id="cfgFb" value="https://www.facebook.com/Toykingoficial"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group"><label>YouTube</label><input type="text" class="form-control"
+                                        id="cfgYt" value=""></div>
+                                <div class="form-group"><label>Cor Primária</label><input type="color"
+                                        class="form-control" id="cfgColor" value="#1A8BD6"
+                                        style="height:42px;padding:4px;"></div>
+                            </div>
+                            <button class="btn btn-success" onclick="saveSettings()"><i class="fas fa-save"></i> Salvar
+                                Configurações</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <!-- TOAST -->
-    <div class="toast" id="toast"></div>
+        <!-- MODAL -->
+        <div class="modal-overlay" id="modalOverlay">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 id="modalTitle">Novo Produto</h3><button class="modal-close" onclick="closeModal()"><i
+                            class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body" id="modalBody"></div>
+                <div class="modal-footer" id="modalFooter"></div>
+            </div>
+        </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js"></script>
-    <script>
-        // ===== DATA =====
-        let products = [];
-        let categories = [];
-        let banners = [];
-        let manuals = [];
-        let settings = {};
+        <!-- TOAST -->
+        <div class="toast" id="toast"></div>
 
-        const defaultPages = [
-            { name: '🏠 Início', file: 'index.html' },
-            { name: '📋 Quem Somos', file: 'quem-somos.html' },
-            { name: '📖 Manuais e Vídeos', file: 'manuais.html' },
-            { name: '🧸 Produtos', file: 'produtos.html' },
-            { name: '🛒 Quero Comprar', file: 'contato.html' },
-            { name: '📞 Contato', file: 'contato.html' },
-        ];
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+        <script src="supabase-config.js"></script>
+        <script>
+            // ===== DATA =====
+            let products = [];
+            let categories = [];
+            let banners = [];
+            let manuals = [];
+            let settings = {};
 
-        // Load data from Supabase on admin open
-        async function loadAllData() {
-            try {
-                const sbProducts = await sbGetProducts();
-                products = sbProducts.map(p => ({
-                    id: p.product_code, name: p.name, cat: p.category, age: p.age,
-                    img: p.image_url, badge: p.badge || '', status: p.status,
-                    desc: p.description || '', _dbId: p.id
-                }));
-            } catch (e) { console.error(e); products = []; }
+            const defaultPages = [
+                { name: '🏠 Início', file: 'index.html' },
+                { name: '📋 Quem Somos', file: 'quem-somos.html' },
+                { name: '📖 Manuais e Vídeos', file: 'manuais.html' },
+                { name: '🧸 Produtos', file: 'produtos.html' },
+                { name: '🛒 Quero Comprar', file: 'contato.html' },
+                { name: '📞 Contato', file: 'contato.html' },
+            ];
 
-            try {
-                const sbCats = await sbGetCategories();
-                categories = sbCats.map(c => c.name);
-            } catch (e) { console.error(e); categories = ['Encartelados', 'Display', 'Didáticos', 'Brinquedos a Pilha', 'Verão', 'Patinetes']; }
+            // Load data from Supabase on admin open
+            async function loadAllData() {
+                try {
+                    const sbProducts = await sbGetProducts();
+                    products = sbProducts.map(p => ({
+                        id: p.product_code, name: p.name, cat: p.category, age: p.age,
+                        img: p.image_url, badge: p.badge || '', status: p.status,
+                        desc: p.description || '', _dbId: p.id
+                    }));
+                } catch (e) { console.error(e); products = []; }
 
-            try {
-                const sbBanners = await sbGetBanners();
-                banners = sbBanners.map(b => ({
-                    title: b.title, subtitle: b.subtitle || '', img: b.image_url || '', img_mobile: b.image_mobile_url || '',
-                    link: b.link || 'produtos.html', _dbId: b.id
-                }));
-            } catch (e) { console.error(e); banners = []; }
+                try {
+                    const sbCats = await sbGetCategories();
+                    categories = sbCats.map(c => c.name);
+                } catch (e) { console.error(e); categories = ['Encartelados', 'Display', 'Didáticos', 'Brinquedos a Pilha', 'Verão', 'Patinetes']; }
 
-            try {
-                const sbManuals = await sbGetManuals();
-                manuals = sbManuals.map(m => ({
-                    name: m.name, code: m.product_code || '',
-                    hasManual: m.has_manual, hasVideo: m.has_video, _dbId: m.id
-                }));
-            } catch (e) { console.error(e); manuals = []; }
+                try {
+                    const sbBanners = await sbGetBanners();
+                    banners = sbBanners.map(b => ({
+                        title: b.title, subtitle: b.subtitle || '', img: b.image_url || '', img_mobile: b.image_mobile_url || '',
+                        link: b.link || 'produtos.html', _dbId: b.id
+                    }));
+                } catch (e) { console.error(e); banners = []; }
 
-            try {
-                const sbSettings = await sbGetSettings();
-                sbSettings.forEach(s => settings[s.key] = s.value);
-            } catch (e) { console.error(e); }
+                try {
+                    const sbManuals = await sbGetManuals();
+                    manuals = sbManuals.map(m => ({
+                        name: m.name, code: m.product_code || '',
+                        hasManual: m.has_manual, hasVideo: m.has_video, _dbId: m.id
+                    }));
+                } catch (e) { console.error(e); manuals = []; }
 
-            renderAll();
-            loadSettings();
-        }
+                try {
+                    const sbSettings = await sbGetSettings();
+                    sbSettings.forEach(s => settings[s.key] = s.value);
+                } catch (e) { console.error(e); }
 
-        async function saveProductToDB(product) {
-            await sbUpsertProduct({
-                product_code: product.id, name: product.name, category: product.cat,
-                age: product.age, image_url: product.img, badge: product.badge,
-                status: product.status, description: product.desc || '', id: product._dbId
-            });
-        }
-
-        async function saveCategoryToDB(name, oldName = null) {
-            if (oldName) {
-                await sbUpdateCategory(oldName, name);
-            } else {
-                await sbUpsertCategory({ name, sort_order: categories.indexOf(name) });
+                renderAll();
+                loadSettings();
             }
-        }
 
-        async function saveBannerToDB(banner) {
-            const data = { title: banner.title, subtitle: banner.subtitle, image_url: banner.img, image_mobile_url: banner.img_mobile, link: banner.link || 'produtos.html' };
-            if (banner._dbId) data.id = banner._dbId;
-            await sbUpsertBanner(data);
-        }
+            async function saveProductToDB(product) {
+                await sbUpsertProduct({
+                    product_code: product.id, name: product.name, category: product.cat,
+                    age: product.age, image_url: product.img, badge: product.badge,
+                    status: product.status, description: product.desc || '', id: product._dbId
+                });
+            }
 
-        async function saveManualToDB(manual) {
-            const data = { name: manual.name, product_code: manual.code, has_manual: manual.hasManual, has_video: manual.hasVideo };
-            if (manual._dbId) data.id = manual._dbId;
-            await sbUpsertManual(data);
-        }
+            async function saveCategoryToDB(name, oldName = null) {
+                if (oldName) {
+                    await sbUpdateCategory(oldName, name);
+                } else {
+                    await sbUpsertCategory({ name, sort_order: categories.indexOf(name) });
+                }
+            }
 
-        function save() {
-            // Legacy compatibility - no-op, saves happen individually now
-        }
+            async function saveBannerToDB(banner) {
+                const data = { title: banner.title, subtitle: banner.subtitle, image_url: banner.img, image_mobile_url: banner.img_mobile, link: banner.link || 'produtos.html' };
+                if (banner._dbId) data.id = banner._dbId;
+                await sbUpsertBanner(data);
+            }
 
-        // ===== NAV =====
-        const titles = { dashboard: '📊 Dashboard', products: '📦 Produtos', categories: '🏷️ Categorias', pages: '📄 Páginas', banners: '🖼️ Banners', manuals: '📖 Manuais', settings: '⚙️ Configurações' };
-        document.querySelectorAll('.nav-item').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const sec = btn.dataset.section;
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                btn.classList.add('active');
-                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-                document.getElementById('sec-' + sec).classList.add('active');
-                document.getElementById('pageTitle').textContent = titles[sec] || sec;
-                if (window.innerWidth < 769) document.getElementById('sidebar').classList.remove('open');
+            async function saveManualToDB(manual) {
+                const data = { name: manual.name, product_code: manual.code, has_manual: manual.hasManual, has_video: manual.hasVideo };
+                if (manual._dbId) data.id = manual._dbId;
+                await sbUpsertManual(data);
+            }
+
+            function save() {
+                // Legacy compatibility - no-op, saves happen individually now
+            }
+
+            // ===== NAV =====
+            const titles = { dashboard: '📊 Dashboard', products: '📦 Produtos', categories: '🏷️ Categorias', pages: '📄 Páginas', banners: '🖼️ Banners', manuals: '📖 Manuais', settings: '⚙️ Configurações' };
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const sec = btn.dataset.section;
+                    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                    document.getElementById('sec-' + sec).classList.add('active');
+                    document.getElementById('pageTitle').textContent = titles[sec] || sec;
+                    if (window.innerWidth < 769) document.getElementById('sidebar').classList.remove('open');
+                });
             });
-        });
-        document.getElementById('menuToggle').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('open');
-        });
+            document.getElementById('menuToggle').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.toggle('open');
+            });
 
-        // ===== RENDER =====
-        function renderAll() {
-            renderDashboard();
-            renderProducts();
-            renderCategories();
-            renderPages();
-            renderBanners();
-            renderManuals();
-            loadSettings();
-        }
+            // ===== RENDER =====
+            function renderAll() {
+                renderDashboard();
+                renderProducts();
+                renderCategories();
+                renderPages();
+                renderBanners();
+                renderManuals();
+                loadSettings();
+            }
 
-        function renderDashboard() {
-            document.getElementById('statProducts').textContent = products.length;
-            document.getElementById('statCategories').textContent = categories.length;
-            document.getElementById('statManuals').textContent = manuals.length;
-            const tb = document.getElementById('dashProductsTable');
-            tb.innerHTML = '';
-            products.slice(0, 5).forEach(p => {
-                const imgSrc = p.img && p.img.startsWith('data:image') ? p.img : 'assets/images/' + p.img;
-                tb.innerHTML += `<tr>
+            function renderDashboard() {
+                document.getElementById('statProducts').textContent = products.length;
+                document.getElementById('statCategories').textContent = categories.length;
+                document.getElementById('statManuals').textContent = manuals.length;
+                const tb = document.getElementById('dashProductsTable');
+                tb.innerHTML = '';
+                products.slice(0, 5).forEach(p => {
+                    const imgSrc = p.img && p.img.startsWith('data:image') ? p.img : 'assets/images/' + p.img;
+                    tb.innerHTML += `<tr>
           <td><img src="${imgSrc}" class="td-img"></td>
           <td>${p.name}</td><td>${p.id}</td><td>${p.cat}</td>
           <td><span class="badge-status ${p.status === 'active' ? 'badge-active' : 'badge-draft'}">${p.status === 'active' ? 'Ativo' : 'Rascunho'}</span></td>
         </tr>`;
-            });
-        }
+                });
+            }
 
-        function renderProducts() {
-            const search = (document.getElementById('searchProd')?.value || '').toLowerCase();
-            const filtered = products.filter(p => !search || p.name.toLowerCase().includes(search) || p.id.toLowerCase().includes(search));
-            const tb = document.getElementById('productsTable');
-            tb.innerHTML = '';
-            filtered.forEach((p) => {
-                const originalIdx = products.indexOf(p);
-                const imgSrc = p.img && p.img.startsWith('data:image') ? p.img : 'assets/images/' + p.img;
-                tb.innerHTML += `<tr>
+            function renderProducts() {
+                const search = (document.getElementById('searchProd')?.value || '').toLowerCase();
+                const filtered = products.filter(p => !search || p.name.toLowerCase().includes(search) || p.id.toLowerCase().includes(search));
+                const tb = document.getElementById('productsTable');
+                tb.innerHTML = '';
+                filtered.forEach((p) => {
+                    const originalIdx = products.indexOf(p);
+                    const imgSrc = p.img && p.img.startsWith('data:image') ? p.img : 'assets/images/' + p.img;
+                    tb.innerHTML += `<tr>
           <td style="text-align:center;">
               <input type="checkbox" class="prod-checkbox" value="${p._dbId}" onchange="toggleDeleteBtn()" style="cursor:pointer; width:16px; height:16px;">
           </td>
@@ -1223,74 +1314,74 @@
             <a href="produto.html?id=${p.id}" class="btn btn-sm btn-outline" target="_blank"><i class="fas fa-eye"></i></a>
           </div></td>
         </tr>`;
-            });
-            toggleDeleteBtn();
-        }
-
-        function toggleAllProds(ns) {
-            document.querySelectorAll('.prod-checkbox').forEach(cb => cb.checked = ns.checked);
-            toggleDeleteBtn();
-        }
-
-        function toggleDeleteBtn() {
-            const anyChecked = document.querySelectorAll('.prod-checkbox:checked').length > 0;
-            const btn = document.getElementById('btnDeleteSelected');
-            if (btn) btn.style.display = anyChecked ? 'inline-flex' : 'none';
-        }
-
-        async function deleteSelectedProducts() {
-            const checkedBoxes = Array.from(document.querySelectorAll('.prod-checkbox:checked'));
-            if (checkedBoxes.length === 0) return;
-            if (confirm(`Excluir permanentemente ${checkedBoxes.length} produto(s) selecionado(s)?`)) {
-                showToast(`Excluindo ${checkedBoxes.length} produtos...`, 'info');
-                for (const box of checkedBoxes) {
-                    const dbId = box.value;
-                    if (dbId && dbId !== 'undefined') {
-                        await sbDeleteProduct(dbId);
-                    }
-                }
-                showToast('Produtos excluídos com sucesso!');
-                const selectAll = document.getElementById('selectAllProds');
-                if (selectAll) selectAll.checked = false;
+                });
                 toggleDeleteBtn();
-                await loadAllData();
             }
-        }
 
-        function renderCategories() {
-            const tb = document.getElementById('catsTable');
-            tb.innerHTML = '';
-            categories.forEach((c, i) => {
-                const count = products.filter(p => p.cat === c).length;
-                tb.innerHTML += `<tr>
+            function toggleAllProds(ns) {
+                document.querySelectorAll('.prod-checkbox').forEach(cb => cb.checked = ns.checked);
+                toggleDeleteBtn();
+            }
+
+            function toggleDeleteBtn() {
+                const anyChecked = document.querySelectorAll('.prod-checkbox:checked').length > 0;
+                const btn = document.getElementById('btnDeleteSelected');
+                if (btn) btn.style.display = anyChecked ? 'inline-flex' : 'none';
+            }
+
+            async function deleteSelectedProducts() {
+                const checkedBoxes = Array.from(document.querySelectorAll('.prod-checkbox:checked'));
+                if (checkedBoxes.length === 0) return;
+                if (confirm(`Excluir permanentemente ${checkedBoxes.length} produto(s) selecionado(s)?`)) {
+                    showToast(`Excluindo ${checkedBoxes.length} produtos...`, 'info');
+                    for (const box of checkedBoxes) {
+                        const dbId = box.value;
+                        if (dbId && dbId !== 'undefined') {
+                            await sbDeleteProduct(dbId);
+                        }
+                    }
+                    showToast('Produtos excluídos com sucesso!');
+                    const selectAll = document.getElementById('selectAllProds');
+                    if (selectAll) selectAll.checked = false;
+                    toggleDeleteBtn();
+                    await loadAllData();
+                }
+            }
+
+            function renderCategories() {
+                const tb = document.getElementById('catsTable');
+                tb.innerHTML = '';
+                categories.forEach((c, i) => {
+                    const count = products.filter(p => p.cat === c).length;
+                    tb.innerHTML += `<tr>
           <td><strong>${c}</strong></td><td>${count}</td>
           <td><div class="td-actions">
             <button class="btn btn-sm btn-outline" onclick="editCategory(${i})"><i class="fas fa-edit"></i></button>
             <button class="btn btn-sm btn-danger" onclick="deleteCategory(${i})"><i class="fas fa-trash"></i></button>
           </div></td>
         </tr>`;
-            });
-        }
+                });
+            }
 
-        function renderPages() {
-            const tb = document.getElementById('pagesTable');
-            tb.innerHTML = '';
-            defaultPages.forEach(p => {
-                tb.innerHTML += `<tr><td><strong>${p.name}</strong></td><td>${p.file}</td>
+            function renderPages() {
+                const tb = document.getElementById('pagesTable');
+                tb.innerHTML = '';
+                defaultPages.forEach(p => {
+                    tb.innerHTML += `<tr><td><strong>${p.name}</strong></td><td>${p.file}</td>
           <td><a href="${p.file}" class="btn btn-sm btn-outline" target="_blank"><i class="fas fa-external-link-alt"></i> Abrir</a></td></tr>`;
-            });
-        }
+                });
+            }
 
-        function renderBanners() {
-            const tbWeb = document.getElementById('webBannersTable');
-            const tbMob = document.getElementById('mobileBannersTable');
-            if (tbWeb) tbWeb.innerHTML = '';
-            if (tbMob) tbMob.innerHTML = '';
-            banners.forEach((b, i) => {
-                const isMobOnly = b.img === 'mobile_only';
-                const imgSrc = !isMobOnly && b.img && b.img.startsWith('data:image') ? b.img : (!isMobOnly ? 'assets/images/' + b.img : (b.img_mobile && b.img_mobile.startsWith('data:image') ? b.img_mobile : 'assets/images/' + b.img_mobile));
+            function renderBanners() {
+                const tbWeb = document.getElementById('webBannersTable');
+                const tbMob = document.getElementById('mobileBannersTable');
+                if (tbWeb) tbWeb.innerHTML = '';
+                if (tbMob) tbMob.innerHTML = '';
+                banners.forEach((b, i) => {
+                    const isMobOnly = b.img === 'mobile_only';
+                    const imgSrc = !isMobOnly && b.img && b.img.startsWith('data:image') ? b.img : (!isMobOnly ? 'assets/images/' + b.img : (b.img_mobile && b.img_mobile.startsWith('data:image') ? b.img_mobile : 'assets/images/' + b.img_mobile));
 
-                const html = `<tr>
+                    const html = `<tr>
           <td><img src="${imgSrc}" class="td-img" style="width:80px;height:45px;border-radius:8px;object-fit:cover;"></td>
           <td><strong>${b.title}</strong></td><td>${b.subtitle}</td>
           <td><div class="td-actions">
@@ -1298,16 +1389,16 @@
             <button class="btn btn-sm btn-danger" onclick="deleteBanner(${i})"><i class="fas fa-trash"></i></button>
           </div></td>
         </tr>`;
-                if (isMobOnly && tbMob) tbMob.innerHTML += html;
-                else if (!isMobOnly && tbWeb) tbWeb.innerHTML += html;
-            });
-        }
+                    if (isMobOnly && tbMob) tbMob.innerHTML += html;
+                    else if (!isMobOnly && tbWeb) tbWeb.innerHTML += html;
+                });
+            }
 
-        function renderManuals() {
-            const tb = document.getElementById('manualsTable');
-            tb.innerHTML = '';
-            manuals.forEach((m, i) => {
-                tb.innerHTML += `<tr>
+            function renderManuals() {
+                const tb = document.getElementById('manualsTable');
+                tb.innerHTML = '';
+                manuals.forEach((m, i) => {
+                    tb.innerHTML += `<tr>
           <td><strong>${m.name}</strong></td><td>${m.code}</td>
           <td>${m.hasManual ? '<i class="fas fa-check-circle" style="color:var(--green)"></i>' : '<i class="fas fa-times-circle" style="color:#ccc"></i>'}</td>
           <td>${m.hasVideo ? '<i class="fas fa-check-circle" style="color:var(--green)"></i>' : '<i class="fas fa-times-circle" style="color:#ccc"></i>'}</td>
@@ -1316,98 +1407,98 @@
             <button class="btn btn-sm btn-danger" onclick="deleteManual(${i})"><i class="fas fa-trash"></i></button>
           </div></td>
         </tr>`;
-            });
-        }
-
-        // ===== MODALS =====
-        function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
-        function showToast(msg, type = 'success') {
-            const t = document.getElementById('toast');
-            t.textContent = msg; t.className = 'toast ' + type + ' show';
-            setTimeout(() => t.classList.remove('show'), 3000);
-        }
-
-        const imgOptions = ['dinosaur_toys.png', 'robot_toys.png', 'musical_toys.png', 'family_games.png', 'baby_toys.png', 'building_blocks.png', 'racing_cars.png', 'hero_banner.png'];
-        let tempBase64Image = null;
-        let tempBase64MobileImage = null;
-
-        let cropper = null;
-        let cropType = 'desktop'; // or 'mobile'
-
-        function startCrop(e, type) {
-            const file = e.target.files[0];
-            if (!file) return;
-            cropType = type;
-            const reader = new FileReader();
-            reader.onload = function (evt) {
-                document.getElementById('cropperWrap').style.display = 'block';
-                document.getElementById('cropperActions').style.display = 'flex';
-                const image = document.getElementById('cropperImage');
-                image.src = evt.target.result;
-
-                if (cropper) cropper.destroy();
-                let ratio = 1080 / 1080; // Default 1:1 for products and mobile banner
-                if (type === 'desktop') ratio = 1920 / 520;
-
-                cropper = new Cropper(image, {
-                    aspectRatio: ratio,
-                    viewMode: 2,
-                    dragMode: 'move',
-                    background: false,
-                    modal: true,
                 });
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function handleImageUpload(e) {
-            startCrop(e, 'desktop');
-        }
-
-        function handleMobileImageUpload(e) {
-            startCrop(e, 'mobile');
-        }
-
-        function handleProductImageUpload(e) {
-            startCrop(e, 'product');
-        }
-
-        function applyCrop() {
-            if (!cropper) return;
-            const canvas = cropper.getCroppedCanvas({
-                maxWidth: cropType === 'desktop' ? 1920 : 1080,
-            });
-            const dataUrl = canvas.toDataURL('image/webp', 0.85);
-
-            if (cropType === 'desktop') {
-                tempBase64Image = dataUrl;
-                showToast('Banner Web ajustado e recortado!', 'success');
-                updateBannerPreview();
-            } else if (cropType === 'mobile') {
-                tempBase64MobileImage = dataUrl;
-                showToast('Banner Celular ajustado e recortado!', 'success');
-                updateBannerPreview();
-            } else if (cropType === 'product') {
-                tempBase64Image = dataUrl;
-                const previewImg = document.getElementById('mImgPreview');
-                if (previewImg) { previewImg.src = dataUrl; previewImg.style.display = 'block'; }
-                showToast('Imagem do produto ajustada!', 'success');
             }
 
-            cancelCrop();
-        }
+            // ===== MODALS =====
+            function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
+            function showToast(msg, type = 'success') {
+                const t = document.getElementById('toast');
+                t.textContent = msg; t.className = 'toast ' + type + ' show';
+                setTimeout(() => t.classList.remove('show'), 3000);
+            }
 
-        function cancelCrop() {
-            if (cropper) { cropper.destroy(); cropper = null; }
-            document.getElementById('cropperWrap').style.display = 'none';
-            document.getElementById('cropperActions').style.display = 'none';
-        }
+            const imgOptions = ['dinosaur_toys.png', 'robot_toys.png', 'musical_toys.png', 'family_games.png', 'baby_toys.png', 'building_blocks.png', 'racing_cars.png', 'hero_banner.png'];
+            let tempBase64Image = null;
+            let tempBase64MobileImage = null;
 
-        function openProductModal(idx = -1) {
-            tempBase64Image = null; // reset upload
-            const p = idx >= 0 ? products[idx] : { id: 'TK0' + (products.length + 1).toString().padStart(4, '0'), name: '', cat: categories[0], age: '+3 anos', img: imgOptions[0], badge: '', status: 'active', desc: '' };
-            document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Produto' : 'Novo Produto';
-            document.getElementById('modalBody').innerHTML = `
+            let cropper = null;
+            let cropType = 'desktop'; // or 'mobile'
+
+            function startCrop(e, type) {
+                const file = e.target.files[0];
+                if (!file) return;
+                cropType = type;
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    document.getElementById('cropperWrap').style.display = 'block';
+                    document.getElementById('cropperActions').style.display = 'flex';
+                    const image = document.getElementById('cropperImage');
+                    image.src = evt.target.result;
+
+                    if (cropper) cropper.destroy();
+                    let ratio = 1080 / 1080; // Default 1:1 for products and mobile banner
+                    if (type === 'desktop') ratio = 1920 / 520;
+
+                    cropper = new Cropper(image, {
+                        aspectRatio: ratio,
+                        viewMode: 2,
+                        dragMode: 'move',
+                        background: false,
+                        modal: true,
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+
+            function handleImageUpload(e) {
+                startCrop(e, 'desktop');
+            }
+
+            function handleMobileImageUpload(e) {
+                startCrop(e, 'mobile');
+            }
+
+            function handleProductImageUpload(e) {
+                startCrop(e, 'product');
+            }
+
+            function applyCrop() {
+                if (!cropper) return;
+                const canvas = cropper.getCroppedCanvas({
+                    maxWidth: cropType === 'desktop' ? 1920 : 1080,
+                });
+                const dataUrl = canvas.toDataURL('image/webp', 0.85);
+
+                if (cropType === 'desktop') {
+                    tempBase64Image = dataUrl;
+                    showToast('Banner Web ajustado e recortado!', 'success');
+                    updateBannerPreview();
+                } else if (cropType === 'mobile') {
+                    tempBase64MobileImage = dataUrl;
+                    showToast('Banner Celular ajustado e recortado!', 'success');
+                    updateBannerPreview();
+                } else if (cropType === 'product') {
+                    tempBase64Image = dataUrl;
+                    const previewImg = document.getElementById('mImgPreview');
+                    if (previewImg) { previewImg.src = dataUrl; previewImg.style.display = 'block'; }
+                    showToast('Imagem do produto ajustada!', 'success');
+                }
+
+                cancelCrop();
+            }
+
+            function cancelCrop() {
+                if (cropper) { cropper.destroy(); cropper = null; }
+                document.getElementById('cropperWrap').style.display = 'none';
+                document.getElementById('cropperActions').style.display = 'none';
+            }
+
+            function openProductModal(idx = -1) {
+                tempBase64Image = null; // reset upload
+                const p = idx >= 0 ? products[idx] : { id: 'TK0' + (products.length + 1).toString().padStart(4, '0'), name: '', cat: categories[0], age: '+3 anos', img: imgOptions[0], badge: '', status: 'active', desc: '' };
+                document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Produto' : 'Novo Produto';
+                document.getElementById('modalBody').innerHTML = `
         <div class="form-row"><div class="form-group"><label>Nome</label><input class="form-control" id="mName" value="${p.name}"></div>
         <div class="form-group"><label>Código</label><input class="form-control" id="mCode" value="${p.id}"></div></div>
         <div class="form-row"><div class="form-group"><label>Categoria</label><select class="form-control" id="mCat">${categories.map(c => `<option ${c === p.cat ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
@@ -1428,310 +1519,310 @@
             </label>
             <textarea class="form-control" id="mDesc" rows="4">${p.desc || ''}</textarea>
         </div>`;
-            document.getElementById('modalFooter').innerHTML = `<button class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="saveProduct(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
-            document.getElementById('modalOverlay').classList.add('show');
-        }
-
-        async function autoFixDescription() {
-            const tempBtn = event.target;
-            const originalText = tempBtn.innerHTML;
-            const descEl = document.getElementById('mDesc');
-            let content = descEl.value;
-
-            if (!content.trim()) return showToast('A descrição está vazia', 'error');
-
-            tempBtn.innerHTML = '✨ Processando...';
-            tempBtn.disabled = true;
-
-            try {
-                // A logic heuristic to clean and prettify extracted texts quickly without requiring a paid API 
-
-                // 1. Clean duplicated pipes
-                content = content.replace(/\|\s*\|/g, '|').trim();
-
-                // 2. Add line breaks based on pipes separator
-                content = content.split('|').map(item => item.trim()).filter(item => item.length > 0).join('\n• ');
-                if (content.length > 0) content = '• ' + content;
-
-                // 3. Fix casings (Capitalize first letters of bullet points)
-                content = content.replace(/•\s([a-z])/g, (match, p1) => `• ${p1.toUpperCase()}`);
-
-                // 4. Ensure acronyms stay upper case
-                content = content.replace(/dim:/i, 'DIM:');
-
-                descEl.value = content;
-                showToast('Descrição formatada com sucesso!');
-
-            } catch (err) {
-                showToast('Erro ao formatar', 'error');
-            } finally {
-                tempBtn.innerHTML = originalText;
-                tempBtn.disabled = false;
+                document.getElementById('modalFooter').innerHTML = `<button class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="saveProduct(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
+                document.getElementById('modalOverlay').classList.add('show');
             }
-        }
 
-        async function saveProduct(idx) {
-            let finalImgUrl = document.getElementById('mImgUrl').value || 'assets/images/hero_banner.png';
+            async function autoFixDescription() {
+                const tempBtn = event.target;
+                const originalText = tempBtn.innerHTML;
+                const descEl = document.getElementById('mDesc');
+                let content = descEl.value;
 
-            // Upload product image to Supabase if newly cropped
-            if (tempBase64Image && tempBase64Image.startsWith('data:image')) {
-                showToast('Fazendo upload da imagem do produto...', 'info');
+                if (!content.trim()) return showToast('A descrição está vazia', 'error');
+
+                tempBtn.innerHTML = '✨ Processando...';
+                tempBtn.disabled = true;
+
                 try {
-                    const res = await fetch(tempBase64Image);
-                    const blob = await res.blob();
-                    const fileName = 'prod_' + Date.now() + '.webp';
-                    const uploadedUrl = await sbUploadImage('products', fileName, blob);
-                    if (uploadedUrl) {
-                        finalImgUrl = uploadedUrl;
-                    } else {
-                        return showToast('Falha no upload! Tente de novo. Verifique o banco', 'error');
-                    }
+                    // A logic heuristic to clean and prettify extracted texts quickly without requiring a paid API 
+
+                    // 1. Clean duplicated pipes
+                    content = content.replace(/\|\s*\|/g, '|').trim();
+
+                    // 2. Add line breaks based on pipes separator
+                    content = content.split('|').map(item => item.trim()).filter(item => item.length > 0).join('\n• ');
+                    if (content.length > 0) content = '• ' + content;
+
+                    // 3. Fix casings (Capitalize first letters of bullet points)
+                    content = content.replace(/•\s([a-z])/g, (match, p1) => `• ${p1.toUpperCase()}`);
+
+                    // 4. Ensure acronyms stay upper case
+                    content = content.replace(/dim:/i, 'DIM:');
+
+                    descEl.value = content;
+                    showToast('Descrição formatada com sucesso!');
+
                 } catch (err) {
-                    return showToast('Erro no armazenamento.', 'error');
+                    showToast('Erro ao formatar', 'error');
+                } finally {
+                    tempBtn.innerHTML = originalText;
+                    tempBtn.disabled = false;
                 }
             }
 
-            const p = { id: document.getElementById('mCode').value, name: document.getElementById('mName').value, cat: document.getElementById('mCat').value, age: document.getElementById('mAge').value, img: finalImgUrl, badge: document.getElementById('mBadge').value, status: document.getElementById('mStatus').value, desc: document.getElementById('mDesc').value };
-            if (!p.name || !p.id) return showToast('Preencha nome e código!', 'error');
-            if (idx >= 0) { p._dbId = products[idx]._dbId; products[idx] = p; } else products.push(p);
-            await saveProductToDB(p);
-            closeModal(); await loadAllData(); showToast(idx >= 0 ? 'Produto atualizado!' : 'Produto criado!');
-        }
-        function editProduct(i) { openProductModal(i); }
-        async function deleteProduct(i) { if (confirm('Excluir produto ' + products[i].name + '?')) { if (products[i]._dbId) await sbDeleteProduct(products[i]._dbId); await loadAllData(); showToast('Produto excluído!'); } }
+            async function saveProduct(idx) {
+                let finalImgUrl = document.getElementById('mImgUrl').value || 'assets/images/hero_banner.png';
 
-        async function handleExcelUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            showToast('Lendo arquivo Excel...', 'info');
-            const reader = new FileReader();
-
-            reader.onload = async function (e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-
-                    if (json.length === 0) {
-                        showToast('Planilha vazia!', 'error');
-                        return;
+                // Upload product image to Supabase if newly cropped
+                if (tempBase64Image && tempBase64Image.startsWith('data:image')) {
+                    showToast('Fazendo upload da imagem do produto...', 'info');
+                    try {
+                        const res = await fetch(tempBase64Image);
+                        const blob = await res.blob();
+                        const fileName = 'prod_' + Date.now() + '.webp';
+                        const uploadedUrl = await sbUploadImage('products', fileName, blob);
+                        if (uploadedUrl) {
+                            finalImgUrl = uploadedUrl;
+                        } else {
+                            return showToast('Falha no upload! Tente de novo. Verifique o banco', 'error');
+                        }
+                    } catch (err) {
+                        return showToast('Erro no armazenamento.', 'error');
                     }
-
-                    showToast(`Importando ${json.length} produtos... Aguarde.`);
-
-                    let successCount = 0;
-                    for (const row of json) {
-                        const product_code = row['Código'] || row['codigo'] || row['Codigo'] || row['CÓDIGO'] || row['id'];
-                        const name = row['Nome'] || row['nome'] || row['NOME'];
-
-                        if (!product_code || !name) continue; // Skip corrupted rows without essential IDs
-
-                        const category = row['Categoria'] || row['categoria'] || row['CATEGORIA'] || categories[0];
-                        const age = row['Idade'] || row['idade'] || row['IDADE'] || '+3 anos';
-                        const badge = row['Badge'] || row['badge'] || row['BADGE'] || '';
-                        const status = row['Status'] || row['status'] || row['STATUS'] || 'active';
-                        const desc = row['Descrição'] || row['descricao'] || row['Descricao'] || row['DESCRIÇÃO'] || '';
-                        const image_url = row['Imagem'] || row['imagem'] || row['IMAGEM'] || '';
-
-                        await sbUpsertProduct({
-                            product_code: String(product_code).trim(),
-                            name: String(name).trim(),
-                            category: String(category).trim(),
-                            age: String(age).trim(),
-                            image_url: String(image_url).trim() || 'mobile_only',
-                            badge: String(badge).trim(),
-                            status: String(status).trim() || 'active',
-                            description: String(desc).trim()
-                        });
-                        successCount++;
-                    }
-
-                    showToast(`Concluído! ${successCount} produtos importados.`);
-                    await loadAllData();
-                    document.getElementById('mExcelUpload').value = ''; // clear input
-
-                } catch (err) {
-                    console.error('Erro ao ler Excel', err);
-                    showToast('Erro ao ler a planilha. Verifique o formato.', 'error');
                 }
-            };
 
-            reader.readAsArrayBuffer(file);
-        }
-
-        async function handlePdfUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            let apiKey = localStorage.getItem('openAIKey');
-            if (!apiKey || apiKey.trim() === '') {
-                apiKey = prompt('Para usar OCR Avançado com IA, insira sua Chave de API da OpenAI (sk-...):');
-                if (!apiKey) return showToast('Chave de API requerida!', 'error');
-                localStorage.setItem('openAIKey', apiKey);
+                const p = { id: document.getElementById('mCode').value, name: document.getElementById('mName').value, cat: document.getElementById('mCat').value, age: document.getElementById('mAge').value, img: finalImgUrl, badge: document.getElementById('mBadge').value, status: document.getElementById('mStatus').value, desc: document.getElementById('mDesc').value };
+                if (!p.name || !p.id) return showToast('Preencha nome e código!', 'error');
+                if (idx >= 0) { p._dbId = products[idx]._dbId; products[idx] = p; } else products.push(p);
+                await saveProductToDB(p);
+                closeModal(); await loadAllData(); showToast(idx >= 0 ? 'Produto atualizado!' : 'Produto criado!');
             }
+            function editProduct(i) { openProductModal(i); }
+            async function deleteProduct(i) { if (confirm('Excluir produto ' + products[i].name + '?')) { if (products[i]._dbId) await sbDeleteProduct(products[i]._dbId); await loadAllData(); showToast('Produto excluído!'); } }
 
-            showToast('Lendo arquivo PDF para IA...', 'info');
+            async function handleExcelUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
 
-            if (typeof pdfjsLib === 'undefined') {
-                showToast('Carregando biblioteca PDF...', 'info');
-                await new Promise((res, rej) => {
-                    const script = document.createElement('script');
-                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js';
-                    script.onload = res;
-                    script.onerror = rej;
-                    document.head.appendChild(script);
-                });
-                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-            }
+                showToast('Lendo arquivo Excel...', 'info');
+                const reader = new FileReader();
 
-            const scale = 1.5;
+                reader.onload = async function (e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
-            const reader = new FileReader();
-            reader.onload = async function (e) {
-                try {
-                    const typedarray = new Uint8Array(e.target.result);
-                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
-                    let numPages = pdf.numPages;
-
-                    let allProducts = [];
-
-                    for (let i = 1; i <= numPages; i++) {
-                        showToast(`Analisando layout (Pág ${i}/${numPages})...`, 'info');
-                        const page = await pdf.getPage(i);
-                        const viewport = page.getViewport({ scale: scale });
-
-                        const canvas = document.createElement('canvas');
-                        const context = canvas.getContext('2d');
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-
-                        await page.render({
-                            canvasContext: context,
-                            viewport: viewport
-                        }).promise;
-
-                        const base64Image = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
-
-                        showToast(`IA lendo Pág ${i}...`, 'info');
-
-                        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${apiKey}`
-                            },
-                            body: JSON.stringify({
-                                model: 'gpt-4o',
-                                messages: [
-                                    {
-                                        role: 'system',
-                                        content: "Você é um extrator de dados de catálogos OCR. Analise o layout (entenda colunas, blocos, títulos azuis, códigos em vermelho). Extraia todos os produtos visíveis. Retorne APENAS um array JSON puro, sem markdown, contendo esta exata estrutura para cada produto: [{\"code\": \"TK-123...\", \"name\": \"Nome do produto\", \"desc\": \"Descrição completa. Ignore preços visíveis.\"}]"
-                                    },
-                                    {
-                                        role: 'user',
-                                        content: [
-                                            { type: "text", text: "Extraia os produtos desta página." },
-                                            { type: "image_url", image_url: { url: `data:image/jpeg;base64,${base64Image}` } }
-                                        ]
-                                    }
-                                ],
-                                max_tokens: 3000,
-                                temperature: 0.1
-                            })
-                        });
-
-                        if (!response.ok) {
-                            if (response.status === 401) {
-                                localStorage.removeItem('openAIKey');
-                                throw new Error('Sua Chave OpenAI é inválida.');
-                            }
-                            throw new Error('Falha de Comunicação com OpenAI');
+                        if (json.length === 0) {
+                            showToast('Planilha vazia!', 'error');
+                            return;
                         }
 
-                        const data = await response.json();
-                        let rawJson = data.choices[0].message.content.trim();
-                        if (rawJson.startsWith('```')) {
-                            rawJson = rawJson.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+                        showToast(`Importando ${json.length} produtos... Aguarde.`);
+
+                        let successCount = 0;
+                        for (const row of json) {
+                            const product_code = row['Código'] || row['codigo'] || row['Codigo'] || row['CÓDIGO'] || row['id'];
+                            const name = row['Nome'] || row['nome'] || row['NOME'];
+
+                            if (!product_code || !name) continue; // Skip corrupted rows without essential IDs
+
+                            const category = row['Categoria'] || row['categoria'] || row['CATEGORIA'] || categories[0];
+                            const age = row['Idade'] || row['idade'] || row['IDADE'] || '+3 anos';
+                            const badge = row['Badge'] || row['badge'] || row['BADGE'] || '';
+                            const status = row['Status'] || row['status'] || row['STATUS'] || 'active';
+                            const desc = row['Descrição'] || row['descricao'] || row['Descricao'] || row['DESCRIÇÃO'] || '';
+                            const image_url = row['Imagem'] || row['imagem'] || row['IMAGEM'] || '';
+
+                            await sbUpsertProduct({
+                                product_code: String(product_code).trim(),
+                                name: String(name).trim(),
+                                category: String(category).trim(),
+                                age: String(age).trim(),
+                                image_url: String(image_url).trim() || 'mobile_only',
+                                badge: String(badge).trim(),
+                                status: String(status).trim() || 'active',
+                                description: String(desc).trim()
+                            });
+                            successCount++;
                         }
 
-                        try {
-                            const productsOnPage = JSON.parse(rawJson);
-                            if (Array.isArray(productsOnPage)) {
-                                allProducts = allProducts.concat(productsOnPage);
-                            }
-                        } catch (e) { console.error('Erro no Parse JSON da IA', rawJson) }
+                        showToast(`Concluído! ${successCount} produtos importados.`);
+                        await loadAllData();
+                        document.getElementById('mExcelUpload').value = ''; // clear input
+
+                    } catch (err) {
+                        console.error('Erro ao ler Excel', err);
+                        showToast('Erro ao ler a planilha. Verifique o formato.', 'error');
                     }
+                };
 
-                    if (allProducts.length === 0) {
-                        showToast('Nenhum produto reconhecido pela IA!', 'error');
-                        return;
-                    }
+                reader.readAsArrayBuffer(file);
+            }
 
-                    showToast(`Salvando ${allProducts.length} produtos estruturados...`);
+            async function handlePdfUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
 
-                    let successCount = 0;
-                    for (const p of allProducts) {
-                        if (!p.code || !p.code.match(/tk/i)) continue;
-
-                        await sbUpsertProduct({
-                            product_code: p.code.trim(),
-                            name: (p.name && p.name.length > 2) ? p.name : "Produto " + p.code,
-                            category: categories[0] || 'Geral',
-                            age: '+3 anos',
-                            image_url: 'mobile_only',
-                            badge: '',
-                            status: 'active',
-                            description: p.desc ? p.desc.trim() : ''
-                        });
-                        successCount++;
-                    }
-
-                    showToast(`Concluído! ${successCount} produtos importados via IA OCR.`);
-                    await loadAllData();
-                    document.getElementById('mPdfUpload').value = '';
-
-                } catch (err) {
-                    console.error('Erro na extração IA:', err);
-                    showToast('Erro: ' + err.message, 'error');
+                let apiKey = localStorage.getItem('openAIKey');
+                if (!apiKey || apiKey.trim() === '') {
+                    apiKey = prompt('Para usar OCR Avançado com IA, insira sua Chave de API da OpenAI (sk-...):');
+                    if (!apiKey) return showToast('Chave de API requerida!', 'error');
+                    localStorage.setItem('openAIKey', apiKey);
                 }
-            };
-            reader.readAsArrayBuffer(file);
-        }
 
-        function openCatModal(idx = -1) {
-            const c = idx >= 0 ? categories[idx] : '';
-            document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Categoria' : 'Nova Categoria';
-            document.getElementById('modalBody').innerHTML = `<div class="form-group"><label>Nome da Categoria</label><input class="form-control" id="mCatName" value="${c}"></div>`;
-            document.getElementById('modalFooter').innerHTML = `<button class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="saveCat(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
-            document.getElementById('modalOverlay').classList.add('show');
-        }
-        async function saveCat(idx) {
-            const name = document.getElementById('mCatName').value;
-            if (!name) return showToast('Preencha o nome!', 'error');
-            if (idx >= 0) categories[idx] = name; else categories.push(name);
-            await sbUpsertCategory({ name, sort_order: idx >= 0 ? idx : categories.length - 1 });
-            closeModal(); await loadAllData(); showToast('Categoria salva!');
-        }
-        function editCategory(i) { openCatModal(i); }
-        async function deleteCategory(i) { if (confirm('Excluir categoria?')) { const catName = categories[i]; const { data } = await supabaseClient.from('categories').select('id').eq('name', catName).single(); if (data) await sbDeleteCategory(data.id); await loadAllData(); showToast('Categoria excluída!'); } }
+                showToast('Lendo arquivo PDF para IA...', 'info');
 
-        let currentEditingBannerType = 'desktop';
+                if (typeof pdfjsLib === 'undefined') {
+                    showToast('Carregando biblioteca PDF...', 'info');
+                    await new Promise((res, rej) => {
+                        const script = document.createElement('script');
+                        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js';
+                        script.onload = res;
+                        script.onerror = rej;
+                        document.head.appendChild(script);
+                    });
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+                }
 
-        function openBannerModal(idx = -1, type = 'desktop') {
-            tempBase64Image = null; // reset upload
-            tempBase64MobileImage = null;
-            currentEditingBannerType = type;
-            const b = idx >= 0 ? banners[idx] : { img: type === 'desktop' ? imgOptions[0] : 'mobile_only', img_mobile: type === 'mobile' ? imgOptions[0] : '', title: '', subtitle: '', link: 'produtos.html' };
-            window.currentEditingBannerDbId = b._dbId;
-            document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Banner ' + (type === 'desktop' ? 'Web' : 'Celular') : 'Novo Banner ' + (type === 'desktop' ? 'Web' : 'Celular');
+                const scale = 1.5;
 
-            let displayDesktop = type === 'desktop' ? '' : 'display:none;';
-            let displayMobile = type === 'mobile' ? '' : 'display:none;';
+                const reader = new FileReader();
+                reader.onload = async function (e) {
+                    try {
+                        const typedarray = new Uint8Array(e.target.result);
+                        const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                        let numPages = pdf.numPages;
 
-            document.getElementById('modalBody').innerHTML = `
+                        let allProducts = [];
+
+                        for (let i = 1; i <= numPages; i++) {
+                            showToast(`Analisando layout (Pág ${i}/${numPages})...`, 'info');
+                            const page = await pdf.getPage(i);
+                            const viewport = page.getViewport({ scale: scale });
+
+                            const canvas = document.createElement('canvas');
+                            const context = canvas.getContext('2d');
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+
+                            await page.render({
+                                canvasContext: context,
+                                viewport: viewport
+                            }).promise;
+
+                            const base64Image = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+
+                            showToast(`IA lendo Pág ${i}...`, 'info');
+
+                            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${apiKey}`
+                                },
+                                body: JSON.stringify({
+                                    model: 'gpt-4o',
+                                    messages: [
+                                        {
+                                            role: 'system',
+                                            content: "Você é um extrator de dados de catálogos OCR. Analise o layout (entenda colunas, blocos, títulos azuis, códigos em vermelho). Extraia todos os produtos visíveis. Retorne APENAS um array JSON puro, sem markdown, contendo esta exata estrutura para cada produto: [{\"code\": \"TK-123...\", \"name\": \"Nome do produto\", \"desc\": \"Descrição completa. Ignore preços visíveis.\"}]"
+                                        },
+                                        {
+                                            role: 'user',
+                                            content: [
+                                                { type: "text", text: "Extraia os produtos desta página." },
+                                                { type: "image_url", image_url: { url: `data:image/jpeg;base64,${base64Image}` } }
+                                            ]
+                                        }
+                                    ],
+                                    max_tokens: 3000,
+                                    temperature: 0.1
+                                })
+                            });
+
+                            if (!response.ok) {
+                                if (response.status === 401) {
+                                    localStorage.removeItem('openAIKey');
+                                    throw new Error('Sua Chave OpenAI é inválida.');
+                                }
+                                throw new Error('Falha de Comunicação com OpenAI');
+                            }
+
+                            const data = await response.json();
+                            let rawJson = data.choices[0].message.content.trim();
+                            if (rawJson.startsWith('```')) {
+                                rawJson = rawJson.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
+                            }
+
+                            try {
+                                const productsOnPage = JSON.parse(rawJson);
+                                if (Array.isArray(productsOnPage)) {
+                                    allProducts = allProducts.concat(productsOnPage);
+                                }
+                            } catch (e) { console.error('Erro no Parse JSON da IA', rawJson) }
+                        }
+
+                        if (allProducts.length === 0) {
+                            showToast('Nenhum produto reconhecido pela IA!', 'error');
+                            return;
+                        }
+
+                        showToast(`Salvando ${allProducts.length} produtos estruturados...`);
+
+                        let successCount = 0;
+                        for (const p of allProducts) {
+                            if (!p.code || !p.code.match(/tk/i)) continue;
+
+                            await sbUpsertProduct({
+                                product_code: p.code.trim(),
+                                name: (p.name && p.name.length > 2) ? p.name : "Produto " + p.code,
+                                category: categories[0] || 'Geral',
+                                age: '+3 anos',
+                                image_url: 'mobile_only',
+                                badge: '',
+                                status: 'active',
+                                description: p.desc ? p.desc.trim() : ''
+                            });
+                            successCount++;
+                        }
+
+                        showToast(`Concluído! ${successCount} produtos importados via IA OCR.`);
+                        await loadAllData();
+                        document.getElementById('mPdfUpload').value = '';
+
+                    } catch (err) {
+                        console.error('Erro na extração IA:', err);
+                        showToast('Erro: ' + err.message, 'error');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            }
+
+            function openCatModal(idx = -1) {
+                const c = idx >= 0 ? categories[idx] : '';
+                document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Categoria' : 'Nova Categoria';
+                document.getElementById('modalBody').innerHTML = `<div class="form-group"><label>Nome da Categoria</label><input class="form-control" id="mCatName" value="${c}"></div>`;
+                document.getElementById('modalFooter').innerHTML = `<button class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="saveCat(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
+                document.getElementById('modalOverlay').classList.add('show');
+            }
+            async function saveCat(idx) {
+                const name = document.getElementById('mCatName').value;
+                if (!name) return showToast('Preencha o nome!', 'error');
+                if (idx >= 0) categories[idx] = name; else categories.push(name);
+                await sbUpsertCategory({ name, sort_order: idx >= 0 ? idx : categories.length - 1 });
+                closeModal(); await loadAllData(); showToast('Categoria salva!');
+            }
+            function editCategory(i) { openCatModal(i); }
+            async function deleteCategory(i) { if (confirm('Excluir categoria?')) { const catName = categories[i]; const { data } = await supabaseClient.from('categories').select('id').eq('name', catName).single(); if (data) await sbDeleteCategory(data.id); await loadAllData(); showToast('Categoria excluída!'); } }
+
+            let currentEditingBannerType = 'desktop';
+
+            function openBannerModal(idx = -1, type = 'desktop') {
+                tempBase64Image = null; // reset upload
+                tempBase64MobileImage = null;
+                currentEditingBannerType = type;
+                const b = idx >= 0 ? banners[idx] : { img: type === 'desktop' ? imgOptions[0] : 'mobile_only', img_mobile: type === 'mobile' ? imgOptions[0] : '', title: '', subtitle: '', link: 'produtos.html' };
+                window.currentEditingBannerDbId = b._dbId;
+                document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Banner ' + (type === 'desktop' ? 'Web' : 'Celular') : 'Novo Banner ' + (type === 'desktop' ? 'Web' : 'Celular');
+
+                let displayDesktop = type === 'desktop' ? '' : 'display:none;';
+                let displayMobile = type === 'mobile' ? '' : 'display:none;';
+
+                document.getElementById('modalBody').innerHTML = `
         <div class="cropper-wrap" id="cropperWrap"><img id="cropperImage" src="" style="max-width: 100%;"></div>
         <div class="cropper-actions" id="cropperActions">
             <button type="button" class="btn btn-outline" onclick="cancelCrop()"><i class="fas fa-times"></i> Cancelar Ajuste</button>
@@ -1765,117 +1856,151 @@
             <input type="checkbox" id="mBHideBtn" style="width:16px; height:16px; cursor:pointer;" onchange="updateBannerPreview()" ${b.link === 'none' ? 'checked' : ''}>
             <label for="mBHideBtn" style="margin:0; cursor:pointer;">Ocultar botão "Ver Produtos"?</label>
         </div>`;
-            document.getElementById('modalFooter').innerHTML = `<button class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="saveBanner(${idx}, '${type}')"><i class="fas fa-save"></i> Salvar</button>`;
-            document.getElementById('modalOverlay').classList.add('show');
-            setTimeout(updateBannerPreview, 50);
-        }
-
-        window.updateBannerPreview = function () {
-            const titleInput = document.getElementById('mBTitle');
-            if (!titleInput) return;
-            document.getElementById('bpH1').textContent = titleInput.value || 'Título de Exemplo';
-            document.getElementById('bpP').textContent = document.getElementById('mBSub').value || '';
-
-            let deskImg = tempBase64Image || (document.getElementById('mBImg') ? document.getElementById('mBImg').value : 'mobile_only');
-            let mobImgInput = document.getElementById('mBMobileImg') ? document.getElementById('mBMobileImg').value : '';
-            let mobImg = tempBase64MobileImage || mobImgInput;
-
-            let finalImg = currentEditingBannerType === 'desktop' ? deskImg : mobImg;
-            let finalSrc = finalImg && (finalImg.startsWith('data:image') || finalImg.startsWith('http')) ? finalImg : 'assets/images/' + finalImg;
-            document.getElementById('bpBg').style.backgroundImage = `url('${finalSrc}')`;
-
-            const hideBtn = document.getElementById('mBHideBtn');
-            if (hideBtn) document.querySelector('.bp-btn').style.display = hideBtn.checked ? 'none' : 'block';
-        };
-
-        async function saveBanner(idx, type) {
-            if (cropper) applyCrop();
-            let finalImg = tempBase64Image ? tempBase64Image : (document.getElementById('mBImg') ? document.getElementById('mBImg').value : 'mobile_only');
-            if (type === 'mobile') finalImg = 'mobile_only'; // force it for mobile type
-
-            let finalMobileImg = tempBase64MobileImage ? tempBase64MobileImage : (document.getElementById('mBMobileImg') ? document.getElementById('mBMobileImg').value : '');
-
-            if (tempBase64Image && tempBase64Image.startsWith('data:image')) {
-                showToast('Enviando banner para nuvem...', 'info');
-                try {
-                    const b = await (await fetch(tempBase64Image)).blob();
-                    const res = await sbUploadImage('banners', 'desktop_' + Date.now() + '.webp', b);
-                    if (res) finalImg = res;
-                } catch (e) { console.error(e) }
-            }
-            if (tempBase64MobileImage && tempBase64MobileImage.startsWith('data:image')) {
-                showToast('Enviando banner celular para nuvem...', 'info');
-                try {
-                    const b = await (await fetch(tempBase64MobileImage)).blob();
-                    const res = await sbUploadImage('banners', 'mobile_' + Date.now() + '.webp', b);
-                    if (res) finalMobileImg = res;
-                } catch (e) { console.error(e) }
+                document.getElementById('modalFooter').innerHTML = `<button class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="saveBanner(${idx}, '${type}')"><i class="fas fa-save"></i> Salvar</button>`;
+                document.getElementById('modalOverlay').classList.add('show');
+                setTimeout(updateBannerPreview, 50);
             }
 
-            const b = { img: finalImg, img_mobile: finalMobileImg, title: document.getElementById('mBTitle').value, subtitle: document.getElementById('mBSub').value, link: document.getElementById('mBHideBtn').checked ? 'none' : 'produtos.html' };
-            if (window.currentEditingBannerDbId) {
-                b._dbId = window.currentEditingBannerDbId;
+            window.updateBannerPreview = function () {
+                const titleInput = document.getElementById('mBTitle');
+                if (!titleInput) return;
+                document.getElementById('bpH1').textContent = titleInput.value || 'Título de Exemplo';
+                document.getElementById('bpP').textContent = document.getElementById('mBSub').value || '';
+
+                let deskImg = tempBase64Image || (document.getElementById('mBImg') ? document.getElementById('mBImg').value : 'mobile_only');
+                let mobImgInput = document.getElementById('mBMobileImg') ? document.getElementById('mBMobileImg').value : '';
+                let mobImg = tempBase64MobileImage || mobImgInput;
+
+                let finalImg = currentEditingBannerType === 'desktop' ? deskImg : mobImg;
+                let finalSrc = finalImg && (finalImg.startsWith('data:image') || finalImg.startsWith('http')) ? finalImg : 'assets/images/' + finalImg;
+                document.getElementById('bpBg').style.backgroundImage = `url('${finalSrc}')`;
+
+                const hideBtn = document.getElementById('mBHideBtn');
+                if (hideBtn) document.querySelector('.bp-btn').style.display = hideBtn.checked ? 'none' : 'block';
+            };
+
+            async function saveBanner(idx, type) {
+                if (cropper) applyCrop();
+                let finalImg = tempBase64Image ? tempBase64Image : (document.getElementById('mBImg') ? document.getElementById('mBImg').value : 'mobile_only');
+                if (type === 'mobile') finalImg = 'mobile_only'; // force it for mobile type
+
+                let finalMobileImg = tempBase64MobileImage ? tempBase64MobileImage : (document.getElementById('mBMobileImg') ? document.getElementById('mBMobileImg').value : '');
+
+                if (tempBase64Image && tempBase64Image.startsWith('data:image')) {
+                    showToast('Enviando banner para nuvem...', 'info');
+                    try {
+                        const b = await (await fetch(tempBase64Image)).blob();
+                        const res = await sbUploadImage('banners', 'desktop_' + Date.now() + '.webp', b);
+                        if (res) finalImg = res;
+                    } catch (e) { console.error(e) }
+                }
+                if (tempBase64MobileImage && tempBase64MobileImage.startsWith('data:image')) {
+                    showToast('Enviando banner celular para nuvem...', 'info');
+                    try {
+                        const b = await (await fetch(tempBase64MobileImage)).blob();
+                        const res = await sbUploadImage('banners', 'mobile_' + Date.now() + '.webp', b);
+                        if (res) finalMobileImg = res;
+                    } catch (e) { console.error(e) }
+                }
+
+                const b = { img: finalImg, img_mobile: finalMobileImg, title: document.getElementById('mBTitle').value, subtitle: document.getElementById('mBSub').value, link: document.getElementById('mBHideBtn').checked ? 'none' : 'produtos.html' };
+                if (window.currentEditingBannerDbId) {
+                    b._dbId = window.currentEditingBannerDbId;
+                }
+                await saveBannerToDB(b);
+                closeModal(); await loadAllData(); showToast('Banner salvo com sucesso!');
             }
-            await saveBannerToDB(b);
-            closeModal(); await loadAllData(); showToast('Banner salvo com sucesso!');
-        }
 
-        async function deleteBanner(i) { if (confirm('Excluir banner?')) { if (banners[i]._dbId) await sbDeleteBanner(banners[i]._dbId); await loadAllData(); showToast('Banner excluído!'); } }
+            async function deleteBanner(i) { if (confirm('Excluir banner?')) { if (banners[i]._dbId) await sbDeleteBanner(banners[i]._dbId); await loadAllData(); showToast('Banner excluído!'); } }
 
-        function openManualModal(idx = -1) {
-            const m = idx >= 0 ? manuals[idx] : { name: '', code: '', hasManual: false, hasVideo: false };
-            document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Manual' : 'Novo Manual';
-            document.getElementById('modalBody').innerHTML = `
+            function openManualModal(idx = -1) {
+                const m = idx >= 0 ? manuals[idx] : { name: '', code: '', hasManual: false, hasVideo: false };
+                document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Manual' : 'Novo Manual';
+                document.getElementById('modalBody').innerHTML = `
                 < div class="form-row" ><div class="form-group"><label>Produto</label><input class="form-control" id="mMName" value="${m.name}"></div>
         <div class="form-group"><label>Código</label><input class="form-control" id="mMCode" value="${m.code}"></div></div >
                 <div class="form-row"><div class="form-group"><label>Tem Manual?</label><select class="form-control" id="mMManual"><option value="true" ${m.hasManual ? 'selected' : ''}>Sim</option><option value="false" ${!m.hasManual ? 'selected' : ''}>Não</option></select></div>
                     <div class="form-group"><label>Tem Vídeo?</label><select class="form-control" id="mMVideo"><option value="true" ${m.hasVideo ? 'selected' : ''}>Sim</option><option value="false" ${!m.hasVideo ? 'selected' : ''}>Não</option></select></div></div>`;
-            document.getElementById('modalFooter').innerHTML = `< button class="btn btn-outline" onclick = "closeModal()" > Cancelar</button > <button class="btn btn-success" onclick="saveManual(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
-            document.getElementById('modalOverlay').classList.add('show');
-        }
-        async function saveManual(idx) {
-            const m = { name: document.getElementById('mMName').value, code: document.getElementById('mMCode').value, hasManual: document.getElementById('mMManual').value === 'true', hasVideo: document.getElementById('mMVideo').value === 'true' };
-            if (idx >= 0) { m._dbId = manuals[idx]._dbId; manuals[idx] = m; } else manuals.push(m);
-            await saveManualToDB(m);
-            closeModal(); await loadAllData(); showToast('Manual salvo!');
-        }
-        function editManual(i) { openManualModal(i); }
-        async function deleteManual(i) { if (confirm('Excluir manual?')) { if (manuals[i]._dbId) await sbDeleteManual(manuals[i]._dbId); await loadAllData(); showToast('Manual excluído!'); } }
-
-        async function saveSettings() {
-            const pairs = {
-                site_name: document.getElementById('cfgSiteName').value,
-                slogan: document.getElementById('cfgSlogan').value,
-                phone: document.getElementById('cfgPhone').value,
-                email: document.getElementById('cfgEmail').value,
-                whatsapp: document.getElementById('cfgWhatsapp').value,
-                address: document.getElementById('cfgAddress').value,
-                instagram: document.getElementById('cfgInsta').value,
-                facebook: document.getElementById('cfgFb').value,
-                youtube: document.getElementById('cfgYt').value,
-                primary_color: document.getElementById('cfgColor').value
-            };
-            for (const [key, value] of Object.entries(pairs)) {
-                await sbUpsertSetting(key, value);
+                document.getElementById('modalFooter').innerHTML = `< button class="btn btn-outline" onclick = "closeModal()" > Cancelar</button > <button class="btn btn-success" onclick="saveManual(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
+                document.getElementById('modalOverlay').classList.add('show');
             }
-            showToast('Configurações salvas!');
-        }
-        function loadSettings() {
-            if (settings.site_name) document.getElementById('cfgSiteName').value = settings.site_name;
-            if (settings.slogan) document.getElementById('cfgSlogan').value = settings.slogan;
-            if (settings.phone) document.getElementById('cfgPhone').value = settings.phone;
-            if (settings.email) document.getElementById('cfgEmail').value = settings.email;
-            if (settings.whatsapp) document.getElementById('cfgWhatsapp').value = settings.whatsapp;
-            if (settings.address) document.getElementById('cfgAddress').value = settings.address;
-            if (settings.instagram) document.getElementById('cfgInsta').value = settings.instagram;
-            if (settings.facebook) document.getElementById('cfgFb').value = settings.facebook;
-            if (settings.youtube) document.getElementById('cfgYt').value = settings.youtube;
-            if (settings.primary_color) document.getElementById('cfgColor').value = settings.primary_color;
-        }
+            async function saveManual(idx) {
+                const m = { name: document.getElementById('mMName').value, code: document.getElementById('mMCode').value, hasManual: document.getElementById('mMManual').value === 'true', hasVideo: document.getElementById('mMVideo').value === 'true' };
+                if (idx >= 0) { m._dbId = manuals[idx]._dbId; manuals[idx] = m; } else manuals.push(m);
+                await saveManualToDB(m);
+                closeModal(); await loadAllData(); showToast('Manual salvo!');
+            }
+            function editManual(i) { openManualModal(i); }
+            async function deleteManual(i) { if (confirm('Excluir manual?')) { if (manuals[i]._dbId) await sbDeleteManual(manuals[i]._dbId); await loadAllData(); showToast('Manual excluído!'); } }
 
-        loadAllData();
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+            async function saveSettings() {
+                const pairs = {
+                    site_name: document.getElementById('cfgSiteName').value,
+                    slogan: document.getElementById('cfgSlogan').value,
+                    phone: document.getElementById('cfgPhone').value,
+                    email: document.getElementById('cfgEmail').value,
+                    whatsapp: document.getElementById('cfgWhatsapp').value,
+                    address: document.getElementById('cfgAddress').value,
+                    instagram: document.getElementById('cfgInsta').value,
+                    facebook: document.getElementById('cfgFb').value,
+                    youtube: document.getElementById('cfgYt').value,
+                    primary_color: document.getElementById('cfgColor').value
+                };
+                for (const [key, value] of Object.entries(pairs)) {
+                    await sbUpsertSetting(key, value);
+                }
+                showToast('Configurações salvas!');
+            }
+            function loadSettings() {
+                if (settings.site_name) document.getElementById('cfgSiteName').value = settings.site_name;
+                if (settings.slogan) document.getElementById('cfgSlogan').value = settings.slogan;
+                if (settings.phone) document.getElementById('cfgPhone').value = settings.phone;
+                if (settings.email) document.getElementById('cfgEmail').value = settings.email;
+                if (settings.whatsapp) document.getElementById('cfgWhatsapp').value = settings.whatsapp;
+                if (settings.address) document.getElementById('cfgAddress').value = settings.address;
+                if (settings.instagram) document.getElementById('cfgInsta').value = settings.instagram;
+                if (settings.facebook) document.getElementById('cfgFb').value = settings.facebook;
+                if (settings.youtube) document.getElementById('cfgYt').value = settings.youtube;
+                if (settings.primary_color) document.getElementById('cfgColor').value = settings.primary_color;
+            }
+
+            // --- AUTHENTICATION LOGIC ---
+            function attemptLogin() {
+                const pwd = document.getElementById('adminPwd').value;
+                // Simplistic frontend hash check to hide direct text from casual eyes
+                // "toyking" btoa
+                if (btoa(pwd) === 'dG95a2luZw==') {
+                    sessionStorage.setItem('tk_admin_auth', 'true');
+                    unlockApp();
+                } else {
+                    showToast('Senha incorreta', 'error');
+                    document.getElementById('adminPwd').value = '';
+                    document.getElementById('adminPwd').focus();
+                }
+            }
+
+            function checkAuth() {
+                if (sessionStorage.getItem('tk_admin_auth') === 'true') {
+                    unlockApp();
+                }
+            }
+
+            function unlockApp() {
+                document.getElementById('loginScreen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('appContainer').style.display = 'flex';
+                    // Only load data from Supabase once authenticated to prevent payload sniffing
+                    loadAllData();
+                }, 400);
+            }
+
+            // On document start:
+            checkAuth();
+
+        </script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    </div> <!-- END APP WRAPPER -->
 </body>
 
 </html>
