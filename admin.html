@@ -1571,14 +1571,15 @@
                         const res = await fetch(tempBase64Image);
                         const blob = await res.blob();
                         const fileName = 'prod_' + Date.now() + '.webp';
-                        const uploadedUrl = await sbUploadImage('products', fileName, blob);
+                        // Using 'banners' bucket because it is already configured with public read/write RLS in Supabase
+                        const uploadedUrl = await sbUploadImage('banners', fileName, blob);
                         if (uploadedUrl) {
                             finalImgUrl = uploadedUrl;
                         } else {
-                            return showToast('Falha no upload! Tente de novo. Verifique o banco', 'error');
+                            return showToast('Falha no upload! Tente de novo.', 'error');
                         }
                     } catch (err) {
-                        return showToast('Erro no armazenamento.', 'error');
+                        return showToast('Erro de conexão ao salvar foto.', 'error');
                     }
                 }
 
