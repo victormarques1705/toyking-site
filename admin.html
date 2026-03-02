@@ -1657,14 +1657,7 @@
                 const file = event.target.files[0];
                 if (!file) return;
 
-                let apiKey = localStorage.getItem('openAIKey');
-                if (!apiKey || apiKey.trim() === '') {
-                    apiKey = prompt('Para usar OCR Avançado com IA, insira sua Chave de API da OpenAI (sk-...):');
-                    if (!apiKey) return showToast('Chave de API requerida!', 'error');
-                    localStorage.setItem('openAIKey', apiKey);
-                }
-
-                showToast('Lendo arquivo PDF para IA...', 'info');
+                showToast('Lendo arquivo PDF...', 'info');
 
                 if (typeof pdfjsLib === 'undefined') {
                     showToast('Carregando biblioteca PDF...', 'info');
@@ -1678,8 +1671,6 @@
                     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
                 }
 
-                const scale = 1.5;
-
                 const reader = new FileReader();
                 reader.onload = async function (e) {
                     try {
@@ -1688,114 +1679,115 @@
                         let numPages = pdf.numPages;
 
                         let allProducts = [];
+                        const junkPatterns = [/atualizado em/i, /página/i, /^toy king$/i];
 
                         for (let i = 1; i <= numPages; i++) {
-                            showToast(`Analisando layout (Pág ${i}/${numPages})...`, 'info');
                             const page = await pdf.getPage(i);
-                            const viewport = page.getViewport({ scale: scale });
+                            const content = await page.getTextContent();
 
-                            const canvas = document.createElement('canvas');
-                            const context = canvas.getContext('2d');
-                            canvas.height = viewport.height;
-                            canvas.width = viewport.width;
+                            let lines = [];
+                            content.items.forEach(item => {
+                                const str = item.str.trim();
+                                if (!str) return;
 
-                            await page.render({
-                                canvasContext: context,
-                                viewport: viewport
-                            }).promise;
+                                // Skip junk and standalone prices
+                                if (junkPatterns.some(p => p.test(str))) return;
+                                const isStandalonePrice = str.match(/^R\$\s*\d+,\d{2}$/i) || str.match(/^R\s*\$$/) || str.match(/^\d+,\d{2}$/);
+                                if (isStandalonePrice) return;
 
-                            const base64Image = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+                                const y = item.transform[5];
+                                let added = false;
 
-                            showToast(`IA lendo Pág ${i}...`, 'info');
-
-                            const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${apiKey}`
-                                },
-                                body: JSON.stringify({
-                                    model: 'gpt-4o',
-                                    messages: [
-                                        {
-                                            role: 'system',
-                                            content: "Atue como um modelo de linguagem com capacidade de leitura estruturada + OCR + interpretação semântica. Utilize visão + texto para OCR avançado (reconhecimento óptico de caracteres) e interpretação de layout (entenda colunas, blocos, títulos, códigos). Extraia os dados detalhadamente do PDF visível. Retorne APENAS um array JSON puro, sem formatação markdown, com esta estrutura: [{\"code\": \"TK-X\", \"name\": \"Nome\", \"desc\": \"Descrição\"}]"
-                                        },
-                                        {
-                                            role: 'user',
-                                            content: [
-                                                { type: "text", text: "Extraia os produtos desta página." },
-                                                { type: "image_url", image_url: { url: `data:image/jpeg;base64,${base64Image}` } }
-                                            ]
-                                        }
-                                    ],
-                                    max_tokens: 3000,
-                                    temperature: 0.1
-                                })
+                                for (let l of lines) {
+                                    // Group texts under the same visual Y line (margin of 5 points)
+                                    if (Math.abs(l.y - y) < 5) {
+                                        l.texts.push(str);
+                                        added = true;
+                                        break;
+                                    }
+                                }
+                                if (!added) {
+                                    lines.push({ y: y, texts: [str] });
+                                }
                             });
 
-                            if (!response.ok) {
-                                let errorMsg = 'Falha de Comunicação com OpenAI';
-                                try {
-                                    const errData = await response.json();
-                                    console.error('OpenAI Error:', errData);
-                                    if (errData.error && errData.error.message) {
-                                        errorMsg = errData.error.message;
+                            // Sort lines visually top to bottom
+                            lines.sort((a, b) => b.y - a.y);
+
+                            let currentProduct = null;
+
+                            for (let l = 0; l < lines.length; l++) {
+                                const lineStr = lines[l].texts.join(' ').trim();
+
+                                // Is it a red code?
+                                const codeMatch = lineStr.match(/TK-[\w\d\-]+/i);
+
+                                if (codeMatch) {
+                                    if (currentProduct) allProducts.push(currentProduct);
+
+                                    const code = codeMatch[0];
+                                    let name = 'Produto ' + code;
+
+                                    // Usually the blue title is the very line *above* the code in a catalog layout
+                                    if (l > 0) {
+                                        let possibleName = lines[l - 1].texts.join(' ').trim();
+                                        if (possibleName.length > 2 && !possibleName.includes('DIM:') && !possibleName.includes('|')) {
+                                            name = possibleName;
+                                        }
                                     }
-                                } catch (e) { }
 
-                                if (response.status === 401) {
-                                    localStorage.removeItem('openAIKey');
-                                    throw new Error('Sua Chave OpenAI é inválida: ' + errorMsg);
+                                    currentProduct = {
+                                        product_code: code,
+                                        name: name,
+                                        category: categories[0] || 'Geral',
+                                        age: '+3 anos',
+                                        image_url: 'mobile_only',
+                                        badge: '',
+                                        status: 'active',
+                                        description: ''
+                                    };
+                                } else if (currentProduct) {
+                                    // Accumulate black description text
+                                    let cleanLine = lineStr.replace(/R\$\s*\d+,\d{2}/gi, '').trim();
+                                    if (cleanLine && cleanLine.length > 3 && !cleanLine.includes('R$')) {
+                                        if (currentProduct.description) currentProduct.description += ' | ';
+                                        currentProduct.description += cleanLine;
+                                    }
                                 }
-                                throw new Error(response.status + ' - ' + errorMsg);
                             }
 
-                            const data = await response.json();
-                            let rawJson = data.choices[0].message.content.trim();
-                            if (rawJson.startsWith('```')) {
-                                rawJson = rawJson.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();
-                            }
-
-                            try {
-                                const productsOnPage = JSON.parse(rawJson);
-                                if (Array.isArray(productsOnPage)) {
-                                    allProducts = allProducts.concat(productsOnPage);
-                                }
-                            } catch (e) { console.error('Erro no Parse JSON da IA', rawJson) }
+                            if (currentProduct) allProducts.push(currentProduct);
                         }
 
                         if (allProducts.length === 0) {
-                            showToast('Nenhum produto reconhecido pela IA!', 'error');
+                            showToast('Nenhum código TK- encontrado no PDF!', 'error');
                             return;
                         }
 
-                        showToast(`Salvando ${allProducts.length} produtos estruturados...`);
+                        showToast(`Importando ${allProducts.length} produtos do PDF localmente...`);
 
                         let successCount = 0;
                         for (const p of allProducts) {
-                            if (!p.code || !p.code.match(/tk/i)) continue;
-
                             await sbUpsertProduct({
-                                product_code: p.code.trim(),
-                                name: (p.name && p.name.length > 2) ? p.name : "Produto " + p.code,
-                                category: categories[0] || 'Geral',
-                                age: '+3 anos',
-                                image_url: 'mobile_only',
-                                badge: '',
-                                status: 'active',
-                                description: p.desc ? p.desc.trim() : ''
+                                product_code: p.product_code,
+                                name: p.name,
+                                category: p.category,
+                                age: p.age,
+                                image_url: p.image_url,
+                                badge: p.badge,
+                                status: p.status,
+                                description: p.description
                             });
                             successCount++;
                         }
 
-                        showToast(`Concluído! ${successCount} produtos importados via IA OCR.`);
+                        showToast(`Concluído! ${successCount} produtos importados.`);
                         await loadAllData();
                         document.getElementById('mPdfUpload').value = '';
 
                     } catch (err) {
-                        console.error('Erro na extração IA:', err);
-                        showToast('Erro: ' + err.message, 'error');
+                        console.error('Erro ao ler PDF', err);
+                        showToast('Erro ao processar o PDF.', 'error');
                     }
                 };
                 reader.readAsArrayBuffer(file);
