@@ -10,22 +10,88 @@ document.addEventListener('DOMContentLoaded', () => {
                 const settingsMap = {};
                 settings.forEach(s => settingsMap[s.key] = s.value);
 
-                if (settingsMap.site_name) document.title = document.title.replace('Toy King', settingsMap.site_name);
+                if (settingsMap.site_name) {
+                    document.title = document.title.replace('Toy King', settingsMap.site_name).replace('ToyKing', settingsMap.site_name);
+                }
                 if (settingsMap.primary_color) {
                     document.documentElement.style.setProperty('--blue', settingsMap.primary_color);
                     document.documentElement.style.setProperty('--blue-primary', settingsMap.primary_color);
                 }
                 if (settingsMap.instagram) {
-                    document.querySelectorAll('a[href*="instagram.com"]').forEach(a => a.href = settingsMap.instagram);
+                    document.querySelectorAll('a[href*="instagram.com"]').forEach(a => { if (!a.href.includes('post')) a.href = settingsMap.instagram; });
                 }
                 if (settingsMap.facebook) {
-                    document.querySelectorAll('a[href*="facebook.com"]').forEach(a => a.href = settingsMap.facebook);
+                    document.querySelectorAll('a[href*="facebook.com"]').forEach(a => { if (!a.href.includes('post')) a.href = settingsMap.facebook; });
+                }
+                if (settingsMap.youtube) {
+                    document.querySelectorAll('a[href*="youtube.com"]').forEach(a => a.href = settingsMap.youtube);
+                    document.querySelectorAll('.footer-social').forEach(fs => {
+                        if (settingsMap.youtube && !fs.querySelector('.fa-youtube')) {
+                            fs.innerHTML += `<a href="${settingsMap.youtube}" aria-label="YouTube" target="_blank"><i class="fab fa-youtube"></i></a>`;
+                        }
+                    });
+                }
+                if (settingsMap.email) {
+                    document.querySelectorAll('a[href^="mailto:"]').forEach(a => {
+                        a.href = 'mailto:' + settingsMap.email;
+                        a.textContent = settingsMap.email;
+                    });
+                    document.querySelectorAll('.fa-envelope').forEach(icon => {
+                        let parent = icon.parentElement;
+                        if (parent && (parent.tagName === 'P' || parent.tagName === 'LI') && !parent.querySelector('a')) {
+                            parent.innerHTML = `<i class="fas fa-envelope"></i> ${settingsMap.email}`;
+                        }
+                    });
                 }
                 if (settingsMap.phone) {
-                    const phone = settingsMap.phone;
-                    const purePhone = phone.replace(/\D/g, '');
-                    document.querySelectorAll('a[href^="tel:"]').forEach(a => { a.href = 'tel:' + purePhone; a.textContent = phone; });
-                    document.querySelectorAll('a[href^="https://wa.me/"]').forEach(a => { a.href = 'https://wa.me/55' + purePhone; a.textContent = phone; });
+                    const purePhone = settingsMap.phone.replace(/\D/g, '');
+                    document.querySelectorAll('.fa-phone, .fa-phone-alt').forEach(icon => {
+                        let parent = icon.parentElement;
+                        if (parent && (parent.tagName === 'P' || parent.tagName === 'LI')) {
+                            const a = parent.querySelector('a');
+                            if (a) {
+                                a.href = 'tel:' + purePhone;
+                                a.textContent = settingsMap.phone;
+                            } else {
+                                parent.innerHTML = `<i class="fas fa-phone"></i> ${settingsMap.phone}`;
+                            }
+                        }
+                    });
+                }
+                if (settingsMap.whatsapp) {
+                    const pureWa = settingsMap.whatsapp.replace(/\D/g, '');
+                    document.querySelectorAll('.fa-whatsapp').forEach(icon => {
+                        let parent = icon.parentElement;
+                        if (parent) {
+                            if (parent.tagName === 'A') {
+                                parent.href = 'https://wa.me/55' + pureWa;
+                            } else if (parent.tagName === 'P' || parent.tagName === 'LI') {
+                                const a = parent.querySelector('a');
+                                if (a) {
+                                    a.href = 'https://wa.me/55' + pureWa;
+                                    a.textContent = settingsMap.whatsapp;
+                                } else {
+                                    parent.innerHTML = `<i class="fab fa-whatsapp"></i> ${settingsMap.whatsapp}`;
+                                }
+                            }
+                        }
+                    });
+                }
+                if (settingsMap.address) {
+                    document.querySelectorAll('.fa-map-marker-alt').forEach(icon => {
+                        let parent = icon.parentElement;
+                        if (parent && (parent.tagName === 'P' || parent.tagName === 'LI')) {
+                            parent.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${settingsMap.address}`;
+                        }
+                    });
+                }
+                if (settingsMap.slogan) {
+                    document.querySelectorAll('.footer-logo').forEach(logo => {
+                        let nextElem = logo.nextElementSibling;
+                        if (nextElem && nextElem.tagName === 'P') {
+                            nextElem.textContent = settingsMap.slogan;
+                        }
+                    });
                 }
             }
         } catch (e) { console.error('Erro ao carregar configurações:', e); }
