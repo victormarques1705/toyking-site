@@ -1509,8 +1509,6 @@
                     let numPages = pdf.numPages;
 
                     let allProducts = [];
-                    let currentProduct = null;
-                    let textBuffer = []; // Accumulates all non-code/non-price text
 
                     const junkPatterns = [/atualizado em/i, /página/i, /^toy king$/i];
 
@@ -1518,78 +1516,82 @@
                         const page = await pdf.getPage(i);
                         const content = await page.getTextContent();
 
-                        // Extract and clean items
-                        const items = content.items
-                            .map(item => item.str.trim())
-                            .filter(str => str.length > 0);
+                        // item.transform[4] is X coordinate, item.transform[5] is Y coordinate
+                        // We will group text that shares roughly the same Y line (within a small threshold)
+                        let lines = [];
+                        content.items.forEach(item => {
+                            const str = item.str.trim();
+                            if (!str) return;
 
-                        for (let j = 0; j < items.length; j++) {
-                            const text = items[j];
+                            // Skip junk and standalone prices
+                            if (junkPatterns.some(p => p.test(str))) return;
+                            const isStandalonePrice = str.match(/^R\$\s*\d+,\d{2}$/i) || str.match(/^R\s*\$$/) || str.match(/^\d+,\d{2}$/);
+                            if (isStandalonePrice) return;
 
-                            // Skip Prices (Green in catalog)
-                            const isPrice = text.match(/R\$\s*\d+,\d{2}/i) || text.match(/^R\s*\$$/) || text.match(/^\d+,\d{2}$/);
-                            if (isPrice) continue;
+                            const y = item.transform[5];
+                            let added = false;
 
-                            // Skip Junk (Headers/Footers)
-                            if (junkPatterns.some(p => p.test(text))) continue;
+                            for (let l of lines) {
+                                // If within 5 points vertically, group them in the same line
+                                if (Math.abs(l.y - y) < 5) {
+                                    l.texts.push(str);
+                                    added = true;
+                                    break;
+                                }
+                            }
+                            if (!added) {
+                                lines.push({ y: y, texts: [str] });
+                            }
+                        });
 
-                            // Detect Product Code (Red in catalog)
-                            const codeMatch = text.match(/TK-[\w\d\-]+/i);
+                        // Sort lines from top to bottom (highest Y is top of page in PDF coords)
+                        lines.sort((a, b) => b.y - a.y);
+
+                        let currentProduct = null;
+
+                        for (let l = 0; l < lines.length; l++) {
+                            const lineStr = lines[l].texts.join(' ').trim();
+
+                            // Does this line contain a code?
+                            const codeMatch = lineStr.match(/TK-[\w\d\-]+/i);
 
                             if (codeMatch) {
+                                if (currentProduct) allProducts.push(currentProduct);
+
                                 const code = codeMatch[0];
-
-                                // Before starting a new product, finalize previous if exists
-                                if (currentProduct) {
-                                    // The next name is the last thing in the buffer
-                                    let nextName = textBuffer.length > 0 ? textBuffer.pop() : 'Produto';
-
-                                    // If what we popped looks like description, put it back and name it unknown
-                                    if (nextName.includes(':') || nextName.includes('DIM') || nextName.length > 40) {
-                                        textBuffer.push(nextName);
-                                        nextName = 'Produto';
+                                // Usually the title is the very line *above* the code in a catalog layout.
+                                // Because lines are sorted top-to-bottom, the line immediately above is at index l-1
+                                let name = 'Produto';
+                                if (l > 0) {
+                                    name = lines[l - 1].texts.join(' ').trim();
+                                    // If the above line was junk or looks like a description of a previous product
+                                    if (name.length > 50 || name.includes('DIM:') || name.includes('Quantidade') || name.includes('|')) {
+                                        name = 'Produto ' + code;
                                     }
-
-                                    currentProduct.description = textBuffer.join(' | ');
-                                    allProducts.push(currentProduct);
-
-                                    // Start the new product detected
-                                    currentProduct = {
-                                        product_code: code,
-                                        name: nextName,
-                                        category: categories[0] || 'Grel',
-                                        age: '+3 anos',
-                                        image_url: 'mobile_only',
-                                        badge: '',
-                                        status: 'active',
-                                        description: ''
-                                    };
-                                } else {
-                                    // First product ever
-                                    const name = textBuffer.length > 0 ? textBuffer.pop() : 'Produto';
-                                    currentProduct = {
-                                        product_code: code,
-                                        name: name,
-                                        category: categories[0] || 'Geral',
-                                        age: '+3 anos',
-                                        image_url: 'mobile_only',
-                                        badge: '',
-                                        status: 'active',
-                                        description: ''
-                                    };
                                 }
-                                textBuffer = []; // Reset for next description
-                            } else {
-                                // Just accumulate description or next title
-                                textBuffer.push(text);
+
+                                currentProduct = {
+                                    product_code: code,
+                                    name: name,
+                                    category: categories[0] || 'Geral',
+                                    age: '+3 anos',
+                                    image_url: 'mobile_only',
+                                    badge: '',
+                                    status: 'active',
+                                    description: ''
+                                };
+                            } else if (currentProduct) {
+                                // Accumulate description for the active product (anything that comes after the code)
+                                // Only add if it's not a price embedded in text (just in case)
+                                let cleanLine = lineStr.replace(/R\$\s*\d+,\d{2}/gi, '').trim();
+                                if (cleanLine) {
+                                    if (currentProduct.description) currentProduct.description += ' | ';
+                                    currentProduct.description += cleanLine;
+                                }
                             }
                         }
-                    }
 
-                    // Finalize the very last product
-                    if (currentProduct) {
-                        currentProduct.description = textBuffer.join(' | ');
-                        allProducts.push(currentProduct);
+                        if (currentProduct) allProducts.push(currentProduct);
                     }
 
                     if (allProducts.length === 0) {
@@ -1601,12 +1603,10 @@
 
                     let successCount = 0;
                     for (const p of allProducts) {
-                        // Ensure name is decent
-                        if (p.name === 'Produto' || p.name === 'toy king' || p.name.length < 2) {
+                        if (p.name === 'Produto' || p.name.length < 2) {
                             p.name = "Produto " + p.product_code;
                         }
 
-                        // Use actual schema fields
                         await sbUpsertProduct({
                             product_code: p.product_code,
                             name: p.name,
