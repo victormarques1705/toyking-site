@@ -1346,8 +1346,11 @@
                 image.src = evt.target.result;
 
                 if (cropper) cropper.destroy();
+                let ratio = 1080 / 1080; // Default 1:1 for products and mobile banner
+                if (type === 'desktop') ratio = 1920 / 520;
+
                 cropper = new Cropper(image, {
-                    aspectRatio: type === 'desktop' ? (1920 / 520) : (1080 / 1080),
+                    aspectRatio: ratio,
                     viewMode: 2,
                     dragMode: 'move',
                     background: false,
@@ -1365,6 +1368,10 @@
             startCrop(e, 'mobile');
         }
 
+        function handleProductImageUpload(e) {
+            startCrop(e, 'product');
+        }
+
         function applyCrop() {
             if (!cropper) return;
             const canvas = cropper.getCroppedCanvas({
@@ -1375,13 +1382,19 @@
             if (cropType === 'desktop') {
                 tempBase64Image = dataUrl;
                 showToast('Banner Web ajustado e recortado!', 'success');
-            } else {
+                updateBannerPreview();
+            } else if (cropType === 'mobile') {
                 tempBase64MobileImage = dataUrl;
                 showToast('Banner Celular ajustado e recortado!', 'success');
+                updateBannerPreview();
+            } else if (cropType === 'product') {
+                tempBase64Image = dataUrl;
+                const previewImg = document.getElementById('mImgPreview');
+                if (previewImg) { previewImg.src = dataUrl; previewImg.style.display = 'block'; }
+                showToast('Imagem do produto ajustada!', 'success');
             }
 
             cancelCrop();
-            updateBannerPreview();
         }
 
         function cancelCrop() {
@@ -1400,8 +1413,11 @@
         <div class="form-row"><div class="form-group"><label>Categoria</label><select class="form-control" id="mCat">${categories.map(c => `<option ${c === p.cat ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
         <div class="form-group"><label>Idade</label><select class="form-control" id="mAge"><option ${p.age === '0+ meses' ? 'selected' : ''}>0+ meses</option><option ${p.age === '+6 meses' ? 'selected' : ''}>+6 meses</option><option ${p.age === '+12 meses' ? 'selected' : ''}>+12 meses</option><option ${p.age === '+18 meses' ? 'selected' : ''}>+18 meses</option><option ${p.age === '+3 anos' ? 'selected' : ''}>+3 anos</option><option ${p.age === '+5 anos' ? 'selected' : ''}>+5 anos</option></select></div></div>
         <div class="form-row"><div class="form-group"><label>Imagem</label>
-            <input type="file" id="mImgUpload" accept="image/*" class="form-control" onchange="handleImageUpload(event)" style="margin-bottom: 8px; padding: 5px;">
-            <select class="form-control" id="mImg">${imgOptions.map(i => `<option value="${i}" ${i === p.img ? 'selected' : ''}>${i}</option>`).join('')}${p.img && p.img.startsWith('data:image') ? '<option value="' + p.img + '" selected>Upload Anterior (Mantido)</option>' : ''}</select>
+            <input type="file" id="mImgUpload" accept="image/*" class="form-control" onchange="handleProductImageUpload(event)" style="margin-bottom: 8px; padding: 5px;">
+            <input type="hidden" id="mImgUrl" value="${p.img && !p.img.includes('data:image') ? p.img : 'hero_banner.png'}">
+            <div style="margin-top: 8px; text-align: left;">
+                <img id="mImgPreview" src="${p.img && p.img !== 'mobile_only' ? (p.img.startsWith('http') || p.img.startsWith('data:') ? p.img : 'assets/images/' + p.img) : ''}" style="max-width: 100px; border-radius: 8px; display: ${p.img && p.img !== 'mobile_only' ? 'block' : 'none'}; border: 1px solid #ddd;">
+            </div>
         </div>
         <div class="form-group"><label>Badge</label><select class="form-control" id="mBadge"><option value="" ${!p.badge ? 'selected' : ''}>Nenhum</option><option ${p.badge === 'NOVO' ? 'selected' : ''}>NOVO</option><option ${p.badge === 'TOP' ? 'selected' : ''}>TOP</option></select></div></div>
         <div class="form-group"><label>Status</label><select class="form-control" id="mStatus"><option value="active" ${p.status === 'active' ? 'selected' : ''}>Ativo</option><option value="draft" ${p.status === 'draft' ? 'selected' : ''}>Rascunho</option></select></div>
@@ -1455,8 +1471,27 @@
         }
 
         async function saveProduct(idx) {
-            let finalImg = tempBase64Image ? tempBase64Image : document.getElementById('mImg').value;
-            const p = { id: document.getElementById('mCode').value, name: document.getElementById('mName').value, cat: document.getElementById('mCat').value, age: document.getElementById('mAge').value, img: finalImg, badge: document.getElementById('mBadge').value, status: document.getElementById('mStatus').value, desc: document.getElementById('mDesc').value };
+            let finalImgUrl = document.getElementById('mImgUrl').value || 'assets/images/hero_banner.png';
+
+            // Upload product image to Supabase if newly cropped
+            if (tempBase64Image && tempBase64Image.startsWith('data:image')) {
+                showToast('Fazendo upload da imagem do produto...', 'info');
+                try {
+                    const res = await fetch(tempBase64Image);
+                    const blob = await res.blob();
+                    const fileName = 'prod_' + Date.now() + '.webp';
+                    const uploadedUrl = await sbUploadImage('products', fileName, blob);
+                    if (uploadedUrl) {
+                        finalImgUrl = uploadedUrl;
+                    } else {
+                        return showToast('Falha no upload! Tente de novo. Verifique o banco', 'error');
+                    }
+                } catch (err) {
+                    return showToast('Erro no armazenamento.', 'error');
+                }
+            }
+
+            const p = { id: document.getElementById('mCode').value, name: document.getElementById('mName').value, cat: document.getElementById('mCat').value, age: document.getElementById('mAge').value, img: finalImgUrl, badge: document.getElementById('mBadge').value, status: document.getElementById('mStatus').value, desc: document.getElementById('mDesc').value };
             if (!p.name || !p.id) return showToast('Preencha nome e código!', 'error');
             if (idx >= 0) { p._dbId = products[idx]._dbId; products[idx] = p; } else products.push(p);
             await saveProductToDB(p);
@@ -1770,12 +1805,29 @@
 
             let finalMobileImg = tempBase64MobileImage ? tempBase64MobileImage : (document.getElementById('mBMobileImg') ? document.getElementById('mBMobileImg').value : '');
 
+            if (tempBase64Image && tempBase64Image.startsWith('data:image')) {
+                showToast('Enviando banner para nuvem...', 'info');
+                try {
+                    const b = await (await fetch(tempBase64Image)).blob();
+                    const res = await sbUploadImage('banners', 'desktop_' + Date.now() + '.webp', b);
+                    if (res) finalImg = res;
+                } catch (e) { console.error(e) }
+            }
+            if (tempBase64MobileImage && tempBase64MobileImage.startsWith('data:image')) {
+                showToast('Enviando banner celular para nuvem...', 'info');
+                try {
+                    const b = await (await fetch(tempBase64MobileImage)).blob();
+                    const res = await sbUploadImage('banners', 'mobile_' + Date.now() + '.webp', b);
+                    if (res) finalMobileImg = res;
+                } catch (e) { console.error(e) }
+            }
+
             const b = { img: finalImg, img_mobile: finalMobileImg, title: document.getElementById('mBTitle').value, subtitle: document.getElementById('mBSub').value, link: document.getElementById('mBHideBtn').checked ? 'none' : 'produtos.html' };
             if (window.currentEditingBannerDbId) {
                 b._dbId = window.currentEditingBannerDbId;
             }
             await saveBannerToDB(b);
-            closeModal(); await loadAllData(); showToast('Banner salvo!');
+            closeModal(); await loadAllData(); showToast('Banner salvo com sucesso!');
         }
 
         async function deleteBanner(i) { if (confirm('Excluir banner?')) { if (banners[i]._dbId) await sbDeleteBanner(banners[i]._dbId); await loadAllData(); showToast('Banner excluído!'); } }
