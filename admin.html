@@ -1719,7 +1719,7 @@
                                     messages: [
                                         {
                                             role: 'system',
-                                            content: "Você é um extrator de dados de catálogos OCR. Analise o layout (entenda colunas, blocos, títulos azuis, códigos em vermelho). Extraia todos os produtos visíveis. Retorne APENAS um array JSON puro, sem markdown, contendo esta exata estrutura para cada produto: [{\"code\": \"TK-123...\", \"name\": \"Nome do produto\", \"desc\": \"Descrição completa. Ignore preços visíveis.\"}]"
+                                            content: "Atue como um modelo de linguagem com capacidade de leitura estruturada + OCR + interpretação semântica. Utilize visão + texto para OCR avançado (reconhecimento óptico de caracteres) e interpretação de layout (entenda colunas, blocos, títulos, códigos). Extraia os dados detalhadamente do PDF visível. Retorne APENAS um array JSON puro, sem formatação markdown, com esta estrutura: [{\"code\": \"TK-X\", \"name\": \"Nome\", \"desc\": \"Descrição\"}]"
                                         },
                                         {
                                             role: 'user',
