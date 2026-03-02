@@ -1510,66 +1510,85 @@
 
                     let allProducts = [];
                     let currentProduct = null;
-                    let currentDesc = [];
-                    let pendingTitle = '';
+                    let textBuffer = []; // Accumulates all non-code/non-price text
+
+                    const junkPatterns = [/atualizado em/i, /página/i, /^toy king$/i];
 
                     for (let i = 1; i <= numPages; i++) {
                         const page = await pdf.getPage(i);
                         const content = await page.getTextContent();
-                        const items = content.items.map(item => item.str.trim()).filter(str => str.length > 0);
+
+                        // Extract and clean items
+                        const items = content.items
+                            .map(item => item.str.trim())
+                            .filter(str => str.length > 0);
 
                         for (let j = 0; j < items.length; j++) {
                             const text = items[j];
 
-                            // Check for Product Code (Red in catalog)
-                            const isCode = text.match(/^TK-[\w\d\-]+$/i);
+                            // Skip Prices (Green in catalog)
+                            const isPrice = text.match(/R\$\s*\d+,\d{2}/i) || text.match(/^R\s*\$$/) || text.match(/^\d+,\d{2}$/);
+                            if (isPrice) continue;
 
-                            if (isCode) {
+                            // Skip Junk (Headers/Footers)
+                            if (junkPatterns.some(p => p.test(text))) continue;
+
+                            // Detect Product Code (Red in catalog)
+                            const codeMatch = text.match(/TK-[\w\d\-]+/i);
+
+                            if (codeMatch) {
+                                const code = codeMatch[0];
+
+                                // Before starting a new product, finalize previous if exists
                                 if (currentProduct) {
-                                    // The last item read before a new code is actually its Title (Blue in catalog)
-                                    if (currentDesc.length > 0) pendingTitle = currentDesc.pop();
-                                    currentProduct.description = currentDesc.filter(d => d).join(' | ');
+                                    // The next name is the last thing in the buffer
+                                    let nextName = textBuffer.length > 0 ? textBuffer.pop() : 'Produto';
+
+                                    // If what we popped looks like description, put it back and name it unknown
+                                    if (nextName.includes(':') || nextName.includes('DIM') || nextName.length > 40) {
+                                        textBuffer.push(nextName);
+                                        nextName = 'Produto';
+                                    }
+
+                                    currentProduct.description = textBuffer.join(' | ');
                                     allProducts.push(currentProduct);
-                                }
 
-                                let title = pendingTitle || (j > 0 ? items[j - 1] : 'Produto');
-                                if (title.match(/R\$/) || title.includes('DIM')) title = 'Produto Desconhecido';
-
-                                currentProduct = {
-                                    product_code: text,
-                                    name: title,
-                                    category: categories.length > 0 ? categories[0] : 'Geral',
-                                    age: '+3 anos',
-                                    image_url: 'mobile_only',
-                                    badge: '',
-                                    status: 'active',
-                                    description: ''
-                                };
-                                currentDesc = [];
-                                pendingTitle = '';
-
-                            } else if (text.match(/R\$\s*\d+,\d{2}/i) || text.match(/^R\s*\$$/)) {
-                                // Ignore prices completely (Green in catalog)
-                                continue;
-                            } else if (text.match(/^\d+,\d{2}$/) && j > 0 && items[j - 1].match(/^R\s*\$$/)) {
-                                // Ignore numbers that were split from R$ (Green in catalog)
-                                continue;
-                            } else {
-                                // Accumulate Description (Black in catalog)
-                                if (currentProduct) {
-                                    if (!text.toLowerCase().includes('atualizado em')) {
-                                        currentDesc.push(text);
-                                    }
+                                    // Start the new product detected
+                                    currentProduct = {
+                                        product_code: code,
+                                        name: nextName,
+                                        category: categories[0] || 'Grel',
+                                        age: '+3 anos',
+                                        image_url: 'mobile_only',
+                                        badge: '',
+                                        status: 'active',
+                                        description: ''
+                                    };
                                 } else {
-                                    if (!text.toLowerCase().includes('atualizado em')) {
-                                        pendingTitle = text;
-                                    }
+                                    // First product ever
+                                    const name = textBuffer.length > 0 ? textBuffer.pop() : 'Produto';
+                                    currentProduct = {
+                                        product_code: code,
+                                        name: name,
+                                        category: categories[0] || 'Geral',
+                                        age: '+3 anos',
+                                        image_url: 'mobile_only',
+                                        badge: '',
+                                        status: 'active',
+                                        description: ''
+                                    };
                                 }
+                                textBuffer = []; // Reset for next description
+                            } else {
+                                // Just accumulate description or next title
+                                textBuffer.push(text);
                             }
                         }
                     }
+
+                    // Finalize the very last product
                     if (currentProduct) {
-                        currentProduct.description = currentDesc.filter(d => d).join(' | ');
+                        currentProduct.description = textBuffer.join(' | ');
                         allProducts.push(currentProduct);
                     }
 
@@ -1582,17 +1601,32 @@
 
                     let successCount = 0;
                     for (const p of allProducts) {
-                        await sbUpsertProduct(p);
+                        // Ensure name is decent
+                        if (p.name === 'Produto' || p.name === 'toy king' || p.name.length < 2) {
+                            p.name = "Produto " + p.product_code;
+                        }
+
+                        // Use actual schema fields
+                        await sbUpsertProduct({
+                            product_code: p.product_code,
+                            name: p.name,
+                            category: p.category,
+                            age: p.age,
+                            image_url: p.image_url,
+                            badge: p.badge,
+                            status: p.status,
+                            description: p.description
+                        });
                         successCount++;
                     }
 
-                    showToast(`Concluído! ${successCount} produtos importados do PDF.`);
+                    showToast(`Concluído! ${successCount} produtos importados.`);
                     await loadAllData();
                     document.getElementById('mPdfUpload').value = '';
 
                 } catch (err) {
                     console.error('Erro ao ler PDF', err);
-                    showToast('Erro ao ler o PDF.', 'error');
+                    showToast('Erro ao processar o PDF.', 'error');
                 }
             };
             reader.readAsArrayBuffer(file);
