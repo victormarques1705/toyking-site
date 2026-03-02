@@ -1385,6 +1385,7 @@
             tempBase64MobileImage = null;
             currentEditingBannerType = type;
             const b = idx >= 0 ? banners[idx] : { img: type === 'desktop' ? imgOptions[0] : 'mobile_only', img_mobile: type === 'mobile' ? imgOptions[0] : '', title: '', subtitle: '', link: 'produtos.html' };
+            window.currentEditingBannerDbId = b._dbId;
             document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Banner ' + (type === 'desktop' ? 'Web' : 'Celular') : 'Novo Banner ' + (type === 'desktop' ? 'Web' : 'Celular');
 
             let displayDesktop = type === 'desktop' ? '' : 'display:none;';
@@ -1455,7 +1456,9 @@
             let finalMobileImg = tempBase64MobileImage ? tempBase64MobileImage : (document.getElementById('mBMobileImg') ? document.getElementById('mBMobileImg').value : '');
 
             const b = { img: finalImg, img_mobile: finalMobileImg, title: document.getElementById('mBTitle').value, subtitle: document.getElementById('mBSub').value, link: document.getElementById('mBHideBtn').checked ? 'none' : 'produtos.html' };
-            if (idx >= 0) { b._dbId = banners[idx]._dbId; banners[idx] = b; } else banners.push(b);
+            if (window.currentEditingBannerDbId) {
+                b._dbId = window.currentEditingBannerDbId;
+            }
             await saveBannerToDB(b);
             closeModal(); await loadAllData(); showToast('Banner salvo!');
         }
