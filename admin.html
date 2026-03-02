@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap');
 
@@ -832,14 +836,19 @@
                     <div class="panel-header">
                         <h2>📦 Gestão de Produtos</h2>
                         <div style="display:flex; gap:10px;">
+                            <label for="mPdfUpload" class="btn btn-outline" style="cursor:pointer; margin:0;"
+                                title="Extrai os produtos e códigos de um catálogo PDF e importa">
+                                <i class="fas fa-file-pdf"></i> Importar PDF
+                            </label>
+                            <input type="file" id="mPdfUpload" accept=".pdf" style="display:none;"
+                                onchange="handlePdfUpload(event)">
                             <label for="mExcelUpload" class="btn btn-outline" style="cursor:pointer; margin:0;">
                                 <i class="fas fa-file-excel"></i> Importar Excel
                             </label>
                             <input type="file" id="mExcelUpload" accept=".xlsx, .xls" style="display:none;"
                                 onchange="handleExcelUpload(event)">
                             <button class="btn btn-primary" onclick="openProductModal()"><i class="fas fa-plus"></i>
-                                Novo
-                                Produto</button>
+                                Novo Produto</button>
                         </div>
                     </div>
                     <div class="panel-body">
@@ -1429,6 +1438,114 @@
                 }
             };
 
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function handlePdfUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showToast('Lendo arquivo PDF...', 'info');
+
+            if (typeof pdfjsLib === 'undefined') {
+                showToast('Carregando biblioteca PDF...', 'info');
+                await new Promise((res, rej) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js';
+                    script.onload = res;
+                    script.onerror = rej;
+                    document.head.appendChild(script);
+                });
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function (e) {
+                try {
+                    const typedarray = new Uint8Array(e.target.result);
+                    const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                    let numPages = pdf.numPages;
+
+                    let allProducts = [];
+                    let currentProduct = null;
+
+                    for (let i = 1; i <= numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        const items = content.items.map(item => item.str.trim()).filter(str => str.length > 0);
+
+                        for (let j = 0; j < items.length; j++) {
+                            const text = items[j];
+
+                            // Check for Product Code (e.g. TK-AB8710, TK-1600)
+                            const codeMatch = text.match(/TK-[\w\d]+/i);
+
+                            if (codeMatch) {
+                                let name = j > 0 ? items[j - 1] : 'Produto Desconhecido';
+
+                                if (name.includes('R$') || name.includes('DIM') || name.match(/TK-/)) {
+                                    name = 'Nome não extraído';
+                                }
+
+                                if (currentProduct) allProducts.push(currentProduct);
+
+                                currentProduct = {
+                                    product_code: codeMatch[0],
+                                    name: name,
+                                    category: categories[0],
+                                    age: '+3 anos',
+                                    image_url: 'mobile_only',
+                                    badge: '',
+                                    status: 'active',
+                                    description: '',
+                                    price: ''
+                                };
+                            } else if (currentProduct) {
+                                if (text.match(/R\$\s*\d+,\d{2}/i)) {
+                                    currentProduct.price = text;
+                                } else if (!text.includes('R$') && text.length > 2) {
+                                    currentProduct.description += text + ' | ';
+                                }
+                            }
+                        }
+                    }
+                    if (currentProduct) allProducts.push(currentProduct);
+
+                    if (allProducts.length === 0) {
+                        showToast('Nenhum código TK- encontrado no PDF!', 'error');
+                        return;
+                    }
+
+                    showToast(`Importando ${allProducts.length} produtos do PDF...`);
+
+                    let successCount = 0;
+                    for (const p of allProducts) {
+                        let finalDesc = p.description.trim();
+                        if (finalDesc.endsWith('|')) finalDesc = finalDesc.slice(0, -1).trim();
+                        if (p.price) finalDesc = `Preço: ${p.price} | ` + finalDesc;
+
+                        await sbUpsertProduct({
+                            product_code: p.product_code,
+                            name: p.name,
+                            category: p.category,
+                            age: p.age,
+                            image_url: p.image_url,
+                            badge: p.badge,
+                            status: p.status,
+                            description: finalDesc
+                        });
+                        successCount++;
+                    }
+
+                    showToast(`Concluído! ${successCount} produtos importados do PDF.`);
+                    await loadAllData();
+                    document.getElementById('mPdfUpload').value = '';
+
+                } catch (err) {
+                    console.error('Erro ao ler PDF', err);
+                    showToast('Erro ao ler o PDF.', 'error');
+                }
+            };
             reader.readAsArrayBuffer(file);
         }
 
