@@ -132,9 +132,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (videoGrid && videoData.length > 0) {
                             videoGrid.innerHTML = '';
                             videoData.forEach((item, idx) => {
-                                const relImgSrc = item.image && (item.image.startsWith('data:image') || item.image.startsWith('http')) ? item.image : 'assets/images/' + item.image;
+                                let relImgSrc = item.image && (item.image.startsWith('data:image') || item.image.startsWith('http')) ? item.image : 'assets/images/' + item.image;
+
+                                const ytMatch = item.link && typeof item.link === 'string' ? item.link.match(/(?:youtu\.be\/|youtube\.com\/.*[?&]v=)([^&?]+)/) : null;
+                                if (ytMatch && ytMatch[1] && (!item.image || item.image.includes('hero_banner.png') || item.image.includes('capa_do_youtube'))) {
+                                    relImgSrc = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+                                }
+
                                 videoGrid.innerHTML += `
-                                    <a href="${item.link}" target="_blank" class="video-card reveal" style="display:block; text-decoration:none; color:inherit; transition-delay: ${0.1 + (idx * 0.1)}s;">
+                                    <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="video-card reveal" style="display:block; text-decoration:none; color:inherit; transition-delay: ${0.1 + (idx * 0.1)}s;">
                                         <div class="video-thumb">
                                             <img src="${relImgSrc}" alt="${item.title}">
                                             <div class="play-icon"><i class="fas fa-play"></i></div>

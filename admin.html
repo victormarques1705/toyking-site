@@ -2309,8 +2309,8 @@
                     div.style.position = 'relative';
                     div.innerHTML = `
                         <img src="${getImgSrc(item.image)}" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:8px; margin-bottom:8px;">
-                        <input type="text" class="form-control" style="font-size:0.75rem; margin-bottom:5px;" placeholder="URL da Imagem" value="${item.image}" oninput="updateInstaData(${idx}, 'image', this.value)">
-                        <input type="text" class="form-control" style="font-size:0.75rem;" placeholder="Link do Post" value="${item.link}" oninput="updateInstaData(${idx}, 'link', this.value)">
+                        <input type="text" class="form-control" style="font-size:0.75rem; margin-bottom:5px;" placeholder="URL da Imagem" value="${item.image}" oninput="updateInstaData(${idx}, 'image', this.value, false)" onchange="updateInstaData(${idx}, 'image', this.value, true)">
+                        <input type="text" class="form-control" style="font-size:0.75rem;" placeholder="Link do Post" value="${item.link}" oninput="updateInstaData(${idx}, 'link', this.value, false)" onchange="updateInstaData(${idx}, 'link', this.value, true)">
                         <button class="btn btn-sm btn-danger" style="position:absolute; top:5px; right:5px; padding:4px 8px;" onclick="removeInstaPost(${idx})"><i class="fas fa-times"></i></button>
                     `;
                     grid.appendChild(div);
@@ -2326,12 +2326,12 @@
                 renderInstaFeedPreview();
             }
 
-            function updateInstaData(idx, key, val) {
+            function updateInstaData(idx, key, val, reRender = true) {
                 const area = document.getElementById('cfgInstaFeed');
                 let data = JSON.parse(area.value);
                 data[idx][key] = val;
                 area.value = JSON.stringify(data, null, 2);
-                renderInstaFeedPreview();
+                if (reRender) renderInstaFeedPreview();
             }
 
             function removeInstaPost(idx) {
@@ -2363,9 +2363,9 @@
                             <img src="${getImgSrc(item.image)}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
                             <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:white; font-size:1.5rem; text-shadow:0 2px 4px rgba(0,0,0,0.5);"><i class="fas fa-play"></i></div>
                         </div>
-                        <input type="text" class="form-control" style="font-size:0.75rem; margin-bottom:5px;" placeholder="Título do Vídeo" value="${item.title}" oninput="updateVideoData(${idx}, 'title', this.value)">
-                        <input type="text" class="form-control" style="font-size:0.75rem; margin-bottom:5px;" placeholder="Capa (Imagem)" value="${item.image}" oninput="updateVideoData(${idx}, 'image', this.value)">
-                        <input type="text" class="form-control" style="font-size:0.75rem;" placeholder="Link do Vídeo/Reel" value="${item.link}" oninput="updateVideoData(${idx}, 'link', this.value)">
+                        <input type="text" class="form-control" style="font-size:0.75rem; margin-bottom:5px;" placeholder="Título do Vídeo" value="${item.title}" oninput="updateVideoData(${idx}, 'title', this.value, false)" onchange="updateVideoData(${idx}, 'title', this.value, true)">
+                        <input type="text" class="form-control" style="font-size:0.75rem; margin-bottom:5px;" placeholder="Capa (Imagem)" value="${item.image}" oninput="updateVideoData(${idx}, 'image', this.value, false)" onchange="updateVideoData(${idx}, 'image', this.value, true)">
+                        <input type="text" class="form-control" style="font-size:0.75rem;" placeholder="Link do Vídeo/Reel" value="${item.link}" oninput="updateVideoData(${idx}, 'link', this.value, false)" onchange="updateVideoData(${idx}, 'link', this.value, true)">
                         <button class="btn btn-sm btn-danger" style="position:absolute; top:5px; right:5px; padding:4px 8px;" onclick="removeVideoPost(${idx})"><i class="fas fa-times"></i></button>
                     `;
                     grid.appendChild(div);
@@ -2381,12 +2381,21 @@
                 renderVideoFeedPreview();
             }
 
-            function updateVideoData(idx, key, val) {
+            function updateVideoData(idx, key, val, reRender = true) {
                 const area = document.getElementById('cfgVideoFeed');
                 let data = JSON.parse(area.value);
                 data[idx][key] = val;
+
+                if (key === 'link') {
+                    const ytMatch = val && typeof val === 'string' ? val.match(/(?:youtu\.be\/|youtube\.com\/.*[?&]v=)([^&?]+)/) : null;
+                    if (ytMatch && ytMatch[1] && (!data[idx].image || data[idx].image.includes('hero_banner.png') || data[idx].image.includes('capa_do_youtube'))) {
+                        data[idx].image = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+                        reRender = true; // force rerender to show new cover
+                    }
+                }
+
                 area.value = JSON.stringify(data, null, 2);
-                renderVideoFeedPreview();
+                if (reRender) renderVideoFeedPreview();
             }
 
             function removeVideoPost(idx) {
