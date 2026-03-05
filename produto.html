@@ -49,8 +49,40 @@
             position: relative;
             z-index: 2;
             mix-blend-mode: darken;
-            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 0.5s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
             cursor: zoom-in;
+            opacity: 0;
+        }
+
+        .pd-main-img.loaded {
+            opacity: 1;
+        }
+
+        .pd-gallery::before {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            background: rgba(0, 0, 0, 0.04);
+            border-radius: 16px;
+            animation: pulse-gallery 1.5s infinite;
+            z-index: 1;
+        }
+
+        @keyframes pulse-gallery {
+
+            0%,
+            100% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 0.2;
+            }
+        }
+
+        .pd-gallery.loaded::before {
+            display: none;
         }
 
         .pd-main-img:hover {
@@ -402,7 +434,8 @@
         <div class="pd-top">
             <div class="pd-gallery" id="pdGallery">
                 <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Produto"
-                    class="pd-main-img" id="mainImg">
+                    class="pd-main-img" id="mainImg"
+                    onload="this.classList.add('loaded'); document.getElementById('pdGallery').classList.add('loaded');">
                 <div class="pd-thumbs" id="thumbs"></div>
                 <div class="pd-nav-arrows">
                     <button class="pd-nav-arrow" id="prevImg"><i class="fas fa-chevron-left"></i></button>
