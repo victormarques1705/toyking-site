@@ -25,6 +25,13 @@ async function sbDeleteProduct(id) {
     return !error;
 }
 
+async function sbDeleteProductsBulk(ids) {
+    if (!ids || ids.length === 0) return true;
+    const { error } = await supabaseClient.from('products').delete().in('id', ids);
+    if (error) { console.error('Erro ao excluir produtos em massa:', error); return false; }
+    return true;
+}
+
 // --- BANNERS ---
 async function sbGetBanners() {
     const { data, error } = await supabaseClient.from('banners').select('*').order('sort_order', { ascending: true });
@@ -94,6 +101,7 @@ async function sbUpsertSetting(key, value) {
     if (error) { console.error('Erro ao salvar configuração:', error); return null; }
     return data ? data[0] : null;
 }
+
 
 // --- STORAGE (Image Upload) ---
 async function sbUploadImage(bucket, filePath, file) {

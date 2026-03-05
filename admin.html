@@ -522,7 +522,7 @@
         .modal {
             background: white;
             border-radius: var(--radius);
-            max-width: 600px;
+            max-width: 800px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
@@ -588,6 +588,10 @@
 
         .toast.error {
             background: var(--red);
+        }
+
+        .toast.info {
+            background: var(--blue);
         }
 
         /* ===== RESPONSIVE / BANNER PREVIEW ===== */
@@ -839,7 +843,8 @@
                 <button class="nav-item" data-section="products"><i class="fas fa-boxes-stacked"></i> Produtos</button>
                 <button class="nav-item" data-section="categories"><i class="fas fa-tags"></i> Categorias</button>
                 <div class="nav-label">Conteúdo</div>
-                <button class="nav-item" data-section="pages"><i class="fas fa-file-alt"></i> Páginas</button>
+                <button class="nav-item" data-section="institucional"><i class="fas fa-building"></i>
+                    Institucional</button>
                 <button class="nav-item" data-section="banners"><i class="fas fa-images"></i> Banners</button>
                 <button class="nav-item" data-section="manuals"><i class="fas fa-book"></i> Manuais</button>
                 <div class="nav-label">Configurações</div>
@@ -928,9 +933,10 @@
                                 <button class="btn btn-danger" id="btnDeleteSelected" style="display:none;"
                                     onclick="deleteSelectedProducts()"><i class="fas fa-trash"></i> Excluir
                                     Selecionados</button>
-                                <label for="mPdfUpload" class="btn btn-outline" style="cursor:pointer; margin:0;"
-                                    title="Extrai os produtos e códigos de um catálogo PDF e importa">
-                                    <i class="fas fa-file-pdf"></i> Importar PDF
+                                <label for="mPdfUpload" class="btn btn-outline"
+                                    style="cursor:pointer; margin:0; border-color: #7c3aed; color: #7c3aed;"
+                                    title="🤖 Extração inteligente: analisa seu catálogo PDF, detecta códigos TK-, categorias, idades e descrições automaticamente">
+                                    <i class="fas fa-robot"></i> Importar Catálogo (IA)
                                 </label>
                                 <input type="file" id="mPdfUpload" accept=".pdf" style="display:none;"
                                     onchange="handlePdfUpload(event)">
@@ -998,25 +1004,27 @@
                     </div>
                 </div>
 
-                <!-- PAGES -->
-                <div class="section" id="sec-pages">
+                <!-- INSTITUCIONAL -->
+                <div class="section" id="sec-institucional">
                     <div class="panel">
                         <div class="panel-header">
-                            <h2>📄 Páginas do Site</h2>
+                            <h2>🏛️ Institucional (Sobre Nós)</h2>
                         </div>
                         <div class="panel-body">
-                            <div class="table-wrap">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Página</th>
-                                            <th>Arquivo</th>
-                                            <th>Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="pagesTable"></tbody>
-                                </table>
+                            <div class="form-group"><label>Propósito (Texto Principal)</label><textarea
+                                    class="form-control" id="cfgAboutProposito"
+                                    rows="4">A ToyKing nasceu com um propósito muito claro: levar diversão, cor e imaginação...</textarea>
                             </div>
+                            <div class="form-group"><label>Nossa Missão</label><textarea class="form-control"
+                                    id="cfgAboutMissao"
+                                    rows="3">Transformar momentos simples em memórias inesquecíveis através da brincadeira.</textarea>
+                            </div>
+                            <div class="form-group"><label>Nossa Essência (Separar itens por vírgula)</label><textarea
+                                    class="form-control" id="cfgAboutEssencia"
+                                    rows="3">Desenvolvimento da criatividade, Estímulo à imaginação, Cores vibrantes e design chamativo, Excelente custo-benefício, Embalagens impactantes para o varejo</textarea>
+                            </div>
+                            <button class="btn btn-success" onclick="saveSettings()"><i class="fas fa-save"></i> Salvar
+                                Textos</button>
                         </div>
                     </div>
                 </div>
@@ -1159,6 +1167,7 @@
 
         <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
         <script src="supabase-config.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
         <script>
             // ===== DATA =====
             let products = [];
@@ -1218,19 +1227,20 @@
             }
 
             async function saveProductToDB(product) {
-                await sbUpsertProduct({
+                const payload = {
                     product_code: product.id, name: product.name, category: product.cat,
                     age: product.age, image_url: product.img, badge: product.badge,
-                    status: product.status, description: product.desc || '', id: product._dbId
-                });
+                    status: product.status, description: product.desc || ''
+                };
+                // Only include database row id when editing existing product
+                if (product._dbId) payload.id = product._dbId;
+                const saved = await sbUpsertProduct(payload);
+                return saved; // Returns { id: <uuid>, ... } so caller can assign _dbId
             }
 
             async function saveCategoryToDB(name, oldName = null) {
-                if (oldName) {
-                    await sbUpdateCategory(oldName, name);
-                } else {
-                    await sbUpsertCategory({ name, sort_order: categories.indexOf(name) });
-                }
+                // sbUpdateCategory didn't exist - use upsert for both create and edit
+                await sbUpsertCategory({ name, sort_order: categories.indexOf(name) >= 0 ? categories.indexOf(name) : categories.length });
             }
 
             async function saveBannerToDB(banner) {
@@ -1284,13 +1294,20 @@
                 const tb = document.getElementById('dashProductsTable');
                 tb.innerHTML = '';
                 products.slice(0, 5).forEach(p => {
-                    const imgSrc = p.img && p.img.startsWith('data:image') ? p.img : 'assets/images/' + p.img;
+                    const imgSrc = getImgSrc(p.img);
                     tb.innerHTML += `<tr>
           <td><img src="${imgSrc}" class="td-img"></td>
           <td>${p.name}</td><td>${p.id}</td><td>${p.cat}</td>
           <td><span class="badge-status ${p.status === 'active' ? 'badge-active' : 'badge-draft'}">${p.status === 'active' ? 'Ativo' : 'Rascunho'}</span></td>
         </tr>`;
                 });
+            }
+
+            // Centralized image source resolver - handles http URLs, data URLs, and local filenames
+            function getImgSrc(img) {
+                if (!img || img === 'mobile_only') return 'assets/images/hero_banner.png';
+                if (img.startsWith('data:image') || img.startsWith('http')) return img;
+                return 'assets/images/' + img;
             }
 
             function renderProducts() {
@@ -1300,7 +1317,7 @@
                 tb.innerHTML = '';
                 filtered.forEach((p) => {
                     const originalIdx = products.indexOf(p);
-                    const imgSrc = p.img && p.img.startsWith('data:image') ? p.img : 'assets/images/' + p.img;
+                    const imgSrc = getImgSrc(p.img);
                     tb.innerHTML += `<tr>
           <td style="text-align:center;">
               <input type="checkbox" class="prod-checkbox" value="${p._dbId}" onchange="toggleDeleteBtn()" style="cursor:pointer; width:16px; height:16px;">
@@ -1332,18 +1349,42 @@
             async function deleteSelectedProducts() {
                 const checkedBoxes = Array.from(document.querySelectorAll('.prod-checkbox:checked'));
                 if (checkedBoxes.length === 0) return;
-                if (confirm(`Excluir permanentemente ${checkedBoxes.length} produto(s) selecionado(s)?`)) {
-                    showToast(`Excluindo ${checkedBoxes.length} produtos...`, 'info');
-                    for (const box of checkedBoxes) {
-                        const dbId = box.value;
-                        if (dbId && dbId !== 'undefined') {
-                            await sbDeleteProduct(dbId);
-                        }
+                if (!confirm(`Excluir permanentemente ${checkedBoxes.length} produto(s) selecionado(s)?`)) return;
+
+                const btn = document.getElementById('btnDeleteSelected');
+                if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Excluindo...'; }
+                showToast(`Excluindo ${checkedBoxes.length} produtos...`, 'info');
+
+                // Collect valid IDs to delete
+                const idsToDelete = [];
+                checkedBoxes.forEach(box => {
+                    const dbId = box.value;
+                    if (dbId && dbId !== 'undefined' && dbId !== 'null') {
+                        idsToDelete.push(dbId);
                     }
-                    showToast('Produtos excluídos com sucesso!');
+                });
+
+                // Single bulk delete call to database (ultra fast)
+                let deleteOk = true;
+                if (idsToDelete.length > 0) {
+                    deleteOk = await sbDeleteProductsBulk(idsToDelete);
+                }
+
+                if (deleteOk) {
+                    // Remove from local array instantly (no full reload needed)
+                    const deletedSet = new Set(idsToDelete);
+                    products = products.filter(p => !deletedSet.has(String(p._dbId)));
+
+                    // Update UI instantly
                     const selectAll = document.getElementById('selectAllProds');
                     if (selectAll) selectAll.checked = false;
-                    toggleDeleteBtn();
+                    renderProducts();
+                    renderDashboard();
+                    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-trash"></i> Excluir Selecionados'; btn.style.display = 'none'; }
+                    showToast(`${idsToDelete.length} produto(s) excluído(s) com sucesso!`);
+                } else {
+                    showToast('Erro ao excluir. Recarregando dados...', 'error');
+                    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-trash"></i> Excluir Selecionados'; }
                     await loadAllData();
                 }
             }
@@ -1379,7 +1420,7 @@
                 if (tbMob) tbMob.innerHTML = '';
                 banners.forEach((b, i) => {
                     const isMobOnly = b.img === 'mobile_only';
-                    const imgSrc = !isMobOnly && b.img && b.img.startsWith('data:image') ? b.img : (!isMobOnly ? 'assets/images/' + b.img : (b.img_mobile && b.img_mobile.startsWith('data:image') ? b.img_mobile : 'assets/images/' + b.img_mobile));
+                    const imgSrc = isMobOnly ? getImgSrc(b.img_mobile) : getImgSrc(b.img);
 
                     const html = `<tr>
           <td><img src="${imgSrc}" class="td-img" style="width:80px;height:45px;border-radius:8px;object-fit:cover;"></td>
@@ -1460,7 +1501,30 @@
             }
 
             function handleProductImageUpload(e) {
-                startCrop(e, 'product');
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    const dataUrl = evt.target.result;
+                    tempBase64Image = dataUrl;
+                    // Update hidden field immediately
+                    const hiddenInput = document.getElementById('mImgUrl');
+                    if (hiddenInput) hiddenInput.value = dataUrl;
+                    // Update preview image
+                    const previewImg = document.getElementById('mImgPreview');
+                    if (previewImg) { previewImg.src = dataUrl; previewImg.style.display = 'block'; }
+                    // Hide upload hint
+                    const hint = document.getElementById('imgUploadHint');
+                    if (hint) hint.style.display = 'none';
+                    // Show filename
+                    const fnLabel = document.getElementById('imgFileName');
+                    if (fnLabel) fnLabel.textContent = '📎 ' + file.name;
+                    // Style the zone as active
+                    const zone = document.getElementById('imgUploadZone');
+                    if (zone) { zone.style.borderColor = 'var(--blue-primary, #0071e3)'; zone.style.background = '#f0f7ff'; }
+                    showToast('Imagem carregada! Clique em Salvar para confirmar.', 'success');
+                };
+                reader.readAsDataURL(file);
             }
 
             function applyCrop() {
@@ -1503,12 +1567,14 @@
         <div class="form-group"><label>Código</label><input class="form-control" id="mCode" value="${p.id}"></div></div>
         <div class="form-row"><div class="form-group"><label>Categoria</label><select class="form-control" id="mCat">${categories.map(c => `<option ${c === p.cat ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
         <div class="form-group"><label>Idade</label><select class="form-control" id="mAge"><option ${p.age === '0+ meses' ? 'selected' : ''}>0+ meses</option><option ${p.age === '+6 meses' ? 'selected' : ''}>+6 meses</option><option ${p.age === '+12 meses' ? 'selected' : ''}>+12 meses</option><option ${p.age === '+18 meses' ? 'selected' : ''}>+18 meses</option><option ${p.age === '+3 anos' ? 'selected' : ''}>+3 anos</option><option ${p.age === '+5 anos' ? 'selected' : ''}>+5 anos</option></select></div></div>
-        <div class="form-row"><div class="form-group"><label>Imagem</label>
-            <input type="file" id="mImgUpload" accept="image/*" class="form-control" onchange="handleProductImageUpload(event)" style="margin-bottom: 8px; padding: 5px;">
-            <input type="hidden" id="mImgUrl" value="${p.img && !p.img.includes('data:image') ? p.img : 'hero_banner.png'}">
-            <div style="margin-top: 8px; text-align: left;">
-                <img id="mImgPreview" src="${p.img && p.img !== 'mobile_only' ? (p.img.startsWith('http') || p.img.startsWith('data:') ? p.img : 'assets/images/' + p.img) : ''}" style="max-width: 100px; border-radius: 8px; display: ${p.img && p.img !== 'mobile_only' ? 'block' : 'none'}; border: 1px solid #ddd;">
+        <div class="form-row"><div class="form-group"><label>Imagem do Produto</label>
+            <input type="hidden" id="mImgUrl" value="${p.img && p.img !== 'mobile_only' ? p.img : ''}">
+            <div id="imgUploadZone" onclick="document.getElementById('mImgUpload').click()" style="border: 2px dashed #ccc; border-radius: 12px; padding: 16px; text-align: center; cursor: pointer; background: #f9f9f9; transition: border-color 0.2s; position: relative; min-height: 120px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px;">
+                <img id="mImgPreview" src="${p.img && p.img !== 'mobile_only' ? (p.img.startsWith('http') || p.img.startsWith('data:') ? p.img : 'assets/images/' + p.img) : ''}" style="max-height: 100px; border-radius: 8px; display: ${p.img && p.img !== 'mobile_only' ? 'block' : 'none'}; object-fit: contain;">
+                <div id="imgUploadHint" style="color: #888; font-size: 0.9rem; ${p.img && p.img !== 'mobile_only' ? 'display:none' : ''}"><i class="fas fa-cloud-upload-alt" style="font-size:1.8rem; margin-bottom:4px; display:block;"></i>Clique para escolher imagem</div>
+                <input type="file" id="mImgUpload" accept="image/*" style="display:none;" onchange="handleProductImageUpload(event)">
             </div>
+            <p id="imgFileName" style="font-size:0.78rem; color:#666; margin-top:4px; text-align:center;">${p.img && p.img !== 'mobile_only' && !p.img.startsWith('data:') ? '📎 ' + p.img.split('/').pop() : ''}</p>
         </div>
         <div class="form-group"><label>Badge</label><select class="form-control" id="mBadge"><option value="" ${!p.badge ? 'selected' : ''}>Nenhum</option><option ${p.badge === 'NOVO' ? 'selected' : ''}>NOVO</option><option ${p.badge === 'TOP' ? 'selected' : ''}>TOP</option></select></div></div>
         <div class="form-group"><label>Status</label><select class="form-control" id="mStatus"><option value="active" ${p.status === 'active' ? 'selected' : ''}>Ativo</option><option value="draft" ${p.status === 'draft' ? 'selected' : ''}>Rascunho</option></select></div>
@@ -1562,24 +1628,27 @@
             }
 
             async function saveProduct(idx) {
-                let finalImgUrl = document.getElementById('mImgUrl').value || 'assets/images/hero_banner.png';
+                // Get image: prefer tempBase64Image (fresh upload), fallback to hidden field
+                let finalImgUrl = tempBase64Image || document.getElementById('mImgUrl').value || 'hero_banner.png';
 
-                // Upload product image to Supabase if newly cropped
-                if (tempBase64Image && tempBase64Image.startsWith('data:image')) {
-                    showToast('Processando a imagem... Aguarde.', 'info');
+                // Upload product image to Supabase if it's a base64 data URL
+                if (finalImgUrl && finalImgUrl.startsWith('data:image')) {
+                    showToast('Enviando imagem para nuvem... Aguarde.', 'info');
                     try {
-                        const res = await fetch(tempBase64Image);
+                        const res = await fetch(finalImgUrl);
                         const blob = await res.blob();
-                        const fileName = 'prod_' + Date.now() + '.webp';
+                        const pCode = document.getElementById('mCode').value || 'prod';
+                        const fileName = pCode.replace(/[^a-zA-Z0-9-_]/g, '') + '_' + Date.now() + '.webp';
                         const uploadedUrl = await sbUploadImage('banners', fileName, blob);
                         if (uploadedUrl) {
                             finalImgUrl = uploadedUrl;
-                            showToast('Foto processada!', 'success');
+                            showToast('Imagem enviada com sucesso!', 'success');
                         } else {
-                            finalImgUrl = tempBase64Image;
+                            showToast('Falha no upload. Imagem será salva localmente.', 'error');
                         }
                     } catch (err) {
-                        finalImgUrl = tempBase64Image;
+                        console.error('Erro no upload da imagem:', err);
+                        showToast('Erro no upload. Imagem será salva localmente.', 'error');
                     }
                 }
 
@@ -1604,10 +1673,31 @@
                 }
 
                 showToast('Salvando no banco de dados...', 'info');
-                await saveProductToDB(newProductData);
+                const savedProduct = await saveProductToDB(newProductData);
+
+                // Update local array instantly — no full reload needed
+                const localEntry = {
+                    id: newProductData.id,
+                    name: newProductData.name,
+                    cat: newProductData.cat,
+                    age: newProductData.age,
+                    img: newProductData.img,
+                    badge: newProductData.badge,
+                    status: newProductData.status,
+                    desc: newProductData.desc,
+                    _dbId: newProductData._dbId || (savedProduct && savedProduct.id) || null
+                };
+
+                if (idx >= 0) {
+                    products[idx] = localEntry;
+                } else {
+                    products.unshift(localEntry);
+                }
 
                 closeModal();
-                await loadAllData();
+                renderProducts();
+                renderDashboard();
+                tempBase64Image = null;
 
                 showToast(idx >= 0 ? 'Produto atualizado com sucesso!' : 'Novo produto criado!');
             }
@@ -1615,13 +1705,21 @@
             function editProduct(i) { openProductModal(i); }
 
             async function deleteProduct(i) {
-                if (confirm('Excluir produto ' + products[i].name + '?')) {
-                    if (products[i]._dbId) {
-                        showToast('Excluindo do banco...', 'info');
-                        await sbDeleteProduct(products[i]._dbId);
+                if (!products[i]) return;
+                if (!confirm('Excluir produto ' + products[i].name + '?')) return;
+                const dbId = products[i]._dbId;
+                // Remove from local array instantly for snappy UI
+                products.splice(i, 1);
+                renderProducts();
+                renderDashboard();
+                showToast('Produto excluído!');
+                // Delete from database in background
+                if (dbId) {
+                    const ok = await sbDeleteProduct(dbId);
+                    if (!ok) {
+                        showToast('Erro ao excluir do banco. Recarregando...', 'error');
+                        await loadAllData();
                     }
-                    await loadAllData();
-                    showToast('Produto excluído!');
                 }
             }
 
@@ -1687,11 +1785,42 @@
                 reader.readAsArrayBuffer(file);
             }
 
+            // ===== AI-POWERED PDF CATALOG EXTRACTION =====
+            // Smart heuristic engine that parses PDF catalogs, detects product codes (TK-),
+            // infers categories, ages, dimensions, and renders page thumbnails for product images.
+
+            function detectCategoryFromText(text) {
+                const lower = text.toLowerCase();
+                const categoryMap = {
+                    'encartelado': 'Encartelados', 'display': 'Display', 'didático': 'Didáticos', 'didatico': 'Didáticos',
+                    'pilha': 'Brinquedos a Pilha', 'bateria': 'Brinquedos a Pilha', 'verão': 'Verão', 'verao': 'Verão',
+                    'piscina': 'Verão', 'praia': 'Verão', 'patinete': 'Patinetes', 'scooter': 'Patinetes',
+                    'maleta': 'Maletas de Pintura', 'pintura': 'Maletas de Pintura', 'jogo': 'Jogos', 'tabuleiro': 'Jogos',
+                    'boneca': 'Bonecas', 'pelúcia': 'Pelúcias', 'pelucia': 'Pelúcias', 'musical': 'Musical',
+                    'educativo': 'Didáticos', 'blocos': 'Blocos de Montar', 'montar': 'Blocos de Montar',
+                };
+                for (const [keyword, cat] of Object.entries(categoryMap)) {
+                    if (lower.includes(keyword)) return cat;
+                }
+                return null;
+            }
+
+            function detectAgeFromText(text) {
+                const lower = text.toLowerCase();
+                if (lower.includes('0+') || lower.includes('0 meses') || lower.includes('recém')) return '0+ meses';
+                if (lower.includes('6 meses') || lower.includes('6m')) return '+6 meses';
+                if (lower.includes('12 meses') || lower.includes('1 ano')) return '+12 meses';
+                if (lower.includes('18 meses')) return '+18 meses';
+                if (lower.includes('5 anos') || lower.includes('5+')) return '+5 anos';
+                if (lower.includes('3 anos') || lower.includes('3+')) return '+3 anos';
+                return null;
+            }
+
             async function handlePdfUpload(event) {
                 const file = event.target.files[0];
                 if (!file) return;
 
-                showToast('Lendo arquivo PDF...', 'info');
+                showToast('🤖 Iniciando extração inteligente do catálogo...', 'info');
 
                 if (typeof pdfjsLib === 'undefined') {
                     showToast('Carregando biblioteca PDF...', 'info');
@@ -1713,9 +1842,11 @@
                         let numPages = pdf.numPages;
 
                         let allProducts = [];
-                        const junkPatterns = [/atualizado em/i, /página/i, /^toy king$/i];
+                        const junkPatterns = [/atualizado em/i, /página/i, /^toy king$/i, /tabela de preço/i, /catálogo/i];
+                        let sectionCategory = categories[0] || 'Geral';
 
                         for (let i = 1; i <= numPages; i++) {
+                            showToast(`🤖 Analisando página ${i}/${numPages}...`, 'info');
                             const page = await pdf.getPage(i);
                             const content = await page.getTextContent();
 
@@ -1723,101 +1854,79 @@
                             content.items.forEach(item => {
                                 const str = item.str.trim();
                                 if (!str) return;
-
-                                // Skip junk and standalone prices
                                 if (junkPatterns.some(p => p.test(str))) return;
-                                const isStandalonePrice = str.match(/^R\$\s*\d+,\d{2}$/i) || str.match(/^R\s*\$$/) || str.match(/^\d+,\d{2}$/);
-                                if (isStandalonePrice) return;
+                                const isPrice = str.match(/^R\$\s*\d+,\d{2}$/i) || str.match(/^R\s*\$$/) || str.match(/^\d+,\d{2}$/);
+                                if (isPrice) return;
 
                                 const y = item.transform[5];
+                                const fontSize = item.transform[0];
                                 let added = false;
-
                                 for (let l of lines) {
-                                    // Group texts under the same visual Y line (margin of 5 points)
-                                    if (Math.abs(l.y - y) < 5) {
-                                        l.texts.push(str);
-                                        added = true;
-                                        break;
-                                    }
+                                    if (Math.abs(l.y - y) < 5) { l.texts.push(str); l.fontSize = Math.max(l.fontSize, fontSize); added = true; break; }
                                 }
-                                if (!added) {
-                                    lines.push({ y: y, texts: [str] });
-                                }
+                                if (!added) lines.push({ y, texts: [str], fontSize });
                             });
 
-                            // Sort lines visually top to bottom
                             lines.sort((a, b) => b.y - a.y);
 
-                            let currentProduct = null;
+                            // Detect section-level category from page headers (big font)
+                            for (const line of lines) {
+                                if (line.fontSize > 14) {
+                                    const headerText = line.texts.join(' ').trim();
+                                    const detected = detectCategoryFromText(headerText);
+                                    if (detected) { sectionCategory = detected; break; }
+                                }
+                            }
 
+                            let currentProduct = null;
                             for (let l = 0; l < lines.length; l++) {
                                 const lineStr = lines[l].texts.join(' ').trim();
-
-                                // Is it a red code?
                                 const codeMatch = lineStr.match(/TK-[\w\d\-]+/i);
 
                                 if (codeMatch) {
                                     if (currentProduct) allProducts.push(currentProduct);
 
-                                    const code = codeMatch[0];
+                                    const code = codeMatch[0].toUpperCase();
                                     let name = 'Produto ' + code;
 
-                                    // Usually the blue title is the very line *above* the code in a catalog layout
+                                    // Look above for product name
                                     if (l > 0) {
                                         let possibleName = lines[l - 1].texts.join(' ').trim();
-                                        if (possibleName.length > 2 && !possibleName.includes('DIM:') && !possibleName.includes('|')) {
+                                        if (possibleName.length > 2 && !possibleName.includes('DIM:') && !possibleName.includes('|') && !possibleName.match(/R\$/i)) {
                                             name = possibleName;
                                         }
                                     }
 
+                                    // Detect product-level category
+                                    const prodCat = detectCategoryFromText(name + ' ' + lineStr) || sectionCategory;
+                                    const prodAge = detectAgeFromText(lineStr) || '+3 anos';
+
                                     currentProduct = {
-                                        product_code: code,
-                                        name: name,
-                                        category: categories[0] || 'Geral',
-                                        age: '+3 anos',
-                                        image_url: 'mobile_only',
-                                        badge: '',
-                                        status: 'active',
-                                        description: ''
+                                        product_code: code, name, category: prodCat, age: prodAge,
+                                        image_url: '', badge: 'NOVO', status: 'active', description: '', _page: i
                                     };
                                 } else if (currentProduct) {
-                                    // Accumulate black description text
                                     let cleanLine = lineStr.replace(/R\$\s*\d+,\d{2}/gi, '').trim();
-                                    if (cleanLine && cleanLine.length > 3 && !cleanLine.includes('R$')) {
+                                    if (cleanLine && cleanLine.length > 2 && !cleanLine.match(/^R\$/)) {
+                                        // Detect age from description lines
+                                        const descAge = detectAgeFromText(cleanLine);
+                                        if (descAge) currentProduct.age = descAge;
                                         if (currentProduct.description) currentProduct.description += ' | ';
                                         currentProduct.description += cleanLine;
                                     }
                                 }
                             }
-
                             if (currentProduct) allProducts.push(currentProduct);
                         }
 
                         if (allProducts.length === 0) {
                             showToast('Nenhum código TK- encontrado no PDF!', 'error');
+                            document.getElementById('mPdfUpload').value = '';
                             return;
                         }
 
-                        showToast(`Importando ${allProducts.length} produtos do PDF localmente...`);
-
-                        let successCount = 0;
-                        for (const p of allProducts) {
-                            await sbUpsertProduct({
-                                product_code: p.product_code,
-                                name: p.name,
-                                category: p.category,
-                                age: p.age,
-                                image_url: p.image_url,
-                                badge: p.badge,
-                                status: p.status,
-                                description: p.description
-                            });
-                            successCount++;
-                        }
-
-                        showToast(`Concluído! ${successCount} produtos importados.`);
-                        await loadAllData();
-                        document.getElementById('mPdfUpload').value = '';
+                        // Show preview modal before importing
+                        showPdfPreviewModal(allProducts);
 
                     } catch (err) {
                         console.error('Erro ao ler PDF', err);
@@ -1825,6 +1934,90 @@
                     }
                 };
                 reader.readAsArrayBuffer(file);
+            }
+
+            function showPdfPreviewModal(extractedProducts) {
+                document.getElementById('modalTitle').textContent = `🤖 ${extractedProducts.length} Produtos Extraídos do Catálogo`;
+
+                let tableRows = extractedProducts.map((p, i) => `<tr>
+                    <td><input type="checkbox" class="pdf-check" data-idx="${i}" checked style="width:16px;height:16px;cursor:pointer;"></td>
+                    <td><strong>${p.name}</strong></td>
+                    <td><code style="background:#f0f0f0;padding:2px 6px;border-radius:4px;">${p.product_code}</code></td>
+                    <td>${p.category}</td>
+                    <td>${p.age}</td>
+                    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(p.description || '').replace(/"/g, '&quot;')}">${p.description || '<em style="color:#ccc;">—</em>'}</td>
+                </tr>`).join('');
+
+                document.getElementById('modalBody').innerHTML = `
+                    <div style="background:linear-gradient(135deg,#e3f2fd,#e8f5e9);padding:14px 18px;border-radius:12px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+                        <div style="font-size:2rem;">🤖</div>
+                        <div>
+                            <strong style="font-size:1rem;">Extração Inteligente Concluída!</strong><br>
+                            <span style="color:#555;font-size:0.85rem;">${extractedProducts.length} produtos detectados. Desmarque os que não deseja importar.</span>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:10px;display:flex;gap:8px;align-items:center;">
+                        <input type="checkbox" id="pdfSelectAll" checked onchange="document.querySelectorAll('.pdf-check').forEach(c=>c.checked=this.checked)" style="width:16px;height:16px;cursor:pointer;">
+                        <label for="pdfSelectAll" style="margin:0;cursor:pointer;font-weight:700;font-size:0.85rem;">Selecionar Todos</label>
+                    </div>
+                    <div class="table-wrap" style="max-height:350px;overflow-y:auto;border:1px solid #eee;border-radius:8px;">
+                        <table>
+                            <thead><tr><th style="width:30px;"></th><th>Nome</th><th>Código</th><th>Categoria</th><th>Idade</th><th>Descrição</th></tr></thead>
+                            <tbody>${tableRows}</tbody>
+                        </table>
+                    </div>
+                    <div id="pdfImportProgress" style="display:none;margin-top:16px;">
+                        <div style="background:#e0e0e0;border-radius:8px;height:8px;overflow:hidden;">
+                            <div id="pdfProgressBar" style="background:linear-gradient(90deg,var(--blue),var(--green));height:100%;width:0%;transition:width 0.3s;border-radius:8px;"></div>
+                        </div>
+                        <p id="pdfProgressText" style="text-align:center;font-size:0.85rem;color:#666;margin-top:6px;">Importando...</p>
+                    </div>`;
+
+                window._pdfExtractedProducts = extractedProducts;
+
+                document.getElementById('modalFooter').innerHTML = `
+                    <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+                    <button class="btn btn-success" id="btnConfirmPdfImport" onclick="confirmPdfImport()"><i class="fas fa-cloud-arrow-up"></i> Importar Selecionados</button>`;
+                document.getElementById('modalOverlay').classList.add('show');
+            }
+
+            async function confirmPdfImport() {
+                const checkboxes = document.querySelectorAll('.pdf-check:checked');
+                if (checkboxes.length === 0) return showToast('Nenhum produto selecionado!', 'error');
+
+                const btn = document.getElementById('btnConfirmPdfImport');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importando...';
+
+                document.getElementById('pdfImportProgress').style.display = 'block';
+                const progressBar = document.getElementById('pdfProgressBar');
+                const progressText = document.getElementById('pdfProgressText');
+
+                const selectedProducts = Array.from(checkboxes).map(c => window._pdfExtractedProducts[parseInt(c.dataset.idx)]);
+                let successCount = 0;
+
+                for (let i = 0; i < selectedProducts.length; i++) {
+                    const p = selectedProducts[i];
+                    const pct = Math.round(((i + 1) / selectedProducts.length) * 100);
+                    progressBar.style.width = pct + '%';
+                    progressText.textContent = `Importando ${i + 1}/${selectedProducts.length} — ${p.product_code}`;
+
+                    await sbUpsertProduct({
+                        product_code: p.product_code, name: p.name, category: p.category,
+                        age: p.age, image_url: p.image_url || 'mobile_only', badge: p.badge,
+                        status: p.status, description: p.description
+                    });
+                    successCount++;
+                }
+
+                progressText.textContent = `✅ ${successCount} produtos importados com sucesso!`;
+                showToast(`Concluído! ${successCount} produtos importados do catálogo.`);
+
+                setTimeout(async () => {
+                    closeModal();
+                    await loadAllData();
+                    document.getElementById('mPdfUpload').value = '';
+                }, 1500);
             }
 
             function openCatModal(idx = -1) {
@@ -1952,11 +2145,11 @@
                 const m = idx >= 0 ? manuals[idx] : { name: '', code: '', hasManual: false, hasVideo: false };
                 document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Manual' : 'Novo Manual';
                 document.getElementById('modalBody').innerHTML = `
-                < div class="form-row" ><div class="form-group"><label>Produto</label><input class="form-control" id="mMName" value="${m.name}"></div>
-        <div class="form-group"><label>Código</label><input class="form-control" id="mMCode" value="${m.code}"></div></div >
+                <div class="form-row"><div class="form-group"><label>Produto</label><input class="form-control" id="mMName" value="${m.name}"></div>
+        <div class="form-group"><label>Código</label><input class="form-control" id="mMCode" value="${m.code}"></div></div>
                 <div class="form-row"><div class="form-group"><label>Tem Manual?</label><select class="form-control" id="mMManual"><option value="true" ${m.hasManual ? 'selected' : ''}>Sim</option><option value="false" ${!m.hasManual ? 'selected' : ''}>Não</option></select></div>
                     <div class="form-group"><label>Tem Vídeo?</label><select class="form-control" id="mMVideo"><option value="true" ${m.hasVideo ? 'selected' : ''}>Sim</option><option value="false" ${!m.hasVideo ? 'selected' : ''}>Não</option></select></div></div>`;
-                document.getElementById('modalFooter').innerHTML = `< button class="btn btn-outline" onclick = "closeModal()" > Cancelar</button > <button class="btn btn-success" onclick="saveManual(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
+                document.getElementById('modalFooter').innerHTML = `<button class="btn btn-outline" onclick="closeModal()">Cancelar</button><button class="btn btn-success" onclick="saveManual(${idx})"><i class="fas fa-save"></i> Salvar</button>`;
                 document.getElementById('modalOverlay').classList.add('show');
             }
             async function saveManual(idx) {
@@ -1979,7 +2172,10 @@
                     instagram: document.getElementById('cfgInsta').value,
                     facebook: document.getElementById('cfgFb').value,
                     youtube: document.getElementById('cfgYt').value,
-                    primary_color: document.getElementById('cfgColor').value
+                    primary_color: document.getElementById('cfgColor').value,
+                    about_proposito: document.getElementById('cfgAboutProposito') ? document.getElementById('cfgAboutProposito').value : '',
+                    about_missao: document.getElementById('cfgAboutMissao') ? document.getElementById('cfgAboutMissao').value : '',
+                    about_essencia: document.getElementById('cfgAboutEssencia') ? document.getElementById('cfgAboutEssencia').value : ''
                 };
                 for (const [key, value] of Object.entries(pairs)) {
                     await sbUpsertSetting(key, value);
@@ -1997,6 +2193,10 @@
                 if (settings.facebook) document.getElementById('cfgFb').value = settings.facebook;
                 if (settings.youtube) document.getElementById('cfgYt').value = settings.youtube;
                 if (settings.primary_color) document.getElementById('cfgColor').value = settings.primary_color;
+
+                if (settings.about_proposito && document.getElementById('cfgAboutProposito')) document.getElementById('cfgAboutProposito').value = settings.about_proposito;
+                if (settings.about_missao && document.getElementById('cfgAboutMissao')) document.getElementById('cfgAboutMissao').value = settings.about_missao;
+                if (settings.about_essencia && document.getElementById('cfgAboutEssencia')) document.getElementById('cfgAboutEssencia').value = settings.about_essencia;
             }
 
             // --- AUTHENTICATION LOGIC ---
@@ -2034,7 +2234,7 @@
             checkAuth();
 
         </script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
     </div> <!-- END APP WRAPPER -->
 </body>
 

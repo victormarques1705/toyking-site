@@ -93,6 +93,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     });
                 }
+
+                if (settingsMap.about_proposito && document.getElementById('aboutProposito')) {
+                    const lines = settingsMap.about_proposito.split('\n').filter(l => l.trim() !== '');
+                    document.getElementById('aboutProposito').innerHTML = lines.map(l => `<p>${l}</p>`).join('');
+                }
+                if (settingsMap.about_missao && document.getElementById('aboutMissao')) {
+                    document.getElementById('aboutMissao').textContent = settingsMap.about_missao;
+                }
+                if (settingsMap.about_essencia && document.getElementById('aboutEssencia')) {
+                    const items = settingsMap.about_essencia.split(',').filter(i => i.trim() !== '');
+                    document.getElementById('aboutEssencia').innerHTML = items.map(i => `<li><i class="fas fa-check-circle"></i> ${i.trim()}</li>`).join('');
+                }
             }
         } catch (e) { console.error('Erro ao carregar configurações:', e); }
 
