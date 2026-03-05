@@ -134,13 +134,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             videoData.forEach((item, idx) => {
                                 const relImgSrc = item.image && (item.image.startsWith('data:image') || item.image.startsWith('http')) ? item.image : 'assets/images/' + item.image;
                                 videoGrid.innerHTML += `
-                                    <div class="video-card reveal" style="transition-delay: ${0.1 + (idx * 0.1)}s;" onclick="window.open('${item.link}', '_blank')">
+                                    <a href="${item.link}" target="_blank" class="video-card reveal" style="display:block; text-decoration:none; color:inherit; transition-delay: ${0.1 + (idx * 0.1)}s;">
                                         <div class="video-thumb">
                                             <img src="${relImgSrc}" alt="${item.title}">
                                             <div class="play-icon"><i class="fas fa-play"></i></div>
                                         </div>
                                         <h4>${item.title}</h4>
-                                    </div>`;
+                                    </a>`;
                             });
                             if (window.initReveals) window.initReveals();
                         }
