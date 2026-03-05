@@ -162,9 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const slider = document.querySelector('.slider');
                 const dotsContainer = document.querySelector('.slider-dots');
                 if (slider && dotsContainer) {
-                    slider.innerHTML = '';
-                    dotsContainer.innerHTML = '';
-
                     let isMobile = window.innerWidth <= 768;
                     let displayBanners = isMobile
                         ? banners.filter(b => b.image_url === 'mobile_only' || (b.image_mobile_url && b.image_mobile_url.trim() !== ''))
@@ -172,35 +169,68 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (displayBanners.length === 0) displayBanners = banners;
 
-                    displayBanners.forEach((b, i) => {
-                        const activeClass = i === 0 ? 'active' : '';
-                        const uniqueId = b.id || i;
-
-                        let finalSrc = '';
+                    // Identify first image to preload
+                    let firstSrc = '';
+                    if (displayBanners.length > 0) {
+                        const b0 = displayBanners[0];
                         if (isMobile) {
-                            let mbUrl = (b.image_mobile_url && b.image_mobile_url.trim() !== '') ? b.image_mobile_url : b.image_url;
-                            finalSrc = (mbUrl.startsWith('data:image') || mbUrl.startsWith('http')) ? mbUrl : 'assets/images/' + mbUrl;
+                            let mbUrl = (b0.image_mobile_url && b0.image_mobile_url.trim() !== '') ? b0.image_mobile_url : b0.image_url;
+                            firstSrc = (mbUrl.startsWith('data:image') || mbUrl.startsWith('http')) ? mbUrl : 'assets/images/' + mbUrl;
                         } else {
-                            finalSrc = (b.image_url.startsWith('data:image') || b.image_url.startsWith('http')) ? b.image_url : 'assets/images/' + b.image_url;
+                            firstSrc = (b0.image_url.startsWith('data:image') || b0.image_url.startsWith('http')) ? b0.image_url : 'assets/images/' + b0.image_url;
                         }
+                    }
 
-                        slider.innerHTML += `
-                          <style>
-                            .slide-bg-${uniqueId} { background-image: url('${finalSrc}'); }
-                          </style>
-                          <div class="slide ${activeClass}">
-                            <div class="slide-bg slide-bg-${uniqueId}"></div>
-                            <div class="slide-content">
-                              <h1>${b.title}</h1>
-                              <p>${b.subtitle || ''}</p>
-                              ${b.link === 'none' ? '' : `<a href="${b.link || 'produtos.html'}" class="btn-hero">Ver Produtos</a>`}
-                            </div>
-                          </div>
-                        `;
-                        dotsContainer.innerHTML += `<button class="slider-dot ${activeClass}"></button>`;
-                    });
+                    const renderBanners = () => {
+                        slider.style.opacity = '0';
+                        setTimeout(() => {
+                            slider.innerHTML = '';
+                            dotsContainer.innerHTML = '';
 
-                    if (window.initSliderCore) window.initSliderCore();
+                            displayBanners.forEach((b, i) => {
+                                const activeClass = i === 0 ? 'active' : '';
+                                const uniqueId = b.id || i;
+
+                                let finalSrc = '';
+                                if (isMobile) {
+                                    let mbUrl = (b.image_mobile_url && b.image_mobile_url.trim() !== '') ? b.image_mobile_url : b.image_url;
+                                    finalSrc = (mbUrl.startsWith('data:image') || mbUrl.startsWith('http')) ? mbUrl : 'assets/images/' + mbUrl;
+                                } else {
+                                    finalSrc = (b.image_url.startsWith('data:image') || b.image_url.startsWith('http')) ? b.image_url : 'assets/images/' + b.image_url;
+                                }
+
+                                slider.innerHTML += `
+                                  <style>
+                                    .slide-bg-${uniqueId} { background-image: url('${finalSrc}'); }
+                                  </style>
+                                  <div class="slide ${activeClass}">
+                                    <div class="slide-bg slide-bg-${uniqueId}"></div>
+                                    <div class="slide-content">
+                                      <h1>${b.title}</h1>
+                                      <p>${b.subtitle || ''}</p>
+                                      ${b.link === 'none' ? '' : `<a href="${b.link || 'produtos.html'}" class="btn-hero">Ver Produtos</a>`}
+                                    </div>
+                                  </div>
+                                `;
+                                dotsContainer.innerHTML += `<button class="slider-dot ${activeClass}"></button>`;
+                            });
+
+                            requestAnimationFrame(() => {
+                                slider.style.transition = 'opacity 0.6s ease';
+                                slider.style.opacity = '1';
+                                if (window.initSliderCore) window.initSliderCore();
+                            });
+                        }, 300); // Wait for fade out
+                    };
+
+                    if (firstSrc) {
+                        const imgLoader = new Image();
+                        imgLoader.onload = renderBanners;
+                        imgLoader.onerror = renderBanners;
+                        imgLoader.src = firstSrc;
+                    } else {
+                        renderBanners();
+                    }
                 }
             }
         } catch (e) { console.error('Erro ao carregar banners:', e); }
