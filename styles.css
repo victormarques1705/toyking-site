@@ -1104,8 +1104,13 @@ body.page-exit {
 
 /* Hide Elfsight Logo/Badge */
 .elfsight-app-c5acfcdb-8b2f-48fa-a9fa-1f43213e21bd a,
-a[href*="elfsight.com"] {
+a[href*="elfsight.com"],
+div[class*="eapps-link"],
+.eapps-widget-toolbar {
     display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
 }
 
 .insta-grid {
