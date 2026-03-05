@@ -1102,6 +1102,12 @@ body.page-exit {
     text-align: center;
 }
 
+/* Hide Elfsight Logo/Badge */
+.elfsight-app-c5acfcdb-8b2f-48fa-a9fa-1f43213e21bd a,
+a[href*="elfsight.com"] {
+    display: none !important;
+}
+
 .insta-grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
