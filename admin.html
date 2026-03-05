@@ -968,6 +968,7 @@
                                             <th>Código</th>
                                             <th>Categoria</th>
                                             <th>Idade</th>
+                                            <th>Características</th>
                                             <th>Status</th>
                                             <th>Ações</th>
                                         </tr>
@@ -1328,6 +1329,14 @@
           </td>
           <td><img src="${imgSrc}" class="td-img"></td>
           <td><strong>${p.name}</strong></td><td>${p.id}</td><td>${p.cat}</td><td>${p.age}</td>
+          <td>
+            <div style="display:flex; gap:6px; font-size:1.1rem;">
+                ${p.sounds ? '<span title="Possui Sons">🔊</span>' : '<span style="opacity:0.1; filter:grayscale(1);">🔊</span>'}
+                ${p.lights ? '<span title="Possui Luzes">💡</span>' : '<span style="opacity:0.1; filter:grayscale(1);">💡</span>'}
+                ${p.educational ? '<span title="Educativo">🎓</span>' : '<span style="opacity:0.1; filter:grayscale(1);">🎓</span>'}
+                ${p.battery ? '<span title="Usa Pilhas: ' + p.battery + '"><i class="fas fa-battery-half" style="color:var(--blue)"></i></span>' : ''}
+            </div>
+          </td>
           <td><span class="badge-status ${p.status === 'active' ? 'badge-active' : 'badge-draft'}">${p.status === 'active' ? 'Ativo' : 'Rascunho'}</span></td>
           <td><div class="td-actions">
             <button class="btn btn-sm btn-outline" onclick="editProduct(${originalIdx})"><i class="fas fa-edit"></i></button>
