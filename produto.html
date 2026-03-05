@@ -576,17 +576,31 @@
                         // Related
                         const related = products.filter(p => p.id !== pid && p.status === 'active').slice(0, 4);
                         const rg = document.getElementById('relatedGrid');
-                        related.forEach(p => {
+                        rg.innerHTML = '';
+                        related.forEach((p, i) => {
                             const card = document.createElement('div');
                             card.className = 'product-card reveal';
+                            card.style.transitionDelay = `${0.1 + (i * 0.1)}s`;
                             card.style.cursor = 'pointer';
                             card.onclick = () => window.location.href = 'produto.html?id=' + p.id;
                             const relImgSrc = p.img && (p.img.startsWith('data:image') || p.img.startsWith('http')) ? p.img : (p.img ? 'assets/images/' + p.img : 'assets/images/hero_banner.png');
                             card.innerHTML = `
-            <div class="product-img-wrapper"><img src="${relImgSrc}" alt="${p.name}" class="product-img"></div>
-            <div class="product-info"><h3>${p.name}</h3><p class="category-tag">${p.cat}</p><span class="product-age">${p.age}</span></div>`;
+                                <div class="product-img-wrapper"><img src="${relImgSrc}" alt="${p.name}" class="product-img"></div>
+                                <div class="product-info">
+                                    <h3>${p.name}</h3>
+                                    <p class="product-code-tag">${p.id}</p>
+                                    <div class="product-tags-row">
+                                        <span class="product-tag">${p.cat}</span>
+                                        <span class="product-tag">${p.age}</span>
+                                    </div>
+                                </div>`;
                             rg.appendChild(card);
                         });
+
+                        // Force visible class
+                        setTimeout(() => {
+                            document.querySelectorAll('#relatedGrid .reveal').forEach(el => el.classList.add('visible'));
+                        }, 100);
                     }
                     loadProductDetail();
                 </script>
