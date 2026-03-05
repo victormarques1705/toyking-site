@@ -848,6 +848,7 @@
                     Institucional</button>
                 <button class="nav-item" data-section="banners"><i class="fas fa-images"></i> Banners</button>
                 <button class="nav-item" data-section="instagram"><i class="fab fa-instagram"></i> Instagram</button>
+                <button class="nav-item" data-section="videos"><i class="fas fa-play-circle"></i> Vídeos</button>
                 <button class="nav-item" data-section="manuals"><i class="fas fa-book"></i> Manuais</button>
                 <div class="nav-label">Configurações</div>
                 <button class="nav-item" data-section="settings"><i class="fas fa-cog"></i> Configurações</button>
@@ -1108,6 +1109,34 @@
                     </div>
                 </div>
 
+                <!-- VIDEOS -->
+                <div class="section" id="sec-videos">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>🎬 Vídeos e Reels (Destaques)</h2>
+                            <p style="font-size: 0.85rem; color: #666; font-weight: 600;">Adicione vídeos do Instagram
+                                ou YouTube para exibir na tela inicial.</p>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label>Dados dos Vídeos (JSON - Automático)</label>
+                                <textarea class="form-control" id="cfgVideoFeed" rows="10"
+                                    placeholder='[{"title": "Nome do Vídeo", "image": "capa_do_video", "link": "link_do_video"}]'></textarea>
+                            </div>
+                            <div id="videoPreviewGrid"
+                                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                                <!-- Preview items will appear here -->
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-primary" onclick="addVideoPost()"><i class="fas fa-plus"></i>
+                                    Adicionar Vídeo</button>
+                                <button class="btn btn-success" onclick="saveSettings()"><i class="fas fa-save"></i>
+                                    Salvar Vídeos</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- MANUALS -->
                 <div class="section" id="sec-manuals">
                     <div class="panel">
@@ -1294,7 +1323,7 @@
             }
 
             // ===== NAV =====
-            const titles = { dashboard: '📊 Dashboard', products: '📦 Produtos', categories: '🏷️ Categorias', pages: '📄 Páginas', banners: '🖼️ Banners', instagram: '📸 Instagram', manuals: '📖 Manuais', settings: '⚙️ Configurações' };
+            const titles = { dashboard: '📊 Dashboard', products: '📦 Produtos', categories: '🏷️ Categorias', pages: '📄 Páginas', banners: '🖼️ Banners', instagram: '📸 Instagram', videos: '🎬 Vídeos', manuals: '📖 Manuais', settings: '⚙️ Configurações' };
             document.querySelectorAll('.nav-item').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const sec = btn.dataset.section;
@@ -2230,7 +2259,8 @@
                     about_proposito: document.getElementById('cfgAboutProposito') ? document.getElementById('cfgAboutProposito').value : '',
                     about_missao: document.getElementById('cfgAboutMissao') ? document.getElementById('cfgAboutMissao').value : '',
                     about_essencia: document.getElementById('cfgAboutEssencia') ? document.getElementById('cfgAboutEssencia').value : '',
-                    insta_feed_data: document.getElementById('cfgInstaFeed') ? document.getElementById('cfgInstaFeed').value : '[]'
+                    insta_feed_data: document.getElementById('cfgInstaFeed') ? document.getElementById('cfgInstaFeed').value : '[]',
+                    video_feed_data: document.getElementById('cfgVideoFeed') ? document.getElementById('cfgVideoFeed').value : '[]'
                 };
                 for (const [key, value] of Object.entries(pairs)) {
                     await sbUpsertSetting(key, value);
@@ -2255,6 +2285,10 @@
                 if (settings.insta_feed_data && document.getElementById('cfgInstaFeed')) {
                     document.getElementById('cfgInstaFeed').value = settings.insta_feed_data;
                     renderInstaFeedPreview();
+                }
+                if (settings.video_feed_data && document.getElementById('cfgVideoFeed')) {
+                    document.getElementById('cfgVideoFeed').value = settings.video_feed_data;
+                    renderVideoFeedPreview();
                 }
             }
 
@@ -2307,6 +2341,61 @@
                 data.splice(idx, 1);
                 area.value = JSON.stringify(data, null, 2);
                 renderInstaFeedPreview();
+            }
+
+            // --- VIDEO FEED LOGIC ---
+            function renderVideoFeedPreview() {
+                const area = document.getElementById('cfgVideoFeed');
+                const grid = document.getElementById('videoPreviewGrid');
+                if (!area || !grid) return;
+
+                let data = [];
+                try { data = JSON.parse(area.value || '[]'); } catch (e) { data = []; }
+
+                grid.innerHTML = '';
+                data.forEach((item, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'panel';
+                    div.style.padding = '10px';
+                    div.style.position = 'relative';
+                    div.innerHTML = `
+                        <div style="position:relative; width:100%; aspect-ratio:16/9; margin-bottom:8px;">
+                            <img src="${getImgSrc(item.image)}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+                            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:white; font-size:1.5rem; text-shadow:0 2px 4px rgba(0,0,0,0.5);"><i class="fas fa-play"></i></div>
+                        </div>
+                        <input type="text" class="form-control" style="font-size:0.75rem; margin-bottom:5px;" placeholder="Título do Vídeo" value="${item.title}" onchange="updateVideoData(${idx}, 'title', this.value)">
+                        <input type="text" class="form-control" style="font-size:0.75rem; margin-bottom:5px;" placeholder="Capa (Imagem)" value="${item.image}" onchange="updateVideoData(${idx}, 'image', this.value)">
+                        <input type="text" class="form-control" style="font-size:0.75rem;" placeholder="Link do Vídeo/Reel" value="${item.link}" onchange="updateVideoData(${idx}, 'link', this.value)">
+                        <button class="btn btn-sm btn-danger" style="position:absolute; top:5px; right:5px; padding:4px 8px;" onclick="removeVideoPost(${idx})"><i class="fas fa-times"></i></button>
+                    `;
+                    grid.appendChild(div);
+                });
+            }
+
+            function addVideoPost() {
+                const area = document.getElementById('cfgVideoFeed');
+                let data = [];
+                try { data = JSON.parse(area.value || '[]'); } catch (e) { data = []; }
+                data.push({ title: 'Novo Vídeo', image: 'assets/images/hero_banner.png', link: '#' });
+                area.value = JSON.stringify(data, null, 2);
+                renderVideoFeedPreview();
+            }
+
+            function updateVideoData(idx, key, val) {
+                const area = document.getElementById('cfgVideoFeed');
+                let data = JSON.parse(area.value);
+                data[idx][key] = val;
+                area.value = JSON.stringify(data, null, 2);
+                renderVideoFeedPreview();
+            }
+
+            function removeVideoPost(idx) {
+                if (!confirm('Remover este vídeo?')) return;
+                const area = document.getElementById('cfgVideoFeed');
+                let data = JSON.parse(area.value);
+                data.splice(idx, 1);
+                area.value = JSON.stringify(data, null, 2);
+                renderVideoFeedPreview();
             }
 
             // --- AUTHENTICATION LOGIC ---
