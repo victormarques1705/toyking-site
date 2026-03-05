@@ -1102,11 +1102,10 @@ body.page-exit {
     text-align: center;
 }
 
-/* Hide Elfsight Logo/Badge */
-.elfsight-app-c5acfcdb-8b2f-48fa-a9fa-1f43213e21bd a,
+/* Hide Elfsight Logo/Badge ONLY */
 a[href*="elfsight.com"],
-div[class*="eapps-link"],
-.eapps-widget-toolbar {
+.eapps-widget-toolbar,
+.eapps-link {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
