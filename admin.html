@@ -1191,6 +1191,8 @@
                     const sbProducts = await sbGetProducts();
                     products = sbProducts.map(p => ({
                         id: p.product_code, name: p.name, cat: p.category, age: p.age,
+                        battery: p.battery || '', sounds: p.sounds || false,
+                        lights: p.lights || false, educational: p.educational || false,
                         img: p.image_url, badge: p.badge || '', status: p.status,
                         desc: p.description || '', _dbId: p.id
                     }));
@@ -1229,7 +1231,9 @@
             async function saveProductToDB(product) {
                 const payload = {
                     product_code: product.id, name: product.name, category: product.cat,
-                    age: product.age, image_url: product.img, badge: product.badge,
+                    age: product.age, battery: product.battery, sounds: product.sounds,
+                    lights: product.lights, educational: product.educational,
+                    image_url: product.img, badge: product.badge,
                     status: product.status, description: product.desc || ''
                 };
                 // Only include database row id when editing existing product
@@ -1560,13 +1564,21 @@
 
             function openProductModal(idx = -1) {
                 tempBase64Image = null; // reset upload
-                const p = idx >= 0 ? products[idx] : { id: 'TK0' + (products.length + 1).toString().padStart(4, '0'), name: '', cat: categories[0], age: '+3 anos', img: imgOptions[0], badge: '', status: 'active', desc: '' };
+                const p = idx >= 0 ? products[idx] : { id: 'TK0' + (products.length + 1).toString().padStart(4, '0'), name: '', cat: categories[0], age: '+3 anos', battery: '', sounds: false, lights: false, educational: false, img: imgOptions[0], badge: '', status: 'active', desc: '' };
                 document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Produto' : 'Novo Produto';
                 document.getElementById('modalBody').innerHTML = `
         <div class="form-row"><div class="form-group"><label>Nome</label><input class="form-control" id="mName" value="${p.name}"></div>
         <div class="form-group"><label>Código</label><input class="form-control" id="mCode" value="${p.id}"></div></div>
         <div class="form-row"><div class="form-group"><label>Categoria</label><select class="form-control" id="mCat">${categories.map(c => `<option ${c === p.cat ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
         <div class="form-group"><label>Idade</label><select class="form-control" id="mAge"><option ${p.age === '0+ meses' ? 'selected' : ''}>0+ meses</option><option ${p.age === '+6 meses' ? 'selected' : ''}>+6 meses</option><option ${p.age === '+12 meses' ? 'selected' : ''}>+12 meses</option><option ${p.age === '+18 meses' ? 'selected' : ''}>+18 meses</option><option ${p.age === '+3 anos' ? 'selected' : ''}>+3 anos</option><option ${p.age === '+5 anos' ? 'selected' : ''}>+5 anos</option></select></div></div>
+        <div class="form-row"><div class="form-group"><label>Pilhas (Ex: 3x AA)</label><input class="form-control" id="mBattery" value="${p.battery || ''}" placeholder="Deixe vazio se não usar"></div>
+        <div class="form-group"><label>Atributos Especiais</label>
+            <div style="display:flex; gap:12px; margin-top:8px;">
+                <label style="font-weight:normal; cursor:pointer;"><input type="checkbox" id="mSounds" ${p.sounds ? 'checked' : ''}> 🔊 Sons</label>
+                <label style="font-weight:normal; cursor:pointer;"><input type="checkbox" id="mLights" ${p.lights ? 'checked' : ''}> 💡 Luzes</label>
+                <label style="font-weight:normal; cursor:pointer;"><input type="checkbox" id="mEdu" ${p.educational ? 'checked' : ''}> 🎓 Educativo</label>
+            </div>
+        </div></div>
         <div class="form-row"><div class="form-group"><label>Imagem do Produto</label>
             <input type="hidden" id="mImgUrl" value="${p.img && p.img !== 'mobile_only' ? p.img : ''}">
             <div id="imgUploadZone" onclick="document.getElementById('mImgUpload').click()" style="border: 2px dashed #ccc; border-radius: 12px; padding: 16px; text-align: center; cursor: pointer; background: #f9f9f9; transition: border-color 0.2s; position: relative; min-height: 120px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px;">
@@ -1576,8 +1588,8 @@
             </div>
             <p id="imgFileName" style="font-size:0.78rem; color:#666; margin-top:4px; text-align:center;">${p.img && p.img !== 'mobile_only' && !p.img.startsWith('data:') ? '📎 ' + p.img.split('/').pop() : ''}</p>
         </div>
-        <div class="form-group"><label>Badge</label><select class="form-control" id="mBadge"><option value="" ${!p.badge ? 'selected' : ''}>Nenhum</option><option ${p.badge === 'NOVO' ? 'selected' : ''}>NOVO</option><option ${p.badge === 'TOP' ? 'selected' : ''}>TOP</option></select></div></div>
-        <div class="form-group"><label>Status</label><select class="form-control" id="mStatus"><option value="active" ${p.status === 'active' ? 'selected' : ''}>Ativo</option><option value="draft" ${p.status === 'draft' ? 'selected' : ''}>Rascunho</option></select></div>
+        <div class="form-group"><label>Badge</label><select class="form-control" id="mBadge"><option value="" ${!p.badge ? 'selected' : ''}>Nenhum</option><option ${p.badge === 'NOVO' ? 'selected' : ''}>NOVO</option><option ${p.badge === 'TOP' ? 'selected' : ''}>TOP</option></select><br><label style="margin-top:10px;">Status</label><select class="form-control" id="mStatus"><option value="active" ${p.status === 'active' ? 'selected' : ''}>Ativo</option><option value="draft" ${p.status === 'draft' ? 'selected' : ''}>Rascunho</option></select></div></div>
+
         <div class="form-group">
             <label style="display:flex; justify-content:space-between; align-items:center;">
                 Descrição
@@ -1661,6 +1673,10 @@
                     name: pName,
                     cat: document.getElementById('mCat').value,
                     age: document.getElementById('mAge').value,
+                    battery: document.getElementById('mBattery').value,
+                    sounds: document.getElementById('mSounds').checked,
+                    lights: document.getElementById('mLights').checked,
+                    educational: document.getElementById('mEdu').checked,
                     img: finalImgUrl,
                     badge: document.getElementById('mBadge').value,
                     status: document.getElementById('mStatus').value,

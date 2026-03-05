@@ -434,9 +434,9 @@
                         <div class="pd-spec-value" id="pdAge">+3</div>
                         <div class="pd-spec-label">Idade</div>
                     </div>
-                    <div class="pd-spec-card">
+                    <div class="pd-spec-card" id="pdBatteryCard">
                         <div class="pd-spec-icon"><i class="fas fa-battery-full"></i></div>
-                        <div class="pd-spec-value">3x AA</div>
+                        <div class="pd-spec-value" id="pdBattery">Nenhuma</div>
                         <div class="pd-spec-label">Pilhas</div>
                     </div>
                     <div class="pd-spec-card">
@@ -445,11 +445,7 @@
                         <div class="pd-spec-label">Certificado</div>
                     </div>
                 </div>
-                <div class="pd-tags">
-                    <span class="pd-tag-pill">🦕 Dinossauros</span>
-                    <span class="pd-tag-pill">🔊 Sons</span>
-                    <span class="pd-tag-pill">💡 Luzes LED</span>
-                    <span class="pd-tag-pill">🎓 Educativo</span>
+                <div class="pd-tags" id="pdTags">
                 </div>
                 <div class="pd-actions">
                     <button class="pd-btn-primary"
@@ -512,6 +508,10 @@
                                 name: p.name,
                                 cat: p.category,
                                 age: p.age,
+                                battery: p.battery || '',
+                                sounds: p.sounds || false,
+                                lights: p.lights || false,
+                                educational: p.educational || false,
                                 img: p.image_url,
                                 badge: p.badge,
                                 desc: p.description,
@@ -536,6 +536,21 @@
                         document.getElementById('pdCat').textContent = product.cat;
                         document.getElementById('pdCatBread').textContent = product.cat;
                         document.getElementById('pdAge').textContent = product.age.replace(' anos', '').replace(' meses', 'm');
+
+                        if (product.battery && product.battery.trim() !== '') {
+                            document.getElementById('pdBattery').textContent = product.battery;
+                            document.getElementById('pdBatteryCard').style.display = 'block';
+                        } else {
+                            document.getElementById('pdBatteryCard').style.display = 'none';
+                        }
+
+                        // Build dynamic tags
+                        const tagsWrapper = document.getElementById('pdTags');
+                        tagsWrapper.innerHTML = '';
+                        if (product.sounds) tagsWrapper.innerHTML += '<span class="pd-tag-pill">🔊 Sons</span>';
+                        if (product.lights) tagsWrapper.innerHTML += '<span class="pd-tag-pill">💡 Luzes LED</span>';
+                        if (product.educational) tagsWrapper.innerHTML += '<span class="pd-tag-pill">🎓 Educativo</span>';
+
                         if (product.desc) document.getElementById('pdDesc').textContent = product.desc;
                         const imgSrc = product.img && (product.img.startsWith('data:image') || product.img.startsWith('http')) ? product.img : 'assets/images/' + product.img;
                         document.getElementById('mainImg').src = imgSrc;

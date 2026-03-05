@@ -7,12 +7,23 @@ CREATE TABLE IF NOT EXISTS products (
     name TEXT NOT NULL,
     category TEXT NOT NULL DEFAULT '',
     age TEXT NOT NULL DEFAULT '+3 anos',
+    battery TEXT DEFAULT '',
+    sounds BOOLEAN DEFAULT FALSE,
+    lights BOOLEAN DEFAULT FALSE,
+    educational BOOLEAN DEFAULT FALSE,
     image_url TEXT DEFAULT '',
     badge TEXT DEFAULT '',
     status TEXT NOT NULL DEFAULT 'active',
     description TEXT DEFAULT '',
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- UPDATE EXISTING TABLE IF IT ALREADY EXISTS
+-- Run these commands manually in your Supabase SQL Editor if you already created the table!
+-- ALTER TABLE products ADD COLUMN battery TEXT DEFAULT '';
+-- ALTER TABLE products ADD COLUMN sounds BOOLEAN DEFAULT FALSE;
+-- ALTER TABLE products ADD COLUMN lights BOOLEAN DEFAULT FALSE;
+-- ALTER TABLE products ADD COLUMN educational BOOLEAN DEFAULT FALSE;
 
 -- BANNERS TABLE
 CREATE TABLE IF NOT EXISTS banners (
