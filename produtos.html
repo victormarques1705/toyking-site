@@ -253,13 +253,13 @@
               </div>
               <div class="product-info">
                 <h3>${p.name}</h3>
-                <p class="product-code">${p.id}</p>
+                <p class="product-code-tag">${p.id}</p>
                 <div class="product-tags">
                   <span class="product-tag">${p.cat}</span>
                   <span class="product-tag">${p.age}</span>
-                  ${p.sounds ? '<span class="product-tag">🔊</span>' : ''}
-                  ${p.lights ? '<span class="product-tag">💡</span>' : ''}
-                  ${p.educational ? '<span class="product-tag">🎓</span>' : ''}
+                  ${p.sounds ? '<span class="product-tag icon-tag">🔊</span>' : ''}
+                  ${p.lights ? '<span class="product-tag icon-tag">💡</span>' : ''}
+                  ${p.educational ? '<span class="product-tag icon-tag">🎓</span>' : ''}
                 </div>
               </div>`;
                     grid.appendChild(card);
