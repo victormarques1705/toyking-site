@@ -163,9 +163,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const products = await sbGetProducts();
             if (products && products.length > 0) {
                 const catMap = {
-                    'Encartelados': '#encartelados', 'Brinquedos a Pilha': '#pilha',
-                    'Jogos': '#jogos', 'Didáticos': '#didaticos',
-                    'Verão': '#verao', 'Patinetes': '#patinetes'
+                    'Encartelados': '#encartelados',
+                    'Brinquedos a Pilha': '#pilha',
+                    'Jogos': '#jogos',
+                    'Didáticos': '#didaticos',
+                    'Verão': '#verao',
+                    'Patinetes': '#patinetes',
+                    'Display': '#display'
                 };
 
                 for (const [catName, secId] of Object.entries(catMap)) {
@@ -202,6 +206,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                         </div>
                                       </div>
                                     `;
+                                });
+                                // Force visible class on new items
+                                grid.querySelectorAll('.reveal').forEach(el => {
+                                    setTimeout(() => el.classList.add('visible'), 100);
                                 });
                             }
                         }
@@ -363,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.products-grid').forEach(grid => {
         const cards = grid.querySelectorAll('.product-card');
         cards.forEach((card, i) => {
-            card.style.transitionDelay = `${i * 0.1} s`;
+            card.style.transitionDelay = `${i * 0.1}s`;
         });
     });
 
