@@ -70,15 +70,31 @@
   <section class="hero" id="hero">
     <div class="particles"></div>
     <div class="slider">
-      <!-- Banners loaded by JS - Placeholder to avoid blue flash -->
+      <!-- Banners loaded by JS - Placeholder (Skeleton effect) -->
       <div class="slide active">
-        <div class="slide-bg" style="background-image: url('assets/images/hero_banner.png');"></div>
-        <div class="slide-content">
-          <h1>Toy King Distribuidora</h1>
-          <p>Leve alegria e diversão para sua loja!</p>
-          <a href="produtos.html" class="btn-hero" style="visibility: hidden;">Ver Produtos</a>
+        <div class="slide-bg" style="background-color: #2b4c7e; animation: pulse 1.5s infinite; opacity: 0.8;"></div>
+        <div class="slide-content" style="opacity: 0.5;">
+          <h1
+            style="background: rgba(255,255,255,0.2); color: transparent; border-radius: 8px; max-width: 400px; height: 48px; margin-bottom: 20px;">
+            Carregando</h1>
+          <p
+            style="background: rgba(255,255,255,0.2); color: transparent; border-radius: 8px; max-width: 250px; height: 24px;">
+          </p>
         </div>
       </div>
+      <style>
+        @keyframes pulse {
+
+          0%,
+          100% {
+            opacity: 0.8;
+          }
+
+          50% {
+            opacity: 0.4;
+          }
+        }
+      </style>
     </div>
     <div class="slider-arrows">
       <button class="slider-arrow slider-prev"><i class="fas fa-chevron-left"></i></button>
