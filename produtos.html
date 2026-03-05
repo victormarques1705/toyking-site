@@ -236,30 +236,6 @@
             const perPage = 12;
             let filteredProducts = [];
 
-            function applyFilters() {
-                const cat = document.getElementById('filterCategory').value;
-                const age = document.getElementById('filterAge').value;
-                const search = document.getElementById('searchProducts').value.toLowerCase();
-
-                filteredProducts = products.filter(p => {
-                    if (cat !== 'all' && p.cat !== cat) return false;
-                    if (age !== 'all') {
-                        // Matching age string logic
-                        if (age === '0m' && p.age !== '0+ meses') return false;
-                        if (age === '6m' && p.age !== '+6 meses') return false;
-                        if (age === '12m' && p.age !== '+12 meses') return false;
-                        if (age === '18m' && p.age !== '+18 meses') return false;
-                        if (age === '3a' && p.age !== '+3 anos') return false;
-                        if (age === '5a' && p.age !== '+5 anos') return false;
-                    }
-                    if (search && !p.name.toLowerCase().includes(search) && !p.id.toLowerCase().includes(search)) return false;
-                    return true;
-                });
-                renderProducts(1);
-            }
-
-            applyFilters(); // First run
-
             function renderProducts(page = 1) {
                 grid.innerHTML = '';
                 const start = (page - 1) * perPage;
@@ -318,13 +294,31 @@
             }
 
             function applyFilters() {
-                // REDEFINED ABOVE
+                const cat = document.getElementById('filterCategory').value;
+                const age = document.getElementById('filterAge').value;
+                const search = document.getElementById('searchProducts').value.toLowerCase();
+
+                filteredProducts = products.filter(p => {
+                    if (cat !== 'all' && p.cat !== cat) return false;
+                    if (age !== 'all') {
+                        if (age === '0m' && p.age !== '0+ meses') return false;
+                        if (age === '6m' && p.age !== '+6 meses') return false;
+                        if (age === '12m' && p.age !== '+12 meses') return false;
+                        if (age === '18m' && p.age !== '+18 meses') return false;
+                        if (age === '3a' && p.age !== '+3 anos') return false;
+                        if (age === '5a' && p.age !== '+5 anos') return false;
+                    }
+                    if (search && !p.name.toLowerCase().includes(search) && !p.id.toLowerCase().includes(search)) return false;
+                    return true;
+                });
+                renderProducts(1);
             }
 
             document.getElementById('filterCategory').addEventListener('change', applyFilters);
             document.getElementById('filterAge').addEventListener('change', applyFilters);
             document.getElementById('searchProducts').addEventListener('input', applyFilters);
-            renderProducts(1);
+
+            applyFilters(); // Now it can be called safely
         }
 
         loadPageData();
