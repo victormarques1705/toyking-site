@@ -1237,10 +1237,15 @@
                     image_url: product.img, badge: product.badge,
                     status: product.status, description: product.desc || ''
                 };
-                // Only include database row id when editing existing product
-                if (product._dbId) payload.id = product._dbId;
+
+                // For existing rows, we MUST provide the 'id' (the primary key BIGINT) 
+                // to trigger an UPDATE instead of a new INSERT.
+                if (product._dbId) {
+                    payload.id = product._dbId;
+                }
+
                 const saved = await sbUpsertProduct(payload);
-                return saved; // Returns { id: <uuid>, ... } so caller can assign _dbId
+                return saved;
             }
 
             async function saveCategoryToDB(name, oldName = null) {
