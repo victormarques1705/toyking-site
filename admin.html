@@ -1237,13 +1237,6 @@
                     image_url: product.img, badge: product.badge,
                     status: product.status, description: product.desc || ''
                 };
-
-                // For existing rows, we MUST provide the 'id' (the primary key BIGINT) 
-                // to trigger an UPDATE instead of a new INSERT.
-                if (product._dbId) {
-                    payload.id = product._dbId;
-                }
-
                 const saved = await sbUpsertProduct(payload);
                 return saved;
             }
