@@ -193,7 +193,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                         <div class="product-info">
                                           <h3>${p.name}</h3>
                                           <p class="category-tag">${p.category}</p>
-                                          <span class="product-age">${p.age}</span>
+                                          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+                                            <span class="product-age">${p.age}</span>
+                                            ${p.sounds ? '<span class="product-age" style="background:#f0f8ff;">🔊</span>' : ''}
+                                            ${p.lights ? '<span class="product-age" style="background:#fffcf0;">💡</span>' : ''}
+                                            ${p.educational ? '<span class="product-age" style="background:#f0fff4;">🎓</span>' : ''}
+                                          </div>
                                         </div>
                                       </div>
                                     `;

@@ -200,6 +200,10 @@
                     name: p.name,
                     cat: p.category,
                     age: p.age,
+                    battery: p.battery || '',
+                    sounds: p.sounds || false,
+                    lights: p.lights || false,
+                    educational: p.educational || false,
                     img: p.image_url,
                     badge: p.badge,
                     status: p.status
@@ -253,6 +257,9 @@
                 <div class="product-tags">
                   <span class="product-tag">${p.cat}</span>
                   <span class="product-tag">${p.age}</span>
+                  ${p.sounds ? '<span class="product-tag">🔊</span>' : ''}
+                  ${p.lights ? '<span class="product-tag">💡</span>' : ''}
+                  ${p.educational ? '<span class="product-tag">🎓</span>' : ''}
                 </div>
               </div>`;
                     grid.appendChild(card);
