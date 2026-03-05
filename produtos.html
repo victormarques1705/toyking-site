@@ -239,7 +239,7 @@
                     card.style.transitionDelay = `${i * 0.05}s`;
                     card.style.cursor = 'pointer';
                     card.onclick = () => window.location.href = 'produto.html?id=' + p.id;
-                    const imgSrc = p.img && (p.img.startsWith('data:image') || p.img.startsWith('http')) ? p.img : 'assets/images/' + p.img;
+                    const imgSrc = p.img && (p.img.startsWith('data:image') || p.img.startsWith('http')) ? p.img : (p.img ? 'assets/images/' + p.img : 'assets/images/hero_banner.png');
                     card.innerHTML = `
               ${p.badge ? `<div class="product-img-wrapper"><span class="badge ${p.badge === 'NOVO' ? 'badge-new' : 'badge-hot'}">${p.badge === 'TOP' ? '🔥 TOP' : p.badge}</span>` : '<div class="product-img-wrapper">'}
               <img src="${imgSrc}" alt="${p.name}" class="product-img">

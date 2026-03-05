@@ -1660,7 +1660,7 @@
                         const blob = await res.blob();
                         const pCode = document.getElementById('mCode').value || 'prod';
                         const fileName = pCode.replace(/[^a-zA-Z0-9-_]/g, '') + '_' + Date.now() + '.webp';
-                        const uploadedUrl = await sbUploadImage('banners', fileName, blob);
+                        const uploadedUrl = await sbUploadImage('products', fileName, blob);
                         if (uploadedUrl) {
                             finalImgUrl = uploadedUrl;
                             showToast('Imagem enviada com sucesso!', 'success');

@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                         const badgeIcon = p.badge === 'TOP' ? '🔥 ' : '';
                                         badgeHtml = `<span class="badge ${badgeClass}">${badgeIcon}${p.badge}</span>`;
                                     }
-                                    const imgSrc = p.image_url && (p.image_url.startsWith('data:image') || p.image_url.startsWith('http')) ? p.image_url : 'assets/images/' + p.image_url;
+                                    const imgSrc = p.image_url && (p.image_url.startsWith('data:image') || p.image_url.startsWith('http')) ? p.image_url : (p.image_url ? 'assets/images/' + p.image_url : 'assets/images/hero_banner.png');
                                     grid.innerHTML += `
                                       <div class="product-card reveal" style="transition-delay: ${0.1 + (i * 0.1)}s;">
                                         ${badgeHtml}

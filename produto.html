@@ -544,7 +544,7 @@
                         if (product.educational) tagsWrapper.innerHTML += '<span class="pd-tag-pill">🎓 Educativo</span>';
 
                         if (product.desc) document.getElementById('pdDesc').textContent = product.desc;
-                        const imgSrc = product.img && (product.img.startsWith('data:image') || product.img.startsWith('http')) ? product.img : 'assets/images/' + product.img;
+                        const imgSrc = product.img && (product.img.startsWith('data:image') || product.img.startsWith('http')) ? product.img : (product.img ? 'assets/images/' + product.img : 'assets/images/hero_banner.png');
                         document.getElementById('mainImg').src = imgSrc;
                         document.title = product.name + ' - ToyKing';
 
@@ -560,13 +560,13 @@
                         images.forEach((img, i) => {
                             const t = document.createElement('div');
                             t.className = 'pd-thumb' + (i === 0 ? ' active' : '');
-                            const currentImgSrc = img && (img.startsWith('data:image') || img.startsWith('http')) ? img : 'assets/images/' + img;
+                            const currentImgSrc = img && (img.startsWith('data:image') || img.startsWith('http')) ? img : (img ? 'assets/images/' + img : 'assets/images/hero_banner.png');
                             t.innerHTML = `<img src="${currentImgSrc}" alt="thumb">`;
                             t.onclick = () => { currentImg = i; updateGallery(); };
                             thumbsEl.appendChild(t);
                         });
                         function updateGallery() {
-                            const src = images[currentImg] && (images[currentImg].startsWith('data:image') || images[currentImg].startsWith('http')) ? images[currentImg] : 'assets/images/' + images[currentImg];
+                            const src = images[currentImg] && (images[currentImg].startsWith('data:image') || images[currentImg].startsWith('http')) ? images[currentImg] : (images[currentImg] ? 'assets/images/' + images[currentImg] : 'assets/images/hero_banner.png');
                             document.getElementById('mainImg').src = src;
                             document.querySelectorAll('.pd-thumb').forEach((t, i) => t.classList.toggle('active', i === currentImg));
                         }
@@ -581,7 +581,7 @@
                             card.className = 'product-card reveal';
                             card.style.cursor = 'pointer';
                             card.onclick = () => window.location.href = 'produto.html?id=' + p.id;
-                            const relImgSrc = p.img && (p.img.startsWith('data:image') || p.img.startsWith('http')) ? p.img : 'assets/images/' + p.img;
+                            const relImgSrc = p.img && (p.img.startsWith('data:image') || p.img.startsWith('http')) ? p.img : (p.img ? 'assets/images/' + p.img : 'assets/images/hero_banner.png');
                             card.innerHTML = `
             <div class="product-img-wrapper"><img src="${relImgSrc}" alt="${p.name}" class="product-img"></div>
             <div class="product-info"><h3>${p.name}</h3><p class="category-tag">${p.cat}</p><span class="product-age">${p.age}</span></div>`;
