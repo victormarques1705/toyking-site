@@ -105,6 +105,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     const items = settingsMap.about_essencia.split(',').filter(i => i.trim() !== '');
                     document.getElementById('aboutEssencia').innerHTML = items.map(i => `<li><i class="fas fa-check-circle"></i> ${i.trim()}</li>`).join('');
                 }
+
+                if (settingsMap.insta_feed_data) {
+                    try {
+                        const instaData = JSON.parse(settingsMap.insta_feed_data);
+                        const instaGrid = document.querySelector('.insta-grid');
+                        if (instaGrid && instaData.length > 0) {
+                            instaGrid.innerHTML = '';
+                            instaData.forEach((item, idx) => {
+                                const relImgSrc = item.image && (item.image.startsWith('data:image') || item.image.startsWith('http')) ? item.image : 'assets/images/' + item.image;
+                                instaGrid.innerHTML += `
+                                    <div class="insta-item reveal-scale" style="transition-delay: ${0.1 + (idx * 0.05)}s;" onclick="window.open('${item.link}', '_blank')">
+                                        <img src="${relImgSrc}" alt="Instagram ${idx + 1}" loading="lazy">
+                                        <div class="insta-overlay"><i class="fab fa-instagram"></i></div>
+                                    </div>`;
+                            });
+                            if (window.initReveals) window.initReveals();
+                        }
+                    } catch (e) { console.error('Erro ao processar feed Instagram:', e); }
+                }
             }
         } catch (e) { console.error('Erro ao carregar configurações:', e); }
 

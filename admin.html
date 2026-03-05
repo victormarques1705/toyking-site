@@ -847,6 +847,7 @@
                 <button class="nav-item" data-section="institucional"><i class="fas fa-building"></i>
                     Institucional</button>
                 <button class="nav-item" data-section="banners"><i class="fas fa-images"></i> Banners</button>
+                <button class="nav-item" data-section="instagram"><i class="fab fa-instagram"></i> Instagram</button>
                 <button class="nav-item" data-section="manuals"><i class="fas fa-book"></i> Manuais</button>
                 <div class="nav-label">Configurações</div>
                 <button class="nav-item" data-section="settings"><i class="fas fa-cog"></i> Configurações</button>
@@ -1079,6 +1080,34 @@
                     </div>
                 </div>
 
+                <!-- INSTAGRAM -->
+                <div class="section" id="sec-instagram">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>📸 Feed do Instagram (Tela Inicial)</h2>
+                            <p style="font-size: 0.85rem; color: #666; font-weight: 600;">Adicione fotos e links das
+                                suas postagens para exibir no site.</p>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label>Dados do Feed (JSON - Automático)</label>
+                                <textarea class="form-control" id="cfgInstaFeed" rows="10"
+                                    placeholder='[{"image": "url_da_foto", "link": "url_do_post"}]'></textarea>
+                            </div>
+                            <div id="instaPreviewGrid"
+                                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                                <!-- Preview items will appear here -->
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-primary" onclick="addInstaPost()"><i class="fas fa-plus"></i>
+                                    Adicionar Foto</button>
+                                <button class="btn btn-success" onclick="saveSettings()"><i class="fas fa-save"></i>
+                                    Salvar Feed</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- MANUALS -->
                 <div class="section" id="sec-manuals">
                     <div class="panel">
@@ -1228,6 +1257,7 @@
 
                 renderAll();
                 loadSettings();
+                renderInstaFeedPreview();
             }
 
             async function saveProductToDB(product) {
@@ -1264,7 +1294,7 @@
             }
 
             // ===== NAV =====
-            const titles = { dashboard: '📊 Dashboard', products: '📦 Produtos', categories: '🏷️ Categorias', pages: '📄 Páginas', banners: '🖼️ Banners', manuals: '📖 Manuais', settings: '⚙️ Configurações' };
+            const titles = { dashboard: '📊 Dashboard', products: '📦 Produtos', categories: '🏷️ Categorias', pages: '📄 Páginas', banners: '🖼️ Banners', instagram: '📸 Instagram', manuals: '📖 Manuais', settings: '⚙️ Configurações' };
             document.querySelectorAll('.nav-item').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const sec = btn.dataset.section;
@@ -2199,7 +2229,8 @@
                     primary_color: document.getElementById('cfgColor').value,
                     about_proposito: document.getElementById('cfgAboutProposito') ? document.getElementById('cfgAboutProposito').value : '',
                     about_missao: document.getElementById('cfgAboutMissao') ? document.getElementById('cfgAboutMissao').value : '',
-                    about_essencia: document.getElementById('cfgAboutEssencia') ? document.getElementById('cfgAboutEssencia').value : ''
+                    about_essencia: document.getElementById('cfgAboutEssencia') ? document.getElementById('cfgAboutEssencia').value : '',
+                    insta_feed_data: document.getElementById('cfgInstaFeed') ? document.getElementById('cfgInstaFeed').value : '[]'
                 };
                 for (const [key, value] of Object.entries(pairs)) {
                     await sbUpsertSetting(key, value);
@@ -2221,6 +2252,61 @@
                 if (settings.about_proposito && document.getElementById('cfgAboutProposito')) document.getElementById('cfgAboutProposito').value = settings.about_proposito;
                 if (settings.about_missao && document.getElementById('cfgAboutMissao')) document.getElementById('cfgAboutMissao').value = settings.about_missao;
                 if (settings.about_essencia && document.getElementById('cfgAboutEssencia')) document.getElementById('cfgAboutEssencia').value = settings.about_essencia;
+                if (settings.insta_feed_data && document.getElementById('cfgInstaFeed')) {
+                    document.getElementById('cfgInstaFeed').value = settings.insta_feed_data;
+                    renderInstaFeedPreview();
+                }
+            }
+
+            // --- INSTAGRAM FEED LOGIC ---
+            function renderInstaFeedPreview() {
+                const area = document.getElementById('cfgInstaFeed');
+                const grid = document.getElementById('instaPreviewGrid');
+                if (!area || !grid) return;
+
+                let data = [];
+                try { data = JSON.parse(area.value || '[]'); } catch (e) { data = []; }
+
+                grid.innerHTML = '';
+                data.forEach((item, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'panel';
+                    div.style.padding = '10px';
+                    div.style.position = 'relative';
+                    div.innerHTML = `
+                        <img src="${getImgSrc(item.image)}" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:8px; margin-bottom:8px;">
+                        <input type="text" class="form-control" style="font-size:0.75rem; margin-bottom:5px;" placeholder="URL da Imagem" value="${item.image}" onchange="updateInstaData(${idx}, 'image', this.value)">
+                        <input type="text" class="form-control" style="font-size:0.75rem;" placeholder="Link do Post" value="${item.link}" onchange="updateInstaData(${idx}, 'link', this.value)">
+                        <button class="btn btn-sm btn-danger" style="position:absolute; top:5px; right:5px; padding:4px 8px;" onclick="removeInstaPost(${idx})"><i class="fas fa-times"></i></button>
+                    `;
+                    grid.appendChild(div);
+                });
+            }
+
+            function addInstaPost() {
+                const area = document.getElementById('cfgInstaFeed');
+                let data = [];
+                try { data = JSON.parse(area.value || '[]'); } catch (e) { data = []; }
+                data.push({ image: 'assets/images/logo.png', link: 'https://instagram.com/toykingoficial' });
+                area.value = JSON.stringify(data, null, 2);
+                renderInstaFeedPreview();
+            }
+
+            function updateInstaData(idx, key, val) {
+                const area = document.getElementById('cfgInstaFeed');
+                let data = JSON.parse(area.value);
+                data[idx][key] = val;
+                area.value = JSON.stringify(data, null, 2);
+                renderInstaFeedPreview();
+            }
+
+            function removeInstaPost(idx) {
+                if (!confirm('Remover esta foto?')) return;
+                const area = document.getElementById('cfgInstaFeed');
+                let data = JSON.parse(area.value);
+                data.splice(idx, 1);
+                area.value = JSON.stringify(data, null, 2);
+                renderInstaFeedPreview();
             }
 
             // --- AUTHENTICATION LOGIC ---
