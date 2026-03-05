@@ -8,6 +8,7 @@
   <meta name="description"
     content="Toy King - Distribuidora de brinquedos apaixonada por levar alegria e criatividade. Encartelados, Display, Didáticos, Brinquedos a Pilha, Armas, Verão, Patinetes, Maletas de Pintura e Jogos.">
   <link rel="icon" href="assets/images/logo.png" type="image/png">
+  <link rel="preload" as="image" href="assets/images/hero_banner.png">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://unpkg.com/@dotlottie/player-component@latest/dist/dotlottie-player.mjs" type="module"></script>
@@ -63,26 +64,28 @@
     <a href="blog.html">📝 Blog</a>
     <a href="contato.html">🛒 Quero Comprar</a>
     <a href="contato.html">📞 Contato</a>
-    <a href="produtos.html?cat=Encartelados">📦 Encartelados</a>
-    <a href="produtos.html?cat=Display">🎁 Display</a>
-    <a href="produtos.html?cat=Didáticos">📚 Didáticos</a>
-    <a href="produtos.html?cat=Brinquedos a Pilha">🔋 Brinquedos a Pilha</a>
-    <a href="produtos.html?cat=Verão">☀️ Verão</a>
-    <a href="produtos.html?cat=Patinetes">🛴 Patinetes</a>
   </nav>
 
   <!-- HERO SLIDER -->
   <section class="hero" id="hero">
     <div class="particles"></div>
     <div class="slider">
-      <!-- Banners loaded by JS -->
+      <!-- Banners loaded by JS - Placeholder to avoid blue flash -->
+      <div class="slide active">
+        <div class="slide-bg" style="background-image: url('assets/images/hero_banner.png');"></div>
+        <div class="slide-content">
+          <h1>Toy King Distribuidora</h1>
+          <p>Leve alegria e diversão para sua loja!</p>
+          <a href="produtos.html" class="btn-hero" style="visibility: hidden;">Ver Produtos</a>
+        </div>
+      </div>
     </div>
     <div class="slider-arrows">
       <button class="slider-arrow slider-prev"><i class="fas fa-chevron-left"></i></button>
       <button class="slider-arrow slider-next"><i class="fas fa-chevron-right"></i></button>
     </div>
     <div class="slider-dots">
-      <!-- Dots loaded by JS -->
+      <button class="slider-dot active"></button>
     </div>
   </section>
 
