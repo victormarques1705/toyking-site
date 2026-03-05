@@ -1097,16 +1097,16 @@ body.page-exit {
 
 /* ===== INSTAGRAM FEED ===== */
 .instagram-section {
-    padding: 60px 0;
-    background: var(--light-gray);
+    padding: 80px 0;
+    background: #fdfdfd;
     text-align: center;
 }
 
 .insta-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 12px;
-    margin: 30px 0;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 15px;
+    margin: 40px 0;
 }
 
 .insta-item {
@@ -1115,13 +1115,14 @@ body.page-exit {
     overflow: hidden;
     aspect-ratio: 1;
     cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 
 .insta-item img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: var(--transition);
+    transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .insta-item:hover img {
@@ -1131,14 +1132,14 @@ body.page-exit {
 .insta-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(225, 48, 180, 0.6), rgba(131, 58, 180, 0.6));
+    background: linear-gradient(45deg, rgba(233, 30, 144, 0.7), rgba(26, 139, 214, 0.7));
     opacity: 0;
     transition: var(--transition);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 2rem;
+    font-size: 1.8rem;
 }
 
 .insta-item:hover .insta-overlay {
@@ -1150,18 +1151,19 @@ body.page-exit {
     align-items: center;
     gap: 10px;
     padding: 14px 32px;
-    background: linear-gradient(135deg, #833AB4, #E1306C, #F77737);
+    background: linear-gradient(135deg, #833AB4, #E1306C, #FD1D1D);
     color: white;
     text-decoration: none;
     border-radius: 50px;
     font-weight: 800;
     font-size: 1rem;
     transition: var(--transition);
+    box-shadow: 0 4px 15px rgba(225, 48, 108, 0.3);
 }
 
 .btn-insta:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 30px rgba(225, 48, 108, 0.4);
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 10px 25px rgba(225, 48, 108, 0.4);
 }
 
 /* ===== ALERT SECTION ===== */

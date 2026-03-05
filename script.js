@@ -358,15 +358,24 @@ document.addEventListener('DOMContentLoaded', () => {
     window.initSliderCore();
 
     // ===== SCROLL REVEAL ANIMATIONS =====
-    const reveals = document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale');
-    const revealObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-            }
-        });
-    }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
-    reveals.forEach(el => revealObserver.observe(el));
+    function initReveals() {
+        const reveals = document.querySelectorAll('.reveal:not(.visible), .reveal-left:not(.visible), .reveal-right:not(.visible), .reveal-scale:not(.visible)');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
+
+        reveals.forEach(el => revealObserver.observe(el));
+    }
+
+    initReveals();
+    // Re-init after some time to catch any dynamic content or missed elements
+    setTimeout(initReveals, 1000);
+    setTimeout(initReveals, 3000);
 
     // ===== STAGGER PRODUCT CARDS =====
     document.querySelectorAll('.products-grid').forEach(grid => {
