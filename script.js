@@ -189,13 +189,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                     }
                                     const imgSrc = p.image_url && (p.image_url.startsWith('data:image') || p.image_url.startsWith('http')) ? p.image_url : (p.image_url ? 'assets/images/' + p.image_url : 'assets/images/hero_banner.png');
                                     grid.innerHTML += `
-                                      <div class="product-card reveal" style="transition-delay: ${0.1 + (i * 0.1)}s;">
+                                      <div class="product-card reveal" style="transition-delay: ${0.1 + (i * 0.1)}s; cursor:pointer;" onclick="window.location.href='produto.html?id=${p.product_code}'">
                                         ${badgeHtml}
                                         <div class="product-img-wrapper">
                                           <img src="${imgSrc}" alt="${p.name}" class="product-img">
                                         </div>
                                         <div class="product-info">
                                           <h3>${p.name}</h3>
+                                          <p class="product-code-tag">${p.product_code}</p>
                                           <p class="category-tag">${p.category}</p>
                                           <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
                                             <span class="product-age">${p.age}</span>
