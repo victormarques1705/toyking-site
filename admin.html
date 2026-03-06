@@ -1919,30 +1919,24 @@
 
                     let successCount = 0;
 
-                    // 2. Cross-reference with products missing images
+                    // 2. Cross-reference with ALL products
                     for (let p of products) {
-                        // Needs image if null, empty, or 'hero_banner'
-                        // if (!p.img || p.img === 'mobile_only' || p.img.includes('hero_banner')) {
-                        // Removed strict IF so we can try to find images for EVERYTHING where the photo might be a placeholder
-                        // Actually let's only do it for missing images so we don't overwrite good ones
-                        if (!p.img || p.img === 'mobile_only' || p.img.includes('hero_banner')) {
-                            const pCode = p.id.toUpperCase().trim();
-                            const pCodeClean = pCode.replace(/[-\s]/g, ''); // "TK-1234" becomes "TK1234"
+                        const pCode = p.id.toUpperCase().trim();
+                        const pCodeClean = pCode.replace(/[-\s]/g, ''); // "TK-1234" becomes "TK1234"
 
-                            // Try to find Exact match, or Cleaned matcher
-                            if (fileMap.has(pCode) || fileMap.has(pCodeClean)) {
-                                try {
-                                    const fileHandle = fileMap.has(pCode) ? fileMap.get(pCode) : fileMap.get(pCodeClean);
-                                    const file = await fileHandle.getFile();
-                                    const fileName = 'srv_' + pCodeClean + '_' + Date.now() + '.webp';
-                                    const uploadedUrl = await sbUploadImage('products', fileName, file);
-                                    if (uploadedUrl) {
-                                        p.img = uploadedUrl;
-                                        await saveProductToDB(p);
-                                        successCount++;
-                                    }
-                                } catch (e) { console.error('Error fetching/uploading', pCode, e); }
-                            }
+                        // Try to find Exact match, or Cleaned matcher
+                        if (fileMap.has(pCode) || fileMap.has(pCodeClean)) {
+                            try {
+                                const fileHandle = fileMap.has(pCode) ? fileMap.get(pCode) : fileMap.get(pCodeClean);
+                                const file = await fileHandle.getFile();
+                                const fileName = 'srv_' + pCodeClean + '_' + Date.now() + '.webp';
+                                const uploadedUrl = await sbUploadImage('products', fileName, file);
+                                if (uploadedUrl) {
+                                    p.img = uploadedUrl;
+                                    await saveProductToDB(p);
+                                    successCount++;
+                                }
+                            } catch (e) { console.error('Error fetching/uploading', pCode, e); }
                         }
                     }
 
