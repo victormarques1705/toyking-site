@@ -1550,29 +1550,46 @@ a[href*="elfsight.com"],
     font-family: 'Nunito', sans-serif;
 }
 
+.chat-toggle-wrap {
+    position: relative;
+    width: 68px;
+    height: 68px;
+}
+
 .chat-toggle {
-    width: 64px;
-    height: 64px;
+    width: 68px;
+    height: 68px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #1A8BD6, #0D5FA0);
-    border: none;
+    background: white;
+    border: 3px solid #1A8BD6;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 6px 28px rgba(13, 95, 160, 0.4), 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 28px rgba(13, 95, 160, 0.35), 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative;
-    overflow: visible;
+    overflow: hidden;
+    padding: 0;
 }
 
 .chat-toggle:hover {
     transform: scale(1.1);
     box-shadow: 0 8px 36px rgba(13, 95, 160, 0.5);
+    border-color: #0D5FA0;
 }
 
 .chat-toggle:active {
     transform: scale(0.95);
+}
+
+.chat-mascot-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 15%;
+    border-radius: 50%;
+    transition: all 0.3s ease;
 }
 
 .chat-toggle .chat-icon {
@@ -1586,7 +1603,13 @@ a[href*="elfsight.com"],
     color: white;
 }
 
-.chat-widget.open .chat-toggle .chat-icon {
+.chat-widget.open .chat-toggle {
+    background: linear-gradient(135deg, #1A8BD6, #0D5FA0);
+    border-color: #0D5FA0;
+}
+
+.chat-widget.open .chat-toggle .chat-icon,
+.chat-widget.open .chat-toggle .chat-mascot-img {
     display: none;
 }
 
@@ -1687,6 +1710,15 @@ a[href*="elfsight.com"],
     justify-content: center;
     font-size: 24px;
     flex-shrink: 0;
+    overflow: hidden;
+}
+
+.chat-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 15%;
+    border-radius: 50%;
 }
 
 .chat-header-info h4 {
@@ -1885,17 +1917,72 @@ a[href*="elfsight.com"],
     transform: none;
 }
 
-@media (max-width: 480px) {
-    .chat-window {
-        width: calc(100vw - 24px);
-        height: calc(100vh - 120px);
-        right: -12px;
-        bottom: 76px;
-        border-radius: 16px;
+@media (max-width: 768px) {
+    .chat-widget {
+        right: 12px;
+        bottom: 12px;
     }
 
-    .chat-widget {
-        right: 16px;
-        bottom: 16px;
+    .chat-toggle {
+        width: 56px;
+        height: 56px;
+        border-width: 2px;
+    }
+
+    .chat-window {
+        position: fixed;
+        top: auto;
+        bottom: 76px;
+        right: 0;
+        left: 0;
+        width: 100vw;
+        height: calc(100vh - 90px);
+        max-height: 500px;
+        border-radius: 20px 20px 0 0;
+        box-shadow: 0 -4px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .chat-header {
+        padding: 14px 16px;
+    }
+
+    .chat-avatar {
+        width: 38px;
+        height: 38px;
+    }
+
+    .chat-header-info h4 {
+        font-size: 0.9rem;
+    }
+
+    .chat-messages {
+        padding: 16px 12px;
+    }
+
+    .chat-msg {
+        max-width: 88%;
+        font-size: 0.85rem;
+        padding: 10px 14px;
+    }
+
+    .chat-input-area {
+        padding: 10px 12px;
+    }
+
+    .chat-input-area input {
+        font-size: 0.9rem;
+        padding: 10px 14px;
+    }
+
+    .chat-send-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 0.9rem;
+    }
+
+    .chat-badge {
+        width: 18px;
+        height: 18px;
+        font-size: 9px;
     }
 }
