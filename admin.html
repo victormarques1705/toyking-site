@@ -1404,6 +1404,7 @@
           </td>
           <td><span class="badge-status ${p.status === 'active' ? 'badge-active' : 'badge-draft'}">${p.status === 'active' ? 'Ativo' : 'Rascunho'}</span></td>
           <td><div class="td-actions">
+            <button class="btn btn-sm btn-outline" style="color: ${isFeatured(p.id, p.cat) ? '#eab308' : '#666'}; border-color: ${isFeatured(p.id, p.cat) ? '#eab308' : '#e2e8f0'};" onclick="toggleFeatured('${p.id}', '${p.cat}')" title="Destacar na Home"><i class="${isFeatured(p.id, p.cat) ? 'fas fa-star' : 'far fa-star'}"></i></button>
             <button class="btn btn-sm btn-outline" onclick="editProduct(${originalIdx})"><i class="fas fa-edit"></i></button>
             <button class="btn btn-sm btn-danger" onclick="deleteProduct(${originalIdx})"><i class="fas fa-trash"></i></button>
             <a href="produto.html?id=${p.id}" class="btn btn-sm btn-outline" target="_blank"><i class="fas fa-eye"></i></a>
@@ -1411,6 +1412,40 @@
         </tr>`;
                 });
                 toggleDeleteBtn();
+            }
+
+            function isFeatured(prodCode, catName) {
+                if (!settings.featured_products) return false;
+                try {
+                    const fp = JSON.parse(settings.featured_products);
+                    if (fp[catName] && fp[catName].includes(prodCode)) return true;
+                } catch (e) { }
+                return false;
+            }
+
+            async function toggleFeatured(prodCode, catName) {
+                let fp = {};
+                if (settings.featured_products) {
+                    try { fp = JSON.parse(settings.featured_products); } catch (e) { }
+                }
+                if (!fp[catName]) fp[catName] = [];
+                const idx = fp[catName].indexOf(prodCode);
+
+                if (idx > -1) {
+                    fp[catName].splice(idx, 1);
+                    showToast('Removido dos destaques da Home', 'info');
+                } else {
+                    if (fp[catName].length >= 4) {
+                        showToast('Máximo de 4 produtos por categoria no Destaque!', 'error');
+                        return;
+                    }
+                    fp[catName].push(prodCode);
+                    showToast('Adicionado aos destaques na Home!', 'success');
+                }
+
+                settings.featured_products = JSON.stringify(fp);
+                await sbUpsertSetting('featured_products', settings.featured_products);
+                renderProducts(); // Re-render to update the star icon
             }
 
             function toggleAllProds(ns) {

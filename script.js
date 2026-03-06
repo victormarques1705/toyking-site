@@ -286,7 +286,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (sectionsContainer) {
                     sectionsContainer.innerHTML = '';
                     homeCats.forEach((cat, idx) => {
-                        const prods = products.filter(p => p.category === cat && p.status === 'active').slice(0, 4);
+                        // Priority 1: Starred (featured) products for this category
+                        const featuredProdsObj = window.siteSettings && window.siteSettings.featured_products ? JSON.parse(window.siteSettings.featured_products) : {};
+                        const featuredIds = featuredProdsObj[cat] || [];
+                        let prods = [];
+
+                        if (featuredIds.length > 0) {
+                            prods = featuredIds.map(id => products.find(p => p.product_code === id)).filter(p => p && p.status === 'active');
+                        }
+
+                        // Priority 2: Fill remaining slots up to 4 with regular active products
+                        if (prods.length < 4) {
+                            const remaining = products.filter(p => p.category === cat && p.status === 'active' && !featuredIds.includes(p.product_code)).slice(0, 4 - prods.length);
+                            prods = prods.concat(remaining);
+                        }
+
                         if (prods.length === 0) return; // SKIP EXAMPLES IF NO ACTIVE PRODUCTS! // <--- This fulfills user's request explicitly
 
                         let icon = '🧸';
