@@ -948,10 +948,15 @@
                                 </label>
                                 <input type="file" id="mExcelUpload" accept=".xlsx, .xls" style="display:none;"
                                     onchange="handleExcelUpload(event)">
+                                <button class="btn btn-outline" onclick="handleServerSync(this)"
+                                    style="margin:0; border-color: #2563eb; color: #2563eb;"
+                                    title="Selecione a pasta do seu servidor (Ex: \\srv00\PHOTOS...) e o sistema achará as fotos sozinho.">
+                                    <i class="fas fa-folder-search"></i> Auto-Scan (Servidor)
+                                </button>
                                 <label for="mBulkImgUpload" class="btn btn-outline"
-                                    style="cursor:pointer; margin:0; border-color: #2563eb; color: #2563eb;"
-                                    title="Selecione várias imagens de uma vez. Ex: se a foto se chamar 'TK-1234.jpg', ele liga ao produto de código TK-1234.">
-                                    <i class="fas fa-images"></i> Sync de Imagens
+                                    style="cursor:pointer; margin:0; border-color: #64748b; color: #64748b;"
+                                    title="Selecione manualmente várias imagens de uma vez. Ex: 'TK-1234.jpg'.">
+                                    <i class="fas fa-images"></i> Sync Manual
                                 </label>
                                 <input type="file" id="mBulkImgUpload" accept="image/*" multiple style="display:none;"
                                     onchange="handleBulkImageUpload(event)">
@@ -1860,6 +1865,80 @@
                         showToast('Erro ao excluir do banco. Recarregando...', 'error');
                         await loadAllData();
                     }
+                }
+            }
+
+            async function handleServerSync(btn) {
+                if (!window.showDirectoryPicker) {
+                    showToast('Seu navegador não suporta leitura de pastas. Use o "Sync Manual" ou acesse pelo Google Chrome/Edge.', 'error');
+                    return;
+                }
+
+                try {
+                    const dirHandle = await window.showDirectoryPicker({
+                        mode: 'read',
+                        startIn: 'desktop'
+                    });
+
+                    const oldHtml = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Lendo Servidor...';
+                    showToast('Analisando arquivos na pasta... Aguarde.', 'info');
+
+                    // 1. Map all files in the directory
+                    let fileMap = new Map();
+                    // We only scan the immediate folder content to avoid crashing if the server is huge
+                    for await (const entry of dirHandle.values()) {
+                        if (entry.kind === 'file') {
+                            const name = entry.name;
+                            const extMatches = name.match(/\\.([a-z0-9]+)$/i);
+                            if (extMatches) {
+                                const ext = extMatches[1].toLowerCase();
+                                if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) {
+                                    const code = name.replace(`.${extMatches[1]}`, '').toUpperCase().trim();
+                                    fileMap.set(code, entry);
+                                }
+                            }
+                        }
+                    }
+
+                    showToast(`Pasta mapeada com ${fileMap.size} imagens! Cruzando com produtos sem foto...`, 'info');
+                    btn.innerHTML = '<i class="fas fa-sync fa-spin"></i> Sincronizando...';
+
+                    let successCount = 0;
+
+                    // 2. Cross-reference with products missing images
+                    for (let p of products) {
+                        // Needs image if null, empty, or 'hero_banner'
+                        if (!p.img || p.img === 'mobile_only' || p.img.includes('hero_banner')) {
+                            const pCode = p.id.toUpperCase().trim();
+                            if (fileMap.has(pCode)) {
+                                try {
+                                    const fileHandle = fileMap.get(pCode);
+                                    const file = await fileHandle.getFile();
+                                    const fileName = 'srv_' + pCode + '_' + Date.now() + '.webp';
+                                    const uploadedUrl = await sbUploadImage('products', fileName, file);
+                                    if (uploadedUrl) {
+                                        p.img = uploadedUrl;
+                                        await saveProductToDB(p);
+                                        successCount++;
+                                    }
+                                } catch (e) { console.error('Error fetching/uploading', pCode, e); }
+                            }
+                        }
+                    }
+
+                    if (successCount > 0) {
+                        showToast(`Sucesso! ${successCount} produtos encontraram suas fotos sozinhos no servidor.`, 'success');
+                        await loadAllData();
+                    } else {
+                        showToast(`Nenhuma foto nova encontrada para os produtos pendentes nesta pasta.`, 'info');
+                    }
+                    btn.innerHTML = oldHtml;
+                } catch (err) {
+                    btn.innerHTML = '<i class="fas fa-folder-search"></i> Auto-Scan (Servidor)';
+                    if (err.name === 'AbortError') return; // User cancelled
+                    console.error(err);
+                    showToast('Erro ao ler a pasta do servidor.', 'error');
                 }
             }
 
