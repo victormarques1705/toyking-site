@@ -1884,22 +1884,35 @@
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Lendo Servidor...';
                     showToast('Analisando arquivos na pasta... Aguarde.', 'info');
 
-                    // 1. Map all files in the directory
                     let fileMap = new Map();
-                    // We only scan the immediate folder content to avoid crashing if the server is huge
-                    for await (const entry of dirHandle.values()) {
-                        if (entry.kind === 'file') {
-                            const name = entry.name;
-                            const extMatches = name.match(/\\.([a-z0-9]+)$/i);
-                            if (extMatches) {
-                                const ext = extMatches[1].toLowerCase();
-                                if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) {
-                                    const code = name.replace(`.${extMatches[1]}`, '').toUpperCase().trim();
-                                    fileMap.set(code, entry);
+
+                    // Recursive scan to look inside subfolders
+                    async function scanDirectory(dir) {
+                        for await (const entry of dir.values()) {
+                            if (entry.kind === 'file') {
+                                const name = entry.name;
+                                const extMatches = name.match(/\\.([a-z0-9]+)$/i);
+                                if (extMatches) {
+                                    const ext = extMatches[1].toLowerCase();
+                                    if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) {
+                                        let code = name.replace(`.${extMatches[1]}`, '').toUpperCase().trim();
+                                        // Sometimes codes have prefix like 'TK 1234' or 'TK1234' instead of 'TK-1234'. Normalize it here if needed
+                                        // Or just store exactly what's there and match exact.
+                                        fileMap.set(code, entry);
+                                        // Also try saving a version without spaces/dashes for more resilient matching
+                                        fileMap.set(code.replace(/[-\s]/g, ''), entry);
+                                    }
+                                }
+                            } else if (entry.kind === 'directory') {
+                                // Important: We only go deeper if it's not a hidden or system folder
+                                if (!entry.name.startsWith('.') && !['node_modules', '$RECYCLE.BIN', 'System Volume Information'].includes(entry.name)) {
+                                    await scanDirectory(entry);
                                 }
                             }
                         }
                     }
+
+                    await scanDirectory(dirHandle);
 
                     showToast(`Pasta mapeada com ${fileMap.size} imagens! Cruzando com produtos sem foto...`, 'info');
                     btn.innerHTML = '<i class="fas fa-sync fa-spin"></i> Sincronizando...';
@@ -1909,13 +1922,19 @@
                     // 2. Cross-reference with products missing images
                     for (let p of products) {
                         // Needs image if null, empty, or 'hero_banner'
+                        // if (!p.img || p.img === 'mobile_only' || p.img.includes('hero_banner')) {
+                        // Removed strict IF so we can try to find images for EVERYTHING where the photo might be a placeholder
+                        // Actually let's only do it for missing images so we don't overwrite good ones
                         if (!p.img || p.img === 'mobile_only' || p.img.includes('hero_banner')) {
                             const pCode = p.id.toUpperCase().trim();
-                            if (fileMap.has(pCode)) {
+                            const pCodeClean = pCode.replace(/[-\s]/g, ''); // "TK-1234" becomes "TK1234"
+
+                            // Try to find Exact match, or Cleaned matcher
+                            if (fileMap.has(pCode) || fileMap.has(pCodeClean)) {
                                 try {
-                                    const fileHandle = fileMap.get(pCode);
+                                    const fileHandle = fileMap.has(pCode) ? fileMap.get(pCode) : fileMap.get(pCodeClean);
                                     const file = await fileHandle.getFile();
-                                    const fileName = 'srv_' + pCode + '_' + Date.now() + '.webp';
+                                    const fileName = 'srv_' + pCodeClean + '_' + Date.now() + '.webp';
                                     const uploadedUrl = await sbUploadImage('products', fileName, file);
                                     if (uploadedUrl) {
                                         p.img = uploadedUrl;
@@ -1931,7 +1950,7 @@
                         showToast(`Sucesso! ${successCount} produtos encontraram suas fotos sozinhos no servidor.`, 'success');
                         await loadAllData();
                     } else {
-                        showToast(`Nenhuma foto nova encontrada para os produtos pendentes nesta pasta.`, 'info');
+                        showToast(`Nenhuma foto nova compatível com os produtos atuais foi encontrada. (${fileMap.size} arquivos listados)`, 'info');
                     }
                     btn.innerHTML = oldHtml;
                 } catch (err) {
