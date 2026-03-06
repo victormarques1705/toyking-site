@@ -375,50 +375,67 @@
       input.value = '';
       showTyping(true);
 
-      try {
-        // If flow ID is configured, use the API
-        if (CHATBOT_FLOW_ID) {
+      // Try EZChatBot API first
+      let apiHandled = false;
+      if (CHATBOT_FLOW_ID) {
+        try {
           const res = await fetch(`${CHATBOT_API}?sender=${encodeURIComponent(chatSender)}&token=${CHATBOT_TOKEN}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify({ message: text })
           });
-          const data = await res.json();
-          showTyping(false);
-          if (data && data.response) {
-            addMessage(data.response, 'bot');
-          } else if (data && data.messages && data.messages.length > 0) {
-            data.messages.forEach(m => addMessage(m.text || m, 'bot'));
-          } else {
-            addMessage('Recebi sua mensagem! Em breve um de nossos atendentes irá responder. 😊', 'bot');
-          }
-        } else {
-          // Fallback: smart local responses
-          setTimeout(() => {
+          const raw = await res.text();
+          if (raw && raw.trim().length > 2) {
+            const data = JSON.parse(raw);
             showTyping(false);
-            const lower = text.toLowerCase();
-            let reply = '';
-            if (lower.includes('preço') || lower.includes('valor') || lower.includes('quanto')) {
-              reply = '💰 Para consultar preços e fazer pedidos, entre em contato com nosso time comercial pelo WhatsApp: (11) 2085-0101. Teremos prazer em atendê-lo!';
-            } else if (lower.includes('catálogo') || lower.includes('produto') || lower.includes('brinquedo')) {
-              reply = '🧸 Temos mais de 500 produtos! Veja nosso catálogo completo em "Produtos" no menu, ou me diga qual categoria te interessa: Encartelados, Display, Brinquedos a Pilha, Jogos, Didáticos, Verão ou Patinetes!';
-            } else if (lower.includes('frete') || lower.includes('entrega') || lower.includes('envio')) {
-              reply = '🚚 Oferecemos frete grátis para todo o Brasil em pedidos acima do valor mínimo! O prazo varia conforme a região. Entre em contato para mais detalhes.';
-            } else if (lower.includes('whatsapp') || lower.includes('contato') || lower.includes('telefone')) {
-              reply = '📱 Nosso WhatsApp: (11) 2085-0101\n📧 Email: contato@toyking.com.br\n📍 Estamos na Rua Flor de Maio, 200 - São Paulo/SP';
-            } else if (lower.includes('comprar') || lower.includes('pedido') || lower.includes('atacado')) {
-              reply = '🛒 Para comprar, visite a página "Quero Comprar" no menu ou fale com nosso time no WhatsApp (11) 2085-0101. Trabalhamos com atacado e varejo!';
-            } else if (lower.includes('oi') || lower.includes('olá') || lower.includes('ola') || lower.includes('bom dia') || lower.includes('boa tarde')) {
-              reply = 'Olá! 😄 Que bom ter você aqui! Sou o assistente virtual da Toy King. Posso ajudar com informações sobre produtos, preços, entregas e muito mais. O que precisa?';
-            } else {
-              reply = 'Obrigado pela mensagem! 😊 Para um atendimento mais detalhado, fale com nosso time pelo WhatsApp (11) 2085-0101 ou acesse a página "Quero Comprar" no menu. Estamos à disposição!';
+            if (data && data.response) {
+              addMessage(data.response, 'bot');
+              apiHandled = true;
+            } else if (data && data.messages && data.messages.length > 0) {
+              data.messages.forEach(m => addMessage(m.text || m.message || m, 'bot'));
+              apiHandled = true;
+            } else if (data && data.text) {
+              addMessage(data.text, 'bot');
+              apiHandled = true;
+            } else if (data && data.answer) {
+              addMessage(data.answer, 'bot');
+              apiHandled = true;
             }
-            addMessage(reply, 'bot');
-          }, 1200);
+          }
+        } catch (e) {
+          console.log('EZChatBot API fallback:', e.message);
         }
-      } catch (err) {
-        showTyping(false);
-        addMessage('Ops! Não consegui processar sua mensagem agora. Tente novamente ou entre em contato pelo WhatsApp (11) 2085-0101. 📱', 'bot');
+      }
+
+      // Fallback: smart local responses
+      if (!apiHandled) {
+        setTimeout(() => {
+          showTyping(false);
+          const lower = text.toLowerCase();
+          let reply = '';
+          if (lower.includes('preço') || lower.includes('valor') || lower.includes('quanto')) {
+            reply = '💰 Para consultar preços e fazer pedidos, entre em contato com nosso time comercial pelo WhatsApp: (11) 2085-0101. Teremos prazer em atendê-lo!';
+          } else if (lower.includes('catálogo') || lower.includes('produto') || lower.includes('brinquedo')) {
+            reply = '🧸 Temos mais de 500 produtos! Veja nosso catálogo completo em "Produtos" no menu, ou me diga qual categoria te interessa: Encartelados, Display, Brinquedos a Pilha, Jogos, Didáticos, Verão ou Patinetes!';
+          } else if (lower.includes('frete') || lower.includes('entrega') || lower.includes('envio')) {
+            reply = '🚚 Oferecemos frete grátis para todo o Brasil em pedidos acima do valor mínimo! O prazo varia conforme a região. Entre em contato para mais detalhes.';
+          } else if (lower.includes('whatsapp') || lower.includes('contato') || lower.includes('telefone')) {
+            reply = '📱 Nosso WhatsApp: (11) 2085-0101\n📧 Email: contato@toyking.com.br\n📍 Estamos na Rua Flor de Maio, 200 - São Paulo/SP';
+          } else if (lower.includes('comprar') || lower.includes('pedido') || lower.includes('atacado')) {
+            reply = '🛒 Para comprar, visite a página "Quero Comprar" no menu ou fale com nosso time no WhatsApp (11) 2085-0101. Trabalhamos com atacado e varejo!';
+          } else if (lower.includes('oi') || lower.includes('olá') || lower.includes('ola') || lower.includes('bom dia') || lower.includes('boa tarde') || lower.includes('boa noite') || lower.includes('hello') || lower.includes('hi')) {
+            reply = 'Olá! 😄 Que bom ter você aqui! Sou o assistente virtual da Toy King. Posso ajudar com informações sobre produtos, preços, entregas e muito mais. O que precisa?';
+          } else if (lower.includes('horário') || lower.includes('horario') || lower.includes('funciona') || lower.includes('aberto')) {
+            reply = '🕐 Nosso horário de funcionamento: Segunda a Sexta, das 8h às 18h. Sábados das 8h às 13h.';
+          } else if (lower.includes('troca') || lower.includes('devolu') || lower.includes('garantia')) {
+            reply = '🔄 Oferecemos primeira troca grátis! Para solicitar, entre em contato pelo WhatsApp (11) 2085-0101 com o número do pedido.';
+          } else if (lower.includes('pagamento') || lower.includes('cartão') || lower.includes('pix') || lower.includes('boleto') || lower.includes('parcela')) {
+            reply = '💳 Aceitamos: Cartão (até 12x), PIX, Boleto e Transferência bancária. Consulte condições especiais para atacado!';
+          } else {
+            reply = 'Obrigado pela mensagem! 😊 Para um atendimento mais detalhado, fale com nosso time pelo WhatsApp (11) 2085-0101 ou acesse a página "Quero Comprar" no menu. Estamos à disposição!';
+          }
+          addMessage(reply, 'bot');
+        }, 800);
       }
     }
   </script>
