@@ -1493,6 +1493,14 @@ a[href*="elfsight.com"],
     .category-section {
         padding: 50px 0;
     }
+
+    .cat-carousel-wrapper {
+        padding: 0;
+    }
+
+    .cat-nav-btn {
+        display: none;
+    }
 }
 
 @media (max-width: 480px) {
