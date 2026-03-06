@@ -948,6 +948,13 @@
                                 </label>
                                 <input type="file" id="mExcelUpload" accept=".xlsx, .xls" style="display:none;"
                                     onchange="handleExcelUpload(event)">
+                                <label for="mBulkImgUpload" class="btn btn-outline"
+                                    style="cursor:pointer; margin:0; border-color: #2563eb; color: #2563eb;"
+                                    title="Selecione várias imagens de uma vez. Ex: se a foto se chamar 'TK-1234.jpg', ele liga ao produto de código TK-1234.">
+                                    <i class="fas fa-images"></i> Sync de Imagens
+                                </label>
+                                <input type="file" id="mBulkImgUpload" accept="image/*" multiple style="display:none;"
+                                    onchange="handleBulkImageUpload(event)">
                                 <button class="btn btn-primary" onclick="openProductModal()"><i class="fas fa-plus"></i>
                                     Novo Produto</button>
                             </div>
@@ -1853,6 +1860,56 @@
                         showToast('Erro ao excluir do banco. Recarregando...', 'error');
                         await loadAllData();
                     }
+                }
+            }
+
+            async function handleBulkImageUpload(event) {
+                const files = event.target.files;
+                if (!files || files.length === 0) return;
+
+                const btnLabel = event.target.previousElementSibling;
+                const oldHtml = btnLabel.innerHTML;
+                btnLabel.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sincronizando...';
+
+                showToast(`Analisando ${files.length} imagens... Pode demorar dependendo da internet.`, 'info');
+                let successCount = 0;
+                let notFoundCount = 0;
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    // Strip the extension
+                    let nameParts = file.name.split('.');
+                    if (nameParts.length < 2) continue; // no extension
+                    nameParts.pop(); // remove extension
+                    let code = nameParts.join('.');
+                    code = code.toUpperCase().trim();
+
+                    // find product in array
+                    const prodIndex = products.findIndex(p => p.id.toUpperCase() === code);
+                    if (prodIndex !== -1) {
+                        try {
+                            const fileName = 'bulk_' + code + '_' + Date.now() + '.webp'; // Use webp in name just in case, but upload raw blob
+                            const uploadedUrl = await sbUploadImage('products', fileName, file);
+                            if (uploadedUrl) {
+                                products[prodIndex].img = uploadedUrl;
+                                await saveProductToDB(products[prodIndex]);
+                                successCount++;
+                            }
+                        } catch (e) { console.error('Error uploading bulk image for', code, e); }
+                    } else {
+                        notFoundCount++;
+                    }
+                }
+
+                btnLabel.innerHTML = oldHtml;
+                event.target.value = ''; // reset input
+
+                let msg = `Sincronização concluída! ${successCount} produtos atualizados com imagem.`;
+                if (notFoundCount > 0) msg += ` (${notFoundCount} arquivos ignorados/sem código)`;
+                showToast(msg, successCount > 0 ? 'success' : 'info'); // show different color based on result
+
+                if (successCount > 0) {
+                    await loadAllData();
                 }
             }
 
