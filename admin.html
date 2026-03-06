@@ -1196,6 +1196,13 @@
                                         id="cfgFb" value="https://www.facebook.com/Toykingoficial"></div>
                             </div>
                             <div class="form-row">
+                                <div class="form-group" style="flex:2;"><label>Categorias da Página Inicial (Separadas
+                                        por vírgula)</label><input type="text" class="form-control"
+                                        id="cfgHomeCategories"
+                                        value="Encartelados, Display, Brinquedos a Pilha, Jogos, Didáticos, Verão, Patinetes">
+                                </div>
+                            </div>
+                            <div class="form-row">
                                 <div class="form-group"><label>YouTube</label><input type="text" class="form-control"
                                         id="cfgYt" value=""></div>
                                 <div class="form-group"><label>Cor Primária</label><input type="color"
@@ -2256,6 +2263,7 @@
                     facebook: document.getElementById('cfgFb').value,
                     youtube: document.getElementById('cfgYt').value,
                     primary_color: document.getElementById('cfgColor').value,
+                    home_categories: document.getElementById('cfgHomeCategories') ? document.getElementById('cfgHomeCategories').value : '',
                     about_proposito: document.getElementById('cfgAboutProposito') ? document.getElementById('cfgAboutProposito').value : '',
                     about_missao: document.getElementById('cfgAboutMissao') ? document.getElementById('cfgAboutMissao').value : '',
                     about_essencia: document.getElementById('cfgAboutEssencia') ? document.getElementById('cfgAboutEssencia').value : '',
@@ -2278,6 +2286,7 @@
                 if (settings.facebook) document.getElementById('cfgFb').value = settings.facebook;
                 if (settings.youtube) document.getElementById('cfgYt').value = settings.youtube;
                 if (settings.primary_color) document.getElementById('cfgColor').value = settings.primary_color;
+                if (settings.home_categories && document.getElementById('cfgHomeCategories')) document.getElementById('cfgHomeCategories').value = settings.home_categories;
 
                 if (settings.about_proposito && document.getElementById('cfgAboutProposito')) document.getElementById('cfgAboutProposito').value = settings.about_proposito;
                 if (settings.about_missao && document.getElementById('cfgAboutMissao')) document.getElementById('cfgAboutMissao').value = settings.about_missao;

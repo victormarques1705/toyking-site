@@ -239,59 +239,125 @@ document.addEventListener('DOMContentLoaded', () => {
             // Load Products for homepage sections
             const products = await sbGetProducts();
             if (products && products.length > 0) {
-                const catMap = {
-                    'Encartelados': '#encartelados',
-                    'Brinquedos a Pilha': '#pilha',
-                    'Jogos': '#jogos',
-                    'Didáticos': '#didaticos',
-                    'Verão': '#verao',
-                    'Patinetes': '#patinetes',
-                    'Display': '#display'
-                };
+                const homeCatsStr = window.siteSettings && window.siteSettings.home_categories
+                    ? window.siteSettings.home_categories
+                    : "Encartelados, Display, Brinquedos a Pilha, Jogos, Didáticos, Verão, Patinetes";
 
-                for (const [catName, secId] of Object.entries(catMap)) {
-                    const section = document.querySelector(secId);
-                    if (section) {
-                        const grid = section.querySelector('.products-grid');
-                        if (grid) {
-                            const prods = products.filter(p => p.category === catName && p.status === 'active').slice(0, 4);
-                            if (prods.length > 0) {
-                                grid.innerHTML = '';
-                                prods.forEach((p, i) => {
-                                    let badgeHtml = '';
-                                    if (p.badge) {
-                                        const badgeClass = p.badge === 'TOP' ? 'badge-hot' : 'badge-new';
-                                        const badgeIcon = p.badge === 'TOP' ? '🔥 ' : '';
-                                        badgeHtml = `<span class="badge ${badgeClass}">${badgeIcon}${p.badge}</span>`;
-                                    }
-                                    const imgSrc = p.image_url && (p.image_url.startsWith('data:image') || p.image_url.startsWith('http')) ? p.image_url : (p.image_url ? 'assets/images/' + p.image_url : 'assets/images/hero_banner.png');
-                                    grid.innerHTML += `
-                                      <div class="product-card reveal" style="transition-delay: ${0.1 + (i * 0.1)}s; cursor:pointer;" onclick="window.location.href='produto.html?id=${p.product_code}'">
-                                        ${badgeHtml}
-                                        <div class="product-img-wrapper">
-                                          <img src="${imgSrc}" alt="${p.name}" class="product-img">
-                                        </div>
-                                        <div class="product-info">
-                                          <h3>${p.name}</h3>
-                                          <p class="product-code-tag">${p.product_code}</p>
-                                          <div class="product-tags-row">
-                                            <span class="product-tag">${p.category}</span>
-                                            <span class="product-tag">${p.age}</span>
-                                            ${p.sounds ? '<span class="product-tag icon-tag">🔊</span>' : ''}
-                                            ${p.lights ? '<span class="product-tag icon-tag">💡</span>' : ''}
-                                            ${p.educational ? '<span class="product-tag icon-tag">🎓</span>' : ''}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    `;
-                                });
-                                // Force visible class on new items
-                                grid.querySelectorAll('.reveal').forEach(el => {
-                                    setTimeout(() => el.classList.add('visible'), 100);
-                                });
-                            }
+                const homeCats = homeCatsStr.split(',').map(c => c.trim()).filter(c => c);
+
+                const iconMap = { 'Encartelados': '📦', 'Didáticos': '📚', 'Brinquedos a Pilha': '⚡', 'Pilha': '⚡', 'Verão': '☀️', 'Jogos': '🎲', 'Display': '🎁', 'Patinetes': '🛴', 'Maletas': '🎨', 'Armas': '🔫', 'Meninas': '🎀', 'Meninos': '🚗', 'Bebês': '👶', 'Pelúcias': '🧸' };
+                const bgColors = ['section-green', 'section-orange', 'section-blue', 'section-pink', 'section-purple', 'section-yellow', 'section-red'];
+                const bgWaveColors = ['#FCE4EC', '#FFF3E0', '#E3F2FD', '#F3E5F5', '#FFFDE7', '#FFEBEE', '#E0F7FA'];
+
+                // 1. Update Header Sub
+                const headerSub = document.getElementById('dynamic-header-sub');
+                if (headerSub) {
+                    headerSub.innerHTML = '<a href="produtos.html" class="cat-link highlight">🔥 Novidades!</a>';
+                    homeCats.forEach(cat => {
+                        headerSub.innerHTML += `<a href="produtos.html?cat=${encodeURIComponent(cat)}" class="cat-link">${cat}</a>`;
+                    });
+                }
+
+                // 2. Update Bubbles
+                const bubblesContainer = document.getElementById('dynamic-bubbles');
+                if (bubblesContainer) {
+                    bubblesContainer.innerHTML = '';
+                    homeCats.forEach((cat, idx) => {
+                        let icon = '🧸';
+                        for (let key in iconMap) {
+                            if (cat.toLowerCase().includes(key.toLowerCase())) { icon = iconMap[key]; break; }
                         }
-                    }
+
+                        bubblesContainer.innerHTML += `
+                          <div class="age-bubble reveal-scale" style="transition-delay: ${0.1 + (idx * 0.1)}s;">
+                            <div class="bubble-anim-wrapper">
+                              <div class="bubble-decor"><span></span><span></span><span></span><span></span></div>
+                              <dotlottie-player src="https://lottie.host/861b6aad-e4d1-4042-913d-31c23af8998e/riouT6qwUo.lottie" background="transparent" speed="${0.8 + (idx % 3) * 0.2}" style="width: 290%; height: 290%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 1; pointer-events: none;" loop autoplay></dotlottie-player>
+                              <span class="age-icon">${icon}</span>
+                            </div>
+                            <span class="bubble-label">${cat}</span>
+                          </div>
+                        `;
+                    });
+                }
+
+                // 3. Update Sections
+                const sectionsContainer = document.getElementById('dynamic-categories-container');
+                if (sectionsContainer) {
+                    sectionsContainer.innerHTML = '';
+                    homeCats.forEach((cat, idx) => {
+                        const prods = products.filter(p => p.category === cat && p.status === 'active').slice(0, 4);
+                        if (prods.length === 0) return; // SKIP EXAMPLES IF NO ACTIVE PRODUCTS! // <--- This fulfills user's request explicitly
+
+                        let icon = '🧸';
+                        for (let key in iconMap) {
+                            if (cat.toLowerCase().includes(key.toLowerCase())) { icon = iconMap[key]; break; }
+                        }
+                        const catId = 'cat-' + idx;
+                        const sectionClass = bgColors[idx % bgColors.length];
+                        const waveFill = bgWaveColors[idx % bgWaveColors.length];
+
+                        let prodsHtml = '';
+                        prods.forEach((p, i) => {
+                            let badgeHtml = '';
+                            if (p.badge) {
+                                const badgeClass = p.badge === 'TOP' ? 'badge-hot' : 'badge-new';
+                                const badgeIcon = p.badge === 'TOP' ? '🔥 ' : '';
+                                badgeHtml = `<span class="badge ${badgeClass}">${badgeIcon}${p.badge}</span>`;
+                            }
+                            const imgSrc = p.image_url && (p.image_url.startsWith('data:image') || p.image_url.startsWith('http')) ? p.image_url : (p.image_url ? 'assets/images/' + p.image_url : 'assets/images/hero_banner.png');
+                            prodsHtml += `
+                                <div class="product-card reveal" style="transition-delay: ${0.1 + (i * 0.1)}s; cursor:pointer;" onclick="window.location.href='produto.html?id=${p.product_code}'">
+                                    ${badgeHtml}
+                                    <div class="product-img-wrapper">
+                                      <img src="${imgSrc}" alt="${p.name}" class="product-img">
+                                    </div>
+                                    <div class="product-info">
+                                      <h3>${p.name}</h3>
+                                      <p class="product-code-tag">${p.product_code}</p>
+                                      <div class="product-tags-row">
+                                        <span class="product-tag">${p.category}</span>
+                                        <span class="product-tag">${p.age}</span>
+                                        ${p.sounds ? '<span class="product-tag icon-tag">🔊</span>' : ''}
+                                        ${p.lights ? '<span class="product-tag icon-tag">💡</span>' : ''}
+                                        ${p.educational ? '<span class="product-tag icon-tag">🎓</span>' : ''}
+                                      </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+                        const isEven = idx % 2 === 0;
+                        const waveD = isEven
+                            ? 'M0,40 C360,100 720,0 1080,60 C1260,80 1380,20 1440,40 L1440,100 L0,100 Z'
+                            : 'M0,60 C240,10 480,90 720,40 C960,0 1200,80 1440,30 L1440,100 L0,100 Z';
+
+                        sectionsContainer.innerHTML += `
+                          <section class="category-section ${sectionClass}" id="${catId}">
+                            ${isEven ? '<div class="particles"></div>' : ''}
+                            <div class="container">
+                              <div class="section-header">
+                                <h2 class="section-title reveal-left">${icon} ${cat}</h2>
+                                <a href="produtos.html?cat=${encodeURIComponent(cat)}" class="btn-see-all reveal-right">Ver Todos</a>
+                              </div>
+                              <div class="products-grid">
+                                ${prodsHtml}
+                              </div>
+                            </div>
+                          </section>
+                          <div class="wave-separator">
+                            <svg viewBox="0 0 1440 100" preserveAspectRatio="none">
+                              <path fill="${waveFill}" d="${waveD}"></path>
+                            </svg>
+                          </div>
+                        `;
+                    });
+
+                    // Force reveal update
+                    setTimeout(() => {
+                        sectionsContainer.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+                        sectionsContainer.querySelectorAll('.reveal-left, .reveal-right').forEach(el => el.classList.add('visible'));
+                    }, 500);
                 }
             }
         } catch (e) { console.error('Erro ao carregar produtos:', e); }
