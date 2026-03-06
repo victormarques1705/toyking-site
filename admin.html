@@ -1884,27 +1884,26 @@
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Lendo Servidor...';
                     showToast('Analisando arquivos na pasta... Aguarde.', 'info');
 
-                    let fileMap = new Map();
+                    // Store ALL image files with their entries for flexible matching
+                    let allFiles = []; // [{name: 'FULL_NAME_WITHOUT_EXT', entry: FileSystemFileHandle}]
+                    let fileMap = new Map(); // exact code -> entry
 
                     // Recursive scan to look inside subfolders
                     async function scanDirectory(dir) {
                         for await (const entry of dir.values()) {
                             if (entry.kind === 'file') {
                                 const name = entry.name;
-                                const extMatches = name.match(/\\.([a-z0-9]+)$/i);
+                                const extMatches = name.match(/\.([a-z0-9]+)$/i);
                                 if (extMatches) {
                                     const ext = extMatches[1].toLowerCase();
                                     if (['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(ext)) {
                                         let code = name.replace(`.${extMatches[1]}`, '').toUpperCase().trim();
-                                        // Sometimes codes have prefix like 'TK 1234' or 'TK1234' instead of 'TK-1234'. Normalize it here if needed
-                                        // Or just store exactly what's there and match exact.
                                         fileMap.set(code, entry);
-                                        // Also try saving a version without spaces/dashes for more resilient matching
                                         fileMap.set(code.replace(/[-\s]/g, ''), entry);
+                                        allFiles.push({ name: code, entry });
                                     }
                                 }
                             } else if (entry.kind === 'directory') {
-                                // Important: We only go deeper if it's not a hidden or system folder
                                 if (!entry.name.startsWith('.') && !['node_modules', '$RECYCLE.BIN', 'System Volume Information'].includes(entry.name)) {
                                     await scanDirectory(entry);
                                 }
@@ -1914,31 +1913,75 @@
 
                     await scanDirectory(dirHandle);
 
-                    showToast(`Pasta mapeada com ${fileMap.size} imagens! Cruzando com produtos sem foto...`, 'info');
+                    // Show debug info with sample filenames
+                    const sampleNames = allFiles.slice(0, 10).map(f => f.name);
+                    console.log('Auto-Scan: Found', allFiles.length, 'images. Samples:', sampleNames);
+                    showToast(`Pasta mapeada com ${allFiles.length} imagens! Cruzando com ${products.length} produtos...`, 'info');
                     btn.innerHTML = '<i class="fas fa-sync fa-spin"></i> Sincronizando...';
 
                     let successCount = 0;
+                    let matchLog = [];
+
+                    // Helper: find best matching file for a product code
+                    function findFileForCode(pCode) {
+                        const pCodeClean = pCode.replace(/[-\s]/g, '');
+                        // Extract just the numeric/alphanumeric part after "TK-" prefix
+                        const numericPart = pCode.replace(/^TK[-\s]*/i, '').trim();
+
+                        // 1. Exact match: filename is exactly "TK-1017"
+                        if (fileMap.has(pCode)) return fileMap.get(pCode);
+                        // 2. Clean match: filename is "TK1017" and code is "TK-1017"
+                        if (fileMap.has(pCodeClean)) return fileMap.get(pCodeClean);
+                        // 3. Numeric match: filename is "1017" and code is "TK-1017"
+                        if (numericPart && fileMap.has(numericPart)) return fileMap.get(numericPart);
+
+                        // 4. Partial/contains match: filename contains the code somewhere
+                        for (const f of allFiles) {
+                            const fClean = f.name.replace(/[-\s]/g, '');
+                            // Check if filename contains the full code
+                            if (f.name.includes(pCode) || fClean.includes(pCodeClean)) return f.entry;
+                            // Check if filename contains just the numeric part
+                            if (numericPart && numericPart.length >= 3 && f.name.includes(numericPart)) return f.entry;
+                        }
+
+                        return null;
+                    }
 
                     // 2. Cross-reference with ALL products
                     for (let p of products) {
                         const pCode = p.id.toUpperCase().trim();
-                        const pCodeClean = pCode.replace(/[-\s]/g, ''); // "TK-1234" becomes "TK1234"
+                        const foundFile = findFileForCode(pCode);
 
-                        // Try to find Exact match, or Cleaned matcher
-                        if (fileMap.has(pCode) || fileMap.has(pCodeClean)) {
+                        if (foundFile) {
                             try {
-                                const fileHandle = fileMap.has(pCode) ? fileMap.get(pCode) : fileMap.get(pCodeClean);
-                                const file = await fileHandle.getFile();
-                                const fileName = 'srv_' + pCodeClean + '_' + Date.now() + '.webp';
+                                const file = await foundFile.getFile();
+                                const safeCode = pCode.replace(/[^a-zA-Z0-9]/g, '');
+                                const fileName = 'srv_' + safeCode + '_' + Date.now() + '.webp';
                                 const uploadedUrl = await sbUploadImage('products', fileName, file);
                                 if (uploadedUrl) {
                                     p.img = uploadedUrl;
                                     await saveProductToDB(p);
                                     successCount++;
+                                    matchLog.push('✅ ' + pCode);
                                 }
-                            } catch (e) { console.error('Error fetching/uploading', pCode, e); }
+                            } catch (e) {
+                                console.error('Error fetching/uploading', pCode, e);
+                                matchLog.push('❌ ' + pCode + ' (erro upload)');
+                            }
+                        } else {
+                            matchLog.push('⚠️ ' + pCode + ' (sem match)');
                         }
                     }
+
+                    // Show a detailed debug alert
+                    const debugMsg = `Resultados do Auto-Scan:\n\n` +
+                        `📂 Imagens encontradas na pasta: ${allFiles.length}\n` +
+                        `📦 Produtos no sistema: ${products.length}\n` +
+                        `✅ Matches encontrados: ${successCount}\n\n` +
+                        `Exemplos de nomes de arquivo:\n${sampleNames.join('\n')}\n\n` +
+                        `Log por produto:\n${matchLog.join('\n')}`;
+                    alert(debugMsg);
+                    console.log(debugMsg);
 
                     if (successCount > 0) {
                         showToast(`Sucesso! ${successCount} produtos encontraram suas fotos sozinhos no servidor.`, 'success');
