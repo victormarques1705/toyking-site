@@ -1519,6 +1519,7 @@
 
             function renderPages() {
                 const tb = document.getElementById('pagesTable');
+                if (!tb) return;
                 tb.innerHTML = '';
                 defaultPages.forEach(p => {
                     tb.innerHTML += `<tr><td><strong>${p.name}</strong></td><td>${p.file}</td>
@@ -1531,6 +1532,10 @@
                 const tbMob = document.getElementById('mobileBannersTable');
                 if (tbWeb) tbWeb.innerHTML = '';
                 if (tbMob) tbMob.innerHTML = '';
+
+                let countWeb = 0;
+                let countMob = 0;
+
                 banners.forEach((b, i) => {
                     const isMobOnly = b.img === 'mobile_only';
                     const imgSrc = isMobOnly ? getImgSrc(b.img_mobile) : getImgSrc(b.img);
@@ -1543,9 +1548,12 @@
             <button class="btn btn-sm btn-danger" onclick="deleteBanner(${i})"><i class="fas fa-trash"></i></button>
           </div></td>
         </tr>`;
-                    if (isMobOnly && tbMob) tbMob.innerHTML += html;
-                    else if (!isMobOnly && tbWeb) tbWeb.innerHTML += html;
+                    if (isMobOnly && tbMob) { tbMob.innerHTML += html; countMob++; }
+                    else if (!isMobOnly && tbWeb) { tbWeb.innerHTML += html; countWeb++; }
                 });
+
+                if (countWeb === 0 && tbWeb) tbWeb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;">Nenhum banner cadastrado.</td></tr>';
+                if (countMob === 0 && tbMob) tbMob.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;">Nenhum banner celular cadastrado.</td></tr>';
             }
 
             function renderManuals() {
