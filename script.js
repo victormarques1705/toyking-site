@@ -1,4 +1,92 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // ===== FAST DYNAMIC BANNERS LOADING =====
+    async function loadAndRenderBanners() {
+        if (typeof sbGetBanners === 'undefined') return;
+        const slider = document.querySelector('.slider');
+        const dotsContainer = document.querySelector('.slider-dots');
+        if (!slider || !dotsContainer) return;
+
+        let isMobile = window.innerWidth <= 768;
+
+        const renderBanners = (bannersData) => {
+            let displayBanners = isMobile
+                ? bannersData.filter(b => b.image_url === 'mobile_only' || (b.image_mobile_url && b.image_mobile_url.trim() !== ''))
+                : bannersData.filter(b => b.image_url !== 'mobile_only');
+
+            if (displayBanners.length === 0) displayBanners = bannersData;
+            if (displayBanners.length === 0) return;
+
+            slider.innerHTML = '';
+            dotsContainer.innerHTML = '';
+
+            displayBanners.forEach((b, i) => {
+                const activeClass = i === 0 ? 'active' : '';
+                const uniqueId = b.id || i;
+
+                let finalSrc = '';
+                if (isMobile) {
+                    let mbUrl = (b.image_mobile_url && b.image_mobile_url.trim() !== '') ? b.image_mobile_url : b.image_url;
+                    finalSrc = (mbUrl.startsWith('data:image') || mbUrl.startsWith('http')) ? mbUrl : 'assets/images/' + mbUrl;
+                } else {
+                    finalSrc = (b.image_url.startsWith('data:image') || b.image_url.startsWith('http')) ? b.image_url : 'assets/images/' + b.image_url;
+                }
+
+                if (i === 0) {
+                    let link = document.createElement('link');
+                    link.rel = 'preload';
+                    link.as = 'image';
+                    link.href = finalSrc;
+                    document.head.appendChild(link);
+                }
+
+                slider.innerHTML += `
+                  <style>
+                    .slide-bg-${uniqueId} { background-image: url('${finalSrc}'); }
+                  </style>
+                  <div class="slide ${activeClass}">
+                    <div class="slide-bg slide-bg-${uniqueId}"></div>
+                    <div class="slide-content" style="opacity:1 !important;">
+                      <h1 style="background:transparent; max-width:100%; height:auto;">${b.title}</h1>
+                      <p style="background:transparent; max-width:100%; height:auto;">${b.subtitle || ''}</p>
+                      ${b.link === 'none' ? '' : `<a href="${b.link || 'produtos.html'}" class="btn-hero">Ver Produtos</a>`}
+                    </div>
+                  </div>
+                `;
+                dotsContainer.innerHTML += `<button class="slider-dot ${activeClass}"></button>`;
+            });
+
+            slider.style.transition = 'opacity 0.3s ease';
+            slider.style.opacity = '1';
+
+            // Re-init slider logic if it exists
+            setTimeout(() => { if (window.initSliderCore) window.initSliderCore(); }, 50);
+        };
+
+        // 1. Try Cache First for INSTANT render
+        try {
+            const cached = localStorage.getItem('tk_fast_banners');
+            if (cached) renderBanners(JSON.parse(cached));
+        } catch (e) { }
+
+        // 2. Fetch fresh from DB asynchronously
+        try {
+            const freshBanners = await sbGetBanners();
+            if (freshBanners && freshBanners.length > 0) {
+                const freshStr = JSON.stringify(freshBanners);
+                const cached = localStorage.getItem('tk_fast_banners');
+
+                // Only re-render if something changed, to prevent screen flash
+                if (freshStr !== cached) {
+                    localStorage.setItem('tk_fast_banners', freshStr);
+                    renderBanners(freshBanners);
+                }
+            }
+        } catch (e) { console.error('Erro ao carregar banners:', e); }
+    }
+
+    // Initialize very early
+    loadAndRenderBanners();
+
     // ===== DYNAMIC DATA LOADING FROM SUPABASE =====
     async function loadSiteData() {
         if (typeof sbGetProducts === 'undefined') return; // supabase not loaded on this page
@@ -155,85 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (e) { console.error('Erro ao carregar configurações:', e); }
 
-        try {
-            // Load Banners
-            const banners = await sbGetBanners();
-            if (banners && banners.length > 0) {
-                const slider = document.querySelector('.slider');
-                const dotsContainer = document.querySelector('.slider-dots');
-                if (slider && dotsContainer) {
-                    let isMobile = window.innerWidth <= 768;
-                    let displayBanners = isMobile
-                        ? banners.filter(b => b.image_url === 'mobile_only' || (b.image_mobile_url && b.image_mobile_url.trim() !== ''))
-                        : banners.filter(b => b.image_url !== 'mobile_only');
-
-                    if (displayBanners.length === 0) displayBanners = banners;
-
-                    // Identify first image to preload
-                    let firstSrc = '';
-                    if (displayBanners.length > 0) {
-                        const b0 = displayBanners[0];
-                        if (isMobile) {
-                            let mbUrl = (b0.image_mobile_url && b0.image_mobile_url.trim() !== '') ? b0.image_mobile_url : b0.image_url;
-                            firstSrc = (mbUrl.startsWith('data:image') || mbUrl.startsWith('http')) ? mbUrl : 'assets/images/' + mbUrl;
-                        } else {
-                            firstSrc = (b0.image_url.startsWith('data:image') || b0.image_url.startsWith('http')) ? b0.image_url : 'assets/images/' + b0.image_url;
-                        }
-                    }
-
-                    const renderBanners = () => {
-                        slider.style.opacity = '0';
-                        setTimeout(() => {
-                            slider.innerHTML = '';
-                            dotsContainer.innerHTML = '';
-
-                            displayBanners.forEach((b, i) => {
-                                const activeClass = i === 0 ? 'active' : '';
-                                const uniqueId = b.id || i;
-
-                                let finalSrc = '';
-                                if (isMobile) {
-                                    let mbUrl = (b.image_mobile_url && b.image_mobile_url.trim() !== '') ? b.image_mobile_url : b.image_url;
-                                    finalSrc = (mbUrl.startsWith('data:image') || mbUrl.startsWith('http')) ? mbUrl : 'assets/images/' + mbUrl;
-                                } else {
-                                    finalSrc = (b.image_url.startsWith('data:image') || b.image_url.startsWith('http')) ? b.image_url : 'assets/images/' + b.image_url;
-                                }
-
-                                slider.innerHTML += `
-                                  <style>
-                                    .slide-bg-${uniqueId} { background-image: url('${finalSrc}'); }
-                                  </style>
-                                  <div class="slide ${activeClass}">
-                                    <div class="slide-bg slide-bg-${uniqueId}"></div>
-                                    <div class="slide-content">
-                                      <h1>${b.title}</h1>
-                                      <p>${b.subtitle || ''}</p>
-                                      ${b.link === 'none' ? '' : `<a href="${b.link || 'produtos.html'}" class="btn-hero">Ver Produtos</a>`}
-                                    </div>
-                                  </div>
-                                `;
-                                dotsContainer.innerHTML += `<button class="slider-dot ${activeClass}"></button>`;
-                            });
-
-                            requestAnimationFrame(() => {
-                                slider.style.transition = 'opacity 0.6s ease';
-                                slider.style.opacity = '1';
-                                if (window.initSliderCore) window.initSliderCore();
-                            });
-                        }, 300); // Wait for fade out
-                    };
-
-                    if (firstSrc) {
-                        const imgLoader = new Image();
-                        imgLoader.onload = renderBanners;
-                        imgLoader.onerror = renderBanners;
-                        imgLoader.src = firstSrc;
-                    } else {
-                        renderBanners();
-                    }
-                }
-            }
-        } catch (e) { console.error('Erro ao carregar banners:', e); }
+        // Banners will be loaded by a separate async function to not block other data
 
         try {
             // Load Products for homepage sections
