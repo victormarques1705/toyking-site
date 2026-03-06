@@ -634,8 +634,19 @@ document.addEventListener('DOMContentLoaded', () => {
             // Optional: Hide buttons if at start or end
             const updateButtons = () => {
                 const maxScrollLeft = carousel.scrollWidth - carousel.clientWidth;
-                if (carousel.scrollLeft <= 0) {
-                    prevBtn.style.opacity = '0.3';
+
+                if (maxScrollLeft <= 0) {
+                    // Content fits, hide both buttons
+                    prevBtn.style.display = 'none';
+                    nextBtn.style.display = 'none';
+                    return;
+                }
+
+                prevBtn.style.display = 'flex';
+                nextBtn.style.display = 'flex';
+
+                if (carousel.scrollLeft <= 5) {
+                    prevBtn.style.opacity = '0.25';
                     prevBtn.style.pointerEvents = 'none';
                 } else {
                     prevBtn.style.opacity = '1';
@@ -643,7 +654,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (carousel.scrollLeft >= maxScrollLeft - 10) {
-                    nextBtn.style.opacity = '0.3';
+                    nextBtn.style.opacity = '0.25';
                     nextBtn.style.pointerEvents = 'none';
                 } else {
                     nextBtn.style.opacity = '1';
@@ -653,7 +664,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             carousel.addEventListener('scroll', updateButtons);
             // Initial check
-            setTimeout(updateButtons, 100);
+            setTimeout(updateButtons, 500);
             window.addEventListener('resize', updateButtons);
         }
     }
