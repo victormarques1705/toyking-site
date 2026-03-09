@@ -23,6 +23,15 @@
     --transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Global: Hide all price elements to maintain a catalog-only view */
+.product-price,
+.price,
+.price-tag,
+.product-price-row,
+[class*="price"] {
+    display: none !important;
+}
+
 *,
 *::before,
 *::after {
