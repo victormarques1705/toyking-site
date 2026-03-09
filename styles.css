@@ -1605,3 +1605,36 @@ a[href*="elfsight.com"],
 #EZchatWidget>div:first-child {
     display: none !important;
 }
+
+/* Esconde marca d'água "Powered by EZSoft" nas telas principais */
+[data-testid="poweredBy"],
+[data-testId="poweredBy"],
+a[href*="ezsoft"] {
+    display: none !important;
+}
+
+/* Force mobile chat to be a floating widget instead of an annoying fullscreen modal */
+@media (max-width: 800px) {
+    #EZchatWidget {
+        top: auto !important;
+        left: auto !important;
+        bottom: 100px !important;
+        /* Open above the custom Giraffe button */
+        right: 20px !important;
+        width: calc(100vw - 40px) !important;
+        height: 65vh !important;
+        max-height: 550px !important;
+        min-height: 400px !important;
+        background: transparent !important;
+        border-radius: 16px !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25) !important;
+        z-index: 99999999999 !important;
+    }
+
+    /* Target the iframe only when it's opened (width is not 0) */
+    #EZchatWidget iframe:not([width="0"]) {
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 16px !important;
+    }
+}
