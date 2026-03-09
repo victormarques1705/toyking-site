@@ -722,19 +722,102 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===== CUSTOM LAUNCHER FOR EZ CHAT =====
     const chatBtn = document.getElementById('chat-btn');
+    let ezChatOpened = false;
 
     if (chatBtn) {
         chatBtn.addEventListener('click', () => {
             const badge = chatBtn.querySelector('.chat-badge');
-            if (badge) badge.style.display = 'none'; // hide badge after clicking
+            if (badge) badge.style.display = 'none';
 
-            // Open the native EZchatbot window
             if (window.ezchat && typeof window.ezchat.open === 'function') {
                 window.ezchat.open();
-            } else {
-                // Se por acaso o bot der erro ou não carregar tão rápido, dá um feedback ou fallback visual.
-                console.warn('EZ Chatbot ainda não carregou');
+                ezChatOpened = true;
+                forceStyleInEzChat(); // Tenta aplicar imediatamente
             }
         });
     }
+
+    // Tenta periodicamente injetar estilos no iframe (forçando estilo nativo por JS)
+    function forceStyleInEzChat() {
+        try {
+            const iframe = document.querySelector('iframe[title="mainFrame"]');
+            if (!iframe) return;
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            if (!doc || !doc.body) return;
+
+            // Constantes de cores do EZChat que vieram da API deles
+            const ezPurple1 = 'rgb(87, 56, 249)';  // #5738F9 (Main Color)
+            const ezPurple2 = 'rgb(60, 39, 174)';  // #3C27AE (Bubble Color)
+            const ezPurple3 = 'rgb(83, 56, 158)';  // fallback purple
+            const ezDark1 = 'rgb(51, 51, 51)';     // #333 (Dark background)
+            const ezDark2 = 'rgb(45, 45, 45)';     // #2D2D2D
+
+            // Nossas cores Oiciais
+            const toyBlue = '#1A8BD6';
+            const toyLight = '#F8F9FA';
+            const toyDarkText = '#333333';
+
+            Array.from(doc.querySelectorAll('*')).forEach(el => {
+                const style = window.getComputedStyle(el);
+                const bg = style.backgroundColor;
+
+                // 1. Troca os Roxos pelo Azul da ToyKing
+                if (bg === ezPurple1 || bg === ezPurple2 || bg === ezPurple3) {
+                    el.style.setProperty('background-color', toyBlue, 'important');
+                }
+
+                // 2. Troca o Fundo Escuro da janela por Fundo Claro (branco/gelo)
+                if (bg === ezDark1 || bg === ezDark2) {
+                    el.style.setProperty('background-color', toyLight, 'important');
+                    el.style.setProperty('color', toyDarkText, 'important');
+                }
+
+                // Correção do texto invisível ao digitar
+                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable) {
+                    el.style.setProperty('color', toyDarkText, 'important');
+                    el.style.setProperty('background-color', 'transparent', 'important');
+                }
+
+                // 3. Oculta a Imagem Gigante (Capa da loja com os balões) - caso retorne
+                if (el.tagName === 'IMG' && (el.style.objectFit === 'cover' || el.src.includes('jpg') || el.src.includes('jpeg'))) {
+                    // Impede de ocultar micro avatar do atendente
+                    if (!el.src.includes('cac09326') && !el.src.includes('c4c9ca60') && (el.width > 50 || parseInt(style.height) > 100)) {
+                        el.style.setProperty('display', 'none', 'important');
+                    }
+                }
+
+                // 4. Force Font
+                if (style.fontFamily && !style.fontFamily.includes('Nunito')) {
+                    el.style.setProperty('font-family', "'Nunito', sans-serif", 'important');
+                }
+
+                // 5. Remove a logo nativa "Powered by EZSoft" violentamente, caçando texto ou tags
+                if (el.textContent === 'Powered by EZSoft') {
+                    el.style.setProperty('display', 'none', 'important');
+                    if (el.parentElement) {
+                        el.parentElement.style.setProperty('display', 'none', 'important');
+                    }
+                }
+            });
+
+            // Ajusta barra da Toyking Header
+            const toykingHeader = Array.from(doc.querySelectorAll('p')).find(p => p.textContent.includes('Toyking') && p.textContent !== 'Falar com a ToyKing');
+            if (toykingHeader && toykingHeader.parentElement) {
+                toykingHeader.parentElement.style.setProperty('background-color', toyBlue, 'important');
+                toykingHeader.parentElement.style.setProperty('color', 'white', 'important');
+            }
+
+            // Remove flag por seletor
+            const powered = doc.querySelectorAll('a[href*="ezsoft"], [data-testid="poweredBy"]');
+            powered.forEach(p => p.style.setProperty('display', 'none', 'important'));
+
+        } catch (e) { /* Ignore CORS policy errors entirely */ }
+    }
+
+    // Mantém a injeção forçada de estilo batendo enquanto aberto
+    setInterval(() => {
+        if (ezChatOpened) {
+            forceStyleInEzChat();
+        }
+    }, 500);
 });
