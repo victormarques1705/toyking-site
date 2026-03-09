@@ -772,10 +772,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     el.style.setProperty('color', toyDarkText, 'important');
                 }
 
-                // Correção do texto invisível ao digitar
-                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable) {
-                    el.style.setProperty('color', toyDarkText, 'important');
-                    el.style.setProperty('background-color', 'transparent', 'important');
+                // Correção do texto: Garante cor BRANCA (#FFFFFF) e fundo escuro pro que o usuário está digitando ativamente
+                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable || el.closest('span[contenteditable="true"]') || el.hasAttribute('contenteditable')) {
+                    el.style.setProperty('color', '#FFFFFF', 'important');
+                    // Garante que o fundo seja escuro para a letra branca aparecer bem
+                    el.style.setProperty('background-color', '#333333', 'important');
+                    el.style.setProperty('border-radius', '8px', 'important');
                 }
 
                 // 3. Oculta a Imagem Gigante (Capa da loja com os balões) - caso retorne
