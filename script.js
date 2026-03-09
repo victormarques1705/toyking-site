@@ -702,19 +702,77 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===== CUSTOM LAUNCHER FOR EZ CHAT =====
     const chatBtn = document.getElementById('chat-btn');
+    let ezChatOpened = false;
 
     if (chatBtn) {
         chatBtn.addEventListener('click', () => {
             const badge = chatBtn.querySelector('.chat-badge');
-            if (badge) badge.style.display = 'none'; // hide badge after clicking
+            if (badge) badge.style.display = 'none';
 
-            // Open the native EZchatbot window
             if (window.ezchat && typeof window.ezchat.open === 'function') {
                 window.ezchat.open();
-            } else {
-                // Se por acaso o bot der erro ou não carregar tão rápido, dá um feedback ou fallback visual.
-                console.warn('EZ Chatbot ainda não carregou');
+                ezChatOpened = true;
+                forceStyleInEzChat(); // Try immediately
             }
         });
     }
+
+    // Try to periodically inject styles to the iframe if it's there
+    function forceStyleInEzChat() {
+        try {
+            const iframe = document.querySelector('iframe[title="mainFrame"]');
+            if (!iframe) return;
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            if (!doc) return;
+
+            // If we already injected, return
+            if (doc.getElementById('tk-ez-override')) return;
+
+            const style = doc.createElement('style');
+            style.id = 'tk-ez-override';
+
+            // AGGRESSIVE CSS OVERRIDES FOR EZCHAT
+            style.innerHTML = `
+                /* 1. Global Background (change dark gray/white to our neutral light gray) */
+                body, html, #root, main, div { 
+                    font-family: 'Nunito', sans-serif !important;
+                }
+                
+                * {
+                    /* If they use css variables */
+                    --primary-color: #1A8BD6 !important;
+                    --secondary-color: #0D5FA0 !important;
+                }
+
+                /* Override the "Welcome to Toyking" huge photo intro container */
+                [style*="border-radius: 12px"] > img, [style*="object-fit"] { display: none !important; }
+
+                /* Change dark mode backgrounds to white */
+                [style*="background-color: rgb(51, 51, 51)"],
+                [style*="background-color: rgb(45, 45, 45)"] {
+                    background-color: #F8F9FA !important;
+                    color: #333 !important;
+                }
+
+                /* Change their primary purple (#5e35b1 -> rgb(94, 53, 177) or similar) to our Blue */
+                [style*="background-color: rgb(83, 56, 158)"],
+                [style*="background: rgb(83, 56, 158)"] {
+                    background-color: #1A8BD6 !important;
+                }
+
+                /* Hide huge intro card completely if possible by targeting height/width classes */
+                div > p[style*="Toyking"] { font-weight: bold; background: #1A8BD6 !important; color: white !important; }
+            `;
+
+            if (doc.head) doc.head.appendChild(style);
+
+        } catch (e) { /* CORS or timing issue */ }
+    }
+
+    // Keep trying to style the iframe every second since it might redrawn by React/Preact
+    setInterval(() => {
+        if (ezChatOpened) {
+            forceStyleInEzChat();
+        }
+    }, 1000);
 });
