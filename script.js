@@ -793,11 +793,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     el.style.setProperty('font-family', "'Nunito', sans-serif", 'important');
                 }
 
-                // 5. Remove a logo nativa "Powered by EZSoft" violentamente, caçando texto ou tags
-                if (el.textContent === 'Powered by EZSoft') {
+                // 5. Remove a logo nativa "Powered by EZSoft" violentamente
+                if (el.textContent.includes('Powered by EZSoft') || el.hasAttribute('data-testid') && el.getAttribute('data-testid').includes('poweredBy') || (el.tagName === 'A' && el.href.includes('ezsoft'))) {
                     el.style.setProperty('display', 'none', 'important');
                     if (el.parentElement) {
                         el.parentElement.style.setProperty('display', 'none', 'important');
+                        // Try to hide the grand-parent if it's the floating container with the logo
+                        if (el.parentElement.parentElement && (el.parentElement.parentElement.style.position === 'absolute' || el.parentElement.parentElement.style.position === 'fixed')) {
+                            el.parentElement.parentElement.style.setProperty('display', 'none', 'important');
+                        }
                     }
                 }
             });
@@ -809,9 +813,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 toykingHeader.parentElement.style.setProperty('color', 'white', 'important');
             }
 
-            // Remove flag por seletor
-            const powered = doc.querySelectorAll('a[href*="ezsoft"], [data-testid="poweredBy"]');
-            powered.forEach(p => p.style.setProperty('display', 'none', 'important'));
+            // Reforço extra por seletores conhecidos
+            const brandingSelectors = [
+                'a[href*="ezsoft"]',
+                '[data-testid*="poweredBy"]',
+                '[class*="poweredBy"]',
+                '.ez-powered-by',
+                'img[src*="ezsoft"]',
+                'svg:has(path[d*="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"])' // Seletor pro ícone de balão comum deles
+            ];
+            brandingSelectors.forEach(sel => {
+                doc.querySelectorAll(sel).forEach(p => {
+                    p.style.setProperty('display', 'none', 'important');
+                    if (p.parentElement) p.parentElement.style.setProperty('display', 'none', 'important');
+                });
+            });
 
         } catch (e) { /* Ignore CORS policy errors entirely */ }
     }
