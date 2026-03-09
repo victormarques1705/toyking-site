@@ -227,6 +227,29 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (typeof sbGetSettings !== 'undefined') {
+                const settingsData = await sbGetSettings();
+                const settings = {};
+                settingsData.forEach(s => settings[s.key] = s.value);
+
+                if (settings.catalogo_pdf_url) {
+                    const pdfUrl = settings.catalogo_pdf_url;
+                    // Update iframe
+                    const iframe = document.querySelector('.pdf-frame-wrapper iframe');
+                    if (iframe) {
+                        iframe.src = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+                    }
+                    // Update download button
+                    const btnDownload = document.querySelector('.btn-download');
+                    if (btnDownload) {
+                        btnDownload.href = pdfUrl;
+                    }
+                }
+            }
+        });
+    </script>
     <script src="script.js"></script>
 </body>
 

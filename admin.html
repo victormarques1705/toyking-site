@@ -850,7 +850,9 @@
                 <button class="nav-item" data-section="instagram"><i class="fab fa-instagram"></i> Instagram</button>
                 <button class="nav-item" data-section="videos"><i class="fas fa-play-circle"></i> Vídeos</button>
                 <button class="nav-item" data-section="manuals"><i class="fas fa-book"></i> Manuais</button>
-                <div class="nav-label">Configurações</div>
+                <div class="nav-label">Configurações e Páginas</div>
+                <button class="nav-item" data-section="catalogo"><i class="fas fa-file-pdf"></i> Catálogo PDF</button>
+                <button class="nav-item" data-section="pages"><i class="fas fa-file-alt"></i> Gerenciar Páginas</button>
                 <button class="nav-item" data-section="settings"><i class="fas fa-cog"></i> Configurações</button>
             </nav>
             <div class="sidebar-footer">
@@ -1176,6 +1178,70 @@
                     </div>
                 </div>
 
+                <!-- CATALOG -->
+                <div class="section" id="sec-catalogo">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>📜 Configuração do Catálogo PDF</h2>
+                        </div>
+                        <div class="panel-body">
+                            <div
+                                style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 24px;">
+                                <h4 style="margin-bottom: 10px; color: var(--blue-dark);"><i
+                                        class="fas fa-info-circle"></i> Como funciona?</h4>
+                                <p style="font-size: 0.9rem; color: #64748b; line-height: 1.5;">
+                                    O arquivo PDF subido aqui será exibido na página pública <strong>Catálogo</strong>.
+                                    O sistema utiliza armazenamento em nuvem para garantir que o catálogo carregue
+                                    rápido para seus clientes.
+                                </p>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Link do Catálogo Atual (PDF)</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" class="form-control" id="cfgCatalogoUrl" readonly
+                                        placeholder="Nenhum arquivo subido ainda">
+                                    <a id="btnViewCatalogo" href="#" target="_blank" class="btn btn-outline"
+                                        style="display: none;"><i class="fas fa-eye"></i> Ver</a>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 20px;">
+                                <label class="btn btn-primary"
+                                    style="cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-cloud-upload-alt"></i> Subir Novo Catálogo PDF
+                                    <input type="file" id="pdfCatalogoUpload" accept=".pdf" style="display: none;"
+                                        onchange="handleCatalogoUpload(event)">
+                                </label>
+                                <p id="pdfStatus" style="font-size: 0.85rem; color: #666; margin-top: 8px;"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAGES -->
+                <div class="section" id="sec-pages">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>📄 Gerenciamento de Páginas</h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-wrap">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Página</th>
+                                            <th>URL/Arquivo</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pagesTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- SETTINGS -->
                 <div class="section" id="sec-settings">
                     <div class="panel">
@@ -1342,7 +1408,7 @@
             }
 
             // ===== NAV =====
-            const titles = { dashboard: '📊 Dashboard', products: '📦 Produtos', categories: '🏷️ Categorias', pages: '📄 Páginas', banners: '🖼️ Banners', instagram: '📸 Instagram', videos: '🎬 Vídeos', manuals: '📖 Manuais', settings: '⚙️ Configurações' };
+            const titles = { dashboard: '📊 Dashboard', products: '📦 Produtos', categories: '🏷️ Categorias', pages: '📄 Páginas', banners: '🖼️ Banners', instagram: '📸 Instagram', videos: '🎬 Vídeos', manuals: '📖 Manuais', settings: '⚙️ Configurações', catalogo: '📜 Catálogo PDF' };
             document.querySelectorAll('.nav-item').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const sec = btn.dataset.section;
@@ -2602,6 +2668,52 @@
                 if (settings.video_feed_data && document.getElementById('cfgVideoFeed')) {
                     document.getElementById('cfgVideoFeed').value = settings.video_feed_data;
                     renderVideoFeedPreview();
+                }
+
+                // Catalog Config
+                if (settings.catalogo_pdf_url) {
+                    const input = document.getElementById('cfgCatalogoUrl');
+                    const btn = document.getElementById('btnViewCatalogo');
+                    if (input) input.value = settings.catalogo_pdf_url;
+                    if (btn) {
+                        btn.href = settings.catalogo_pdf_url;
+                        btn.style.display = 'inline-flex';
+                    }
+                }
+            }
+
+            // --- CATALOG MANAGEMENT ---
+            async function handleCatalogoUpload(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const status = document.getElementById('pdfStatus');
+                status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparando envio...';
+
+                try {
+                    const fileName = 'catalogo_toyking_' + Date.now() + '.pdf';
+                    showToast('Enviando catálogo... Isso pode levar alguns segundos.', 'info');
+
+                    const uploadedUrl = await sbUploadImage('manuals', fileName, file); // Reusing manuals bucket
+
+                    if (uploadedUrl) {
+                        await sbUpsertSetting('catalogo_pdf_url', uploadedUrl);
+                        settings.catalogo_pdf_url = uploadedUrl;
+
+                        document.getElementById('cfgCatalogoUrl').value = uploadedUrl;
+                        const btn = document.getElementById('btnViewCatalogo');
+                        btn.href = uploadedUrl;
+                        btn.style.display = 'inline-flex';
+
+                        status.innerHTML = '<span style="color:var(--green)"><i class="fas fa-check"></i> Catálogo atualizado com sucesso!</span>';
+                        showToast('Catálogo PDF atualizado com sucesso!');
+                    } else {
+                        throw new Error('Upload falhou');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    status.innerHTML = '<span style="color:var(--red)"><i class="fas fa-times"></i> Erro ao subir arquivo.</span>';
+                    showToast('Erro ao subir o PDF.', 'error');
                 }
             }
 
