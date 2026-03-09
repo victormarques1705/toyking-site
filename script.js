@@ -700,20 +700,62 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ===== CHAT WIDGET =====
+    // ===== CHAT WIDGET & EZ CHAT INTEGRATION =====
     const chatBtn = document.getElementById('chat-btn');
     const chatPanel = document.getElementById('chat-panel');
     const chatClose = document.getElementById('chat-close');
+    const chatBody = document.getElementById('chat-body');
 
     if (chatBtn && chatPanel && chatClose) {
         chatBtn.addEventListener('click', () => {
             chatPanel.classList.add('open');
             const badge = chatBtn.querySelector('.chat-badge');
             if (badge) badge.style.display = 'none'; // hide badge after opening
+
+            // Força a abertura do chat do EZchatbot caso esteja integrado
+            if (window.ezchat && typeof window.ezchat.open === 'function') {
+                window.ezchat.open();
+            }
         });
 
         chatClose.addEventListener('click', () => {
             chatPanel.classList.remove('open');
         });
+
+        // Intercepta e move o iframe/shadow do EzChat para dentro do nosso design
+        const ezObserver = new MutationObserver((mutations) => {
+            const host = document.getElementById('preact-border-shadow-host') || document.getElementById('EZchatWidget');
+
+            if (host && chatBody && host.parentElement !== chatBody) {
+                // Remove o conteúdo estático anterior (as mensagens fake)
+                chatBody.innerHTML = '';
+                // Move o widget real do EzChat para dentro do nosso corpo de chat
+                chatBody.appendChild(host);
+
+                // Força o widget do ezchat a ocupar 100% do nosso .chat-body ao invés de ficar fixo na tela toda
+                host.style.setProperty('position', 'absolute', 'important');
+                host.style.setProperty('top', '0', 'important');
+                host.style.setProperty('left', '0', 'important');
+                host.style.setProperty('width', '100%', 'important');
+                host.style.setProperty('height', '100%', 'important');
+                host.style.setProperty('bottom', 'auto', 'important');
+                host.style.setProperty('right', 'auto', 'important');
+                host.style.setProperty('z-index', '10', 'important');
+                host.style.setProperty('border-radius', '0 0 16px 16px', 'important');
+
+                // Tenta abrir assim que for inserido
+                setTimeout(() => {
+                    if (window.ezchat && typeof window.ezchat.open === 'function') {
+                        window.ezchat.open();
+                    }
+                }, 500);
+
+                // Como já encontramos e movemos, podemos parar de observar o DOM
+                ezObserver.disconnect();
+            }
+        });
+
+        // Inicia a observação no body aguardando o script do EZChat injetar o HTML
+        ezObserver.observe(document.body, { childList: true, subtree: true });
     }
 });
