@@ -700,6 +700,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ===== INJECT GLOBAL CHAT HTML && SCRIPT TAG =====
+    if (!document.getElementById('chat-widget')) {
+        const chatWidgetHtml = `
+            <div class="chat-widget" id="chat-widget">
+                <button class="chat-btn" id="chat-btn" aria-label="Abrir chat">
+                    <img src="assets/images/chat-avatar.jpg" alt="Atendimento" class="chat-avatar-btn">
+                    <span class="chat-badge">1</span>
+                </button>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', chatWidgetHtml);
+
+        const ezScript = document.createElement('script');
+        ezScript.type = 'application/javascript';
+        ezScript.src = 'https://ezchatbot.ai/webchat/index.umd.js';
+        ezScript.className = 'EzWebchat';
+        ezScript.id = '9d9f88d5-c4f7-4c74-8227-7268269f1560.a13ceb21-c0d8-4120-8a82-3877385a5f9f';
+        document.body.appendChild(ezScript);
+    }
+
     // ===== CUSTOM LAUNCHER FOR EZ CHAT =====
     const chatBtn = document.getElementById('chat-btn');
     let ezChatOpened = false;
@@ -765,19 +785,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     el.style.setProperty('color', toyDarkText, 'important');
                 }
 
-                // Correção do texto invisível ao digitar: Força tudo que for campo de digitação a ter texto escuro
-                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable) {
-                    el.style.setProperty('color', toyDarkText, 'important');
-                    // Garante que o fundo do campo de texto também seja branco/claro
-                    el.style.setProperty('background-color', 'transparent', 'important');
-                }
-
                 // 3. Oculta a Imagem Gigante (Capa da loja com os balões)
                 if (el.tagName === 'IMG' && (el.style.objectFit === 'cover' || el.src.includes('jpg') || el.src.includes('jpeg'))) {
                     // Impede de ocultar micro avatar
                     if (!el.src.includes('cac09326') && !el.src.includes('c4c9ca60') && (el.width > 50 || parseInt(style.height) > 100)) {
                         el.style.setProperty('display', 'none', 'important');
                     }
+                }
+
+                // Correção do texto: Garante cor BRANCA (#FFFFFF) e fundo escuro pro que o usuário está digitando ativamente
+                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable || el.closest('span[contenteditable="true"]') || el.hasAttribute('contenteditable')) {
+                    el.style.setProperty('color', '#FFFFFF', 'important');
+                    // Garante que o fundo seja escuro para a letra branca aparecer bem
+                    el.style.setProperty('background-color', '#333333', 'important');
+                    el.style.setProperty('border-radius', '8px', 'important');
                 }
 
                 // 4. Força a fonte
