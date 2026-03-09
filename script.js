@@ -704,12 +704,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatBtn = document.getElementById('chat-btn');
     let ezChatOpened = false;
 
+    // Força o bot do EZChat a ficar FECHADO e sem popups irritantes até o usuário clicar na nossa girafa
+    const blockAutoOpen = setInterval(() => {
+        if (!ezChatOpened && window.ezchat) {
+            if (typeof window.ezchat.close === 'function') {
+                window.ezchat.close();
+            }
+            if (typeof window.ezchat.set === 'function') {
+                window.ezchat.set('showPopup', false); // Tira os balões chatos automáticos
+            }
+        }
+    }, 500);
+
     if (chatBtn) {
         chatBtn.addEventListener('click', () => {
             const badge = chatBtn.querySelector('.chat-badge');
             if (badge) badge.style.display = 'none';
 
             if (window.ezchat && typeof window.ezchat.open === 'function') {
+                clearInterval(blockAutoOpen); // Remove a trava
                 window.ezchat.open();
                 ezChatOpened = true;
                 forceStyleInEzChat(); // Try immediately
