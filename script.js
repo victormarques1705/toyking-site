@@ -699,4 +699,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 800);
         }
     }
+
+    // ===== CHAT WIDGET =====
+    const chatBtn = document.getElementById('chat-btn');
+    const chatPanel = document.getElementById('chat-panel');
+    const chatClose = document.getElementById('chat-close');
+
+    if (chatBtn && chatPanel && chatClose) {
+        chatBtn.addEventListener('click', () => {
+            chatPanel.classList.add('open');
+            const badge = chatBtn.querySelector('.chat-badge');
+            if (badge) badge.style.display = 'none'; // hide badge after opening
+        });
+
+        chatClose.addEventListener('click', () => {
+            chatPanel.classList.remove('open');
+        });
+    }
 });
