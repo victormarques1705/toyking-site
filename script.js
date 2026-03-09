@@ -86,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize very early
     loadAndRenderBanners();
+    loadSiteData();
 
     // ===== DYNAMIC DATA LOADING FROM SUPABASE =====
     async function loadSiteData() {
@@ -122,8 +123,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (settingsMap.email) {
                     document.querySelectorAll('a[href^="mailto:"]').forEach(a => {
                         a.href = 'mailto:' + settingsMap.email;
-                        a.textContent = settingsMap.email;
+                        // Don't change text if it's an icon-only link
+                        if (a.textContent.includes('@')) a.textContent = settingsMap.email;
                     });
+                    const contactEmail = document.getElementById('contact-email');
+                    if (contactEmail) { contactEmail.href = 'mailto:' + settingsMap.email; contactEmail.textContent = settingsMap.email; }
+                    const alertEmail = document.getElementById('alert-email');
+                    if (alertEmail) alertEmail.textContent = settingsMap.email;
+
                     document.querySelectorAll('.fa-envelope').forEach(icon => {
                         let parent = icon.parentElement;
                         if (parent && (parent.tagName === 'P' || parent.tagName === 'LI') && !parent.querySelector('a')) {
@@ -145,6 +152,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         }
                     });
+                    const contactPhone = document.getElementById('contact-phone');
+                    if (contactPhone) { contactPhone.href = 'tel:' + purePhone; contactPhone.textContent = settingsMap.phone; }
+                    const alertPhone = document.getElementById('alert-phone');
+                    if (alertPhone) alertPhone.textContent = settingsMap.phone;
                 }
                 if (settingsMap.whatsapp) {
                     const pureWa = settingsMap.whatsapp.replace(/\D/g, '');
@@ -164,6 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
                         }
                     });
+                    const contactWa = document.getElementById('contact-whatsapp');
+                    if (contactWa) { contactWa.href = 'https://wa.me/55' + pureWa; contactWa.textContent = settingsMap.whatsapp; }
                 }
                 if (settingsMap.address) {
                     document.querySelectorAll('.fa-map-marker-alt').forEach(icon => {
@@ -172,12 +185,29 @@ document.addEventListener('DOMContentLoaded', () => {
                             parent.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${settingsMap.address}`;
                         }
                     });
+                    const contactAddr = document.getElementById('contact-address');
+                    if (contactAddr) contactAddr.textContent = settingsMap.address;
+                    const contactAddrMap = document.getElementById('contact-address-map');
+                    if (contactAddrMap) contactAddrMap.textContent = (settingsMap.site_name || 'Toy King') + ' - ' + settingsMap.address;
                 }
                 if (settingsMap.slogan) {
                     document.querySelectorAll('.footer-logo').forEach(logo => {
                         let nextElem = logo.nextElementSibling;
                         if (nextElem && nextElem.tagName === 'P') {
                             nextElem.textContent = settingsMap.slogan;
+                        }
+                    });
+                    const footerSlogan = document.querySelector('.footer-col p');
+                    if (footerSlogan && footerSlogan.textContent.includes('Distribuidora')) {
+                        footerSlogan.textContent = settingsMap.slogan;
+                    }
+                }
+
+                if (settingsMap.site_name) {
+                    const siteLabels = document.querySelectorAll('.footer-bottom p, h1, .contact-alert-text strong');
+                    siteLabels.forEach(el => {
+                        if (el.textContent.includes('Toy King') || el.textContent.includes('ToyKing')) {
+                            el.innerHTML = el.innerHTML.replace('Toy King', settingsMap.site_name).replace('ToyKing', settingsMap.site_name);
                         }
                     });
                 }

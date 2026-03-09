@@ -134,7 +134,7 @@
                         <div class="contact-icon-circle blue"><i class="fas fa-phone-alt"></i></div>
                         <div>
                             <h4>Telefone / WhatsApp</h4>
-                            <p><a href="tel:1132271441">(11) 3227-1441</a></p>
+                            <p><a href="tel:1132271441" id="contact-phone">(11) 3227-1441</a></p>
                             <p style="font-size:0.85rem; margin-top:4px; color: #999;">Seg-Sex: 9h às 18h</p>
                         </div>
                     </div>
@@ -142,7 +142,7 @@
                         <div class="contact-icon-circle orange"><i class="fas fa-envelope"></i></div>
                         <div>
                             <h4>E-mail</h4>
-                            <p><a href="mailto:contato@toyking.com.br">contato@toyking.com.br</a></p>
+                            <p><a href="mailto:contato@toyking.com.br" id="contact-email">contato@toyking.com.br</a></p>
                             <p style="font-size:0.85rem; margin-top:4px; color: #999;">Respondemos em até 24h</p>
                         </div>
                     </div>
@@ -150,7 +150,7 @@
                         <div class="contact-icon-circle green"><i class="fab fa-whatsapp"></i></div>
                         <div>
                             <h4>WhatsApp</h4>
-                            <p><a href="https://wa.me/551132271441">(11) 3227-1441</a></p>
+                            <p><a href="https://wa.me/551132271441" id="contact-whatsapp">(11) 3227-1441</a></p>
                             <p style="font-size:0.85rem; margin-top:4px; color: #999;">Atendimento rápido</p>
                         </div>
                     </div>
@@ -158,7 +158,7 @@
                         <div class="contact-icon-circle red"><i class="fas fa-map-marker-alt"></i></div>
                         <div>
                             <h4>Endereço</h4>
-                            <p>Avenida das Américas, 2000, Rio de Janeiro, RJ</p>
+                            <p id="contact-address">Avenida das Américas, 2000, Rio de Janeiro, RJ</p>
                             <p style="font-size:0.85rem; margin-top:4px; color: #999;">Atendimento comercial</p>
                         </div>
                     </div>
@@ -188,8 +188,8 @@
                 <div style="text-align: center; padding: 40px;">
                     <i class="fas fa-map-marked-alt"
                         style="font-size: 3rem; color: var(--blue-primary); margin-bottom: 16px; display: block;"></i>
-                    <p style="font-weight: 700; color: var(--blue-dark); font-size: 1.1rem;">Toy King - Avenida das
-                        Américas, 2000, Rio de Janeiro, RJ</p>
+                    <p style="font-weight: 700; color: var(--blue-dark); font-size: 1.1rem;" id="contact-address-map">
+                        Toy King - Avenida das Américas, 2000, Rio de Janeiro, RJ</p>
                     <p style="color: #999; font-size: 0.9rem; margin-top: 8px;">Visite-nos para conhecer nossos produtos
                     </p>
                 </div>
@@ -202,8 +202,10 @@
         <div class="alert-box reveal">
             <div class="alert-icon">⚠️</div>
             <h3>ALERTA IMPORTANTE</h3>
-            <p>Prezados clientes e parceiros, a <strong>Toy King</strong> informa que apenas se comunica através de seus
-                canais e domínio eletrônico oficial: contato@toyking.com.br e (11) 3227-1441.</p>
+            <p id="contact-alert-text">Prezados clientes e parceiros, a <strong>Toy King</strong> informa que apenas se
+                comunica através de seus
+                canais e domínio eletrônico oficial: <span id="alert-email">contato@toyking.com.br</span> e <span
+                    id="alert-phone">(11) 3227-1441</span>.</p>
         </div>
     </section>
 
