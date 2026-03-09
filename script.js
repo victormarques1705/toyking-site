@@ -613,7 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ===== CAROUSEL NAVIGATION (DESKTOP) =====
+    // ===== CAROUSEL NAVIGATION + AUTO-SCROLL (DESKTOP) =====
     const carouselWrapper = document.querySelector('.cat-carousel-wrapper');
     if (carouselWrapper) {
         const carousel = carouselWrapper.querySelector('.age-bubbles');
@@ -621,51 +621,82 @@ document.addEventListener('DOMContentLoaded', () => {
         const nextBtn = carouselWrapper.querySelector('.cat-nav-btn.next');
 
         if (carousel && prevBtn && nextBtn) {
-            const scrollAmount = 350; // Approximations for scrolling a few items
+            const scrollAmount = 220; // pixels per auto-scroll step
+            const autoScrollDelay = 2500; // ms between each step
+            let autoScrollInterval = null;
+            let isHovering = false;
 
+            // ---- Auto-scroll logic ----
+            function autoScrollStep() {
+                if (isHovering) return;
+                const maxScrollLeft = carousel.scrollWidth - carousel.clientWidth;
+                if (maxScrollLeft <= 0) return; // nothing to scroll
+
+                if (carousel.scrollLeft >= maxScrollLeft - 5) {
+                    // Reached the end – snap back to start smoothly
+                    carousel.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                }
+            }
+
+            function startAutoScroll() {
+                if (autoScrollInterval) clearInterval(autoScrollInterval);
+                autoScrollInterval = setInterval(autoScrollStep, autoScrollDelay);
+            }
+
+            function resetAutoScroll() {
+                clearInterval(autoScrollInterval);
+                startAutoScroll();
+            }
+
+            // Pause on hover
+            carouselWrapper.addEventListener('mouseenter', () => { isHovering = true; });
+            carouselWrapper.addEventListener('mouseleave', () => { isHovering = false; });
+
+            // ---- Manual buttons ----
             prevBtn.addEventListener('click', () => {
-                carousel.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+                const maxScrollLeft = carousel.scrollWidth - carousel.clientWidth;
+                if (carousel.scrollLeft <= 5) {
+                    // At the start – jump to the end
+                    carousel.scrollTo({ left: maxScrollLeft, behavior: 'smooth' });
+                } else {
+                    carousel.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+                }
+                resetAutoScroll();
             });
 
             nextBtn.addEventListener('click', () => {
-                carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                const maxScrollLeft = carousel.scrollWidth - carousel.clientWidth;
+                if (carousel.scrollLeft >= maxScrollLeft - 5) {
+                    // At the end – jump back to start
+                    carousel.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    carousel.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                }
+                resetAutoScroll();
             });
 
-            // Optional: Hide buttons if at start or end
+            // ---- Button visibility (always visible, no disabled state) ----
             const updateButtons = () => {
                 const maxScrollLeft = carousel.scrollWidth - carousel.clientWidth;
-
-                if (maxScrollLeft <= 0) {
-                    // Content fits, hide both buttons
-                    prevBtn.style.display = 'none';
-                    nextBtn.style.display = 'none';
-                    return;
-                }
-
-                prevBtn.style.display = 'flex';
-                nextBtn.style.display = 'flex';
-
-                if (carousel.scrollLeft <= 5) {
-                    prevBtn.style.opacity = '0.25';
-                    prevBtn.style.pointerEvents = 'none';
-                } else {
-                    prevBtn.style.opacity = '1';
-                    prevBtn.style.pointerEvents = 'auto';
-                }
-
-                if (carousel.scrollLeft >= maxScrollLeft - 10) {
-                    nextBtn.style.opacity = '0.25';
-                    nextBtn.style.pointerEvents = 'none';
-                } else {
-                    nextBtn.style.opacity = '1';
-                    nextBtn.style.pointerEvents = 'auto';
-                }
+                const hidden = maxScrollLeft <= 0;
+                prevBtn.style.display = hidden ? 'none' : 'flex';
+                nextBtn.style.display = hidden ? 'none' : 'flex';
+                prevBtn.style.opacity = '1';
+                nextBtn.style.opacity = '1';
+                prevBtn.style.pointerEvents = 'auto';
+                nextBtn.style.pointerEvents = 'auto';
             };
 
             carousel.addEventListener('scroll', updateButtons);
-            // Initial check
-            setTimeout(updateButtons, 500);
             window.addEventListener('resize', updateButtons);
+
+            // Start everything after a short delay (so dynamic bubbles have time to render)
+            setTimeout(() => {
+                updateButtons();
+                startAutoScroll();
+            }, 800);
         }
     }
 });
