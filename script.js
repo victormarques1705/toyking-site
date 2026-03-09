@@ -723,48 +723,55 @@ document.addEventListener('DOMContentLoaded', () => {
             const iframe = document.querySelector('iframe[title="mainFrame"]');
             if (!iframe) return;
             const doc = iframe.contentDocument || iframe.contentWindow.document;
-            if (!doc) return;
+            if (!doc || !doc.body) return;
 
-            // If we already injected, return
-            if (doc.getElementById('tk-ez-override')) return;
+            // Constantes de cores do EZChat que vieram da API deles
+            const ezPurple1 = 'rgb(87, 56, 249)';  // #5738F9 (Main Color)
+            const ezPurple2 = 'rgb(60, 39, 174)';  // #3C27AE (Bubble Color)
+            const ezPurple3 = 'rgb(83, 56, 158)';  // fallback purple
+            const ezDark1 = 'rgb(51, 51, 51)';     // #333 (Dark background)
+            const ezDark2 = 'rgb(45, 45, 45)';     // #2D2D2D
 
-            const style = doc.createElement('style');
-            style.id = 'tk-ez-override';
+            // Nossas cores
+            const toyBlue = '#1A8BD6';
+            const toyLight = '#F8F9FA';
+            const toyDarkText = '#333333';
 
-            // AGGRESSIVE CSS OVERRIDES FOR EZCHAT
-            style.innerHTML = `
-                /* 1. Global Background (change dark gray/white to our neutral light gray) */
-                body, html, #root, main, div { 
-                    font-family: 'Nunito', sans-serif !important;
-                }
-                
-                * {
-                    /* If they use css variables */
-                    --primary-color: #1A8BD6 !important;
-                    --secondary-color: #0D5FA0 !important;
-                }
+            Array.from(doc.querySelectorAll('*')).forEach(el => {
+                const style = window.getComputedStyle(el);
+                const bg = style.backgroundColor;
 
-                /* Override the "Welcome to Toyking" huge photo intro container */
-                [style*="border-radius: 12px"] > img, [style*="object-fit"] { display: none !important; }
-
-                /* Change dark mode backgrounds to white */
-                [style*="background-color: rgb(51, 51, 51)"],
-                [style*="background-color: rgb(45, 45, 45)"] {
-                    background-color: #F8F9FA !important;
-                    color: #333 !important;
+                // 1. Troca os Roxos pelo Azul ToyKing
+                if (bg === ezPurple1 || bg === ezPurple2 || bg === ezPurple3) {
+                    el.style.setProperty('background-color', toyBlue, 'important');
                 }
 
-                /* Change their primary purple (#5e35b1 -> rgb(94, 53, 177) or similar) to our Blue */
-                [style*="background-color: rgb(83, 56, 158)"],
-                [style*="background: rgb(83, 56, 158)"] {
-                    background-color: #1A8BD6 !important;
+                // 2. Troca o Fundo Escuro da janela por Fundo Claro (branco/gelo)
+                if (bg === ezDark1 || bg === ezDark2) {
+                    el.style.setProperty('background-color', toyLight, 'important');
+                    el.style.setProperty('color', toyDarkText, 'important');
                 }
 
-                /* Hide huge intro card completely if possible by targeting height/width classes */
-                div > p[style*="Toyking"] { font-weight: bold; background: #1A8BD6 !important; color: white !important; }
-            `;
+                // 3. Oculta a Imagem Gigante (Capa da loja com os balões)
+                if (el.tagName === 'IMG' && (el.style.objectFit === 'cover' || el.src.includes('jpg') || el.src.includes('jpeg'))) {
+                    // Impede de ocultar micro avatar
+                    if (!el.src.includes('cac09326') && !el.src.includes('c4c9ca60') && (el.width > 50 || parseInt(style.height) > 100)) {
+                        el.style.setProperty('display', 'none', 'important');
+                    }
+                }
 
-            if (doc.head) doc.head.appendChild(style);
+                // 4. Força a fonte
+                if (style.fontFamily && !style.fontFamily.includes('Nunito')) {
+                    el.style.setProperty('font-family', "'Nunito', sans-serif", 'important');
+                }
+            });
+
+            // Ajusta bordas dos botões internos e caixas para ficarem mais suaves iguais ao do site
+            const toykingHeader = Array.from(doc.querySelectorAll('p')).find(p => p.textContent.includes('Toyking'));
+            if (toykingHeader && toykingHeader.parentElement) {
+                toykingHeader.parentElement.style.setProperty('background-color', toyBlue, 'important');
+                toykingHeader.parentElement.style.setProperty('color', 'white', 'important');
+            }
 
         } catch (e) { /* CORS or timing issue */ }
     }
@@ -774,5 +781,5 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ezChatOpened) {
             forceStyleInEzChat();
         }
-    }, 1000);
+    }, 500);
 });

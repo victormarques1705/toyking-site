@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <script type="application/javascript" src="https://ezchatbot.ai/webchat/index.umd.js"
+        id="9d9f88d5-c4f7-4c74-8227-7268269f1560.a13ceb21-c0d8-4120-8a82-3877385a5f9f"></script>
+    <script>
+        setTimeout(() => {
+            try {
+                const iframe = document.querySelector('iframe');
+                console.log("Iframe found:", !!iframe);
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                console.log("Doc found:", !!doc);
+                console.log("Body innerHTML length:", doc.body.innerHTML.length);
+            } catch (e) {
+                console.error("CORS Error:", e.message);
+            }
+        }, 5000);
+    </script>
+</body>
+
+</html>
