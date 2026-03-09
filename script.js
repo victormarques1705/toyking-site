@@ -700,139 +700,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ===== INJECT GLOBAL CHAT HTML && SCRIPT TAG =====
-    if (!document.getElementById('chat-widget')) {
-        const chatWidgetHtml = `
-            <div class="chat-widget" id="chat-widget">
-                <button class="chat-btn" id="chat-btn" aria-label="Abrir chat">
-                    <img src="assets/images/chat-avatar.jpg" alt="Atendimento" class="chat-avatar-btn">
-                    <span class="chat-badge">1</span>
-                </button>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', chatWidgetHtml);
-
-        const ezScript = document.createElement('script');
-        ezScript.type = 'application/javascript';
-        ezScript.src = 'https://ezchatbot.ai/webchat/index.umd.js';
-        ezScript.className = 'EzWebchat';
-        ezScript.id = '9d9f88d5-c4f7-4c74-8227-7268269f1560.a13ceb21-c0d8-4120-8a82-3877385a5f9f';
-        document.body.appendChild(ezScript);
-    }
-
     // ===== CUSTOM LAUNCHER FOR EZ CHAT =====
     const chatBtn = document.getElementById('chat-btn');
-    let ezChatOpened = false;
-
-    // Força o bot do EZChat a ficar FECHADO e sem popups irritantes até o usuário clicar na nossa girafa
-    const blockAutoOpen = setInterval(() => {
-        if (!ezChatOpened && window.ezchat) {
-            if (typeof window.ezchat.close === 'function') {
-                window.ezchat.close();
-            }
-            if (typeof window.ezchat.set === 'function') {
-                window.ezchat.set('showPopup', false); // Tira os balões chatos automáticos
-            }
-        }
-    }, 500);
 
     if (chatBtn) {
         chatBtn.addEventListener('click', () => {
             const badge = chatBtn.querySelector('.chat-badge');
-            if (badge) badge.style.display = 'none';
+            if (badge) badge.style.display = 'none'; // hide badge after clicking
 
+            // Open the native EZchatbot window
             if (window.ezchat && typeof window.ezchat.open === 'function') {
-                clearInterval(blockAutoOpen); // Remove a trava
                 window.ezchat.open();
-                ezChatOpened = true;
-                forceStyleInEzChat(); // Try immediately
+            } else {
+                // Se por acaso o bot der erro ou não carregar tão rápido, dá um feedback ou fallback visual.
+                console.warn('EZ Chatbot ainda não carregou');
             }
         });
     }
-
-    // Try to periodically inject styles to the iframe if it's there
-    function forceStyleInEzChat() {
-        try {
-            const iframe = document.querySelector('iframe[title="mainFrame"]');
-            if (!iframe) return;
-            const doc = iframe.contentDocument || iframe.contentWindow.document;
-            if (!doc || !doc.body) return;
-
-            // Constantes de cores do EZChat que vieram da API deles
-            const ezPurple1 = 'rgb(87, 56, 249)';  // #5738F9 (Main Color)
-            const ezPurple2 = 'rgb(60, 39, 174)';  // #3C27AE (Bubble Color)
-            const ezPurple3 = 'rgb(83, 56, 158)';  // fallback purple
-            const ezDark1 = 'rgb(51, 51, 51)';     // #333 (Dark background)
-            const ezDark2 = 'rgb(45, 45, 45)';     // #2D2D2D
-
-            // Nossas cores
-            const toyBlue = '#1A8BD6';
-            const toyLight = '#F8F9FA';
-            const toyDarkText = '#333333';
-
-            Array.from(doc.querySelectorAll('*')).forEach(el => {
-                const style = window.getComputedStyle(el);
-                const bg = style.backgroundColor;
-
-                // 1. Troca os Roxos pelo Azul ToyKing
-                if (bg === ezPurple1 || bg === ezPurple2 || bg === ezPurple3) {
-                    el.style.setProperty('background-color', toyBlue, 'important');
-                }
-
-                // 2. Troca o Fundo Escuro da janela por Fundo Claro (branco/gelo)
-                if (bg === ezDark1 || bg === ezDark2) {
-                    el.style.setProperty('background-color', toyLight, 'important');
-                    el.style.setProperty('color', toyDarkText, 'important');
-                }
-
-                // 3. Oculta a Imagem Gigante (Capa da loja com os balões)
-                if (el.tagName === 'IMG' && (el.style.objectFit === 'cover' || el.src.includes('jpg') || el.src.includes('jpeg'))) {
-                    // Impede de ocultar micro avatar
-                    if (!el.src.includes('cac09326') && !el.src.includes('c4c9ca60') && (el.width > 50 || parseInt(style.height) > 100)) {
-                        el.style.setProperty('display', 'none', 'important');
-                    }
-                }
-
-                // Correção do texto: Garante cor BRANCA (#FFFFFF) e fundo escuro pro que o usuário está digitando ativamente
-                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable || el.closest('span[contenteditable="true"]') || el.hasAttribute('contenteditable')) {
-                    el.style.setProperty('color', '#FFFFFF', 'important');
-                    // Garante que o fundo seja escuro para a letra branca aparecer bem
-                    el.style.setProperty('background-color', '#333333', 'important');
-                    el.style.setProperty('border-radius', '8px', 'important');
-                }
-
-                // 4. Força a fonte
-                if (style.fontFamily && !style.fontFamily.includes('Nunito')) {
-                    el.style.setProperty('font-family', "'Nunito', sans-serif", 'important');
-                }
-
-                // 5. Remove a logo nativa "Powered by EZSoft" por texto exato para não esconder painéis a toa
-                if (el.textContent === 'Powered by EZSoft') {
-                    el.style.setProperty('display', 'none', 'important');
-                    if (el.parentElement) {
-                        el.parentElement.style.setProperty('display', 'none', 'important');
-                    }
-                }
-            });
-
-            // Ajusta bordas dos botões internos e caixas para ficarem mais suaves iguais ao do site
-            const toykingHeader = Array.from(doc.querySelectorAll('p')).find(p => p.textContent.includes('Toyking') && p.textContent !== 'Falar com a ToyKing');
-            if (toykingHeader && toykingHeader.parentElement) {
-                toykingHeader.parentElement.style.setProperty('background-color', toyBlue, 'important');
-                toykingHeader.parentElement.style.setProperty('color', 'white', 'important');
-            }
-
-            // Reforça a ocultação da flag do ezsoft através de seus seletores padrão
-            const powered = doc.querySelectorAll('a[href*="ezsoft"], [data-testid="poweredBy"]');
-            powered.forEach(p => p.style.setProperty('display', 'none', 'important'));
-
-        } catch (e) { /* CORS or timing issue */ }
-    }
-
-    // Keep trying to style the iframe every second since it might redrawn by React/Preact
-    setInterval(() => {
-        if (ezChatOpened) {
-            forceStyleInEzChat();
-        }
-    }, 500);
 });

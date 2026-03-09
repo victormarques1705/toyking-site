@@ -23,13 +23,6 @@
     --transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.product-price,
-.price,
-.price-tag,
-[class*="price"] {
-    display: none !important;
-}
-
 *,
 *::before,
 *::after {
@@ -1608,40 +1601,18 @@ a[href*="elfsight.com"],
     animation: bounce 2s infinite;
 }
 
-/* Hide the default EzChat launcher button so we only see the Giraffe */
-#EZchatWidget>div:first-child {
+/* Hide the default EzChat launcher button so we only see the Girafa */
+/* Target specific nested React containers to avoid destroying the main iframe layout */
+#EZchatWidget>div:first-child,
+#EZchatWidget div:has(> button[data-testid="bubbleBtn"]),
+#EZchatWidget [data-testid="bubbleBtn"],
+button[data-testid="bubbleBtn"] {
     display: none !important;
-}
-
-/* Esconde marca d'água "Powered by EZSoft" nas telas principais */
-[data-testid="poweredBy"],
-[data-testId="poweredBy"],
-a[href*="ezsoft"] {
-    display: none !important;
-}
-
-/* Force mobile chat to be a floating widget instead of an annoying fullscreen modal */
-@media (max-width: 800px) {
-    #EZchatWidget {
-        top: auto !important;
-        left: auto !important;
-        bottom: 100px !important;
-        /* Open above the custom Giraffe button */
-        right: 20px !important;
-        width: calc(100vw - 40px) !important;
-        height: 65vh !important;
-        max-height: 550px !important;
-        min-height: 400px !important;
-        background: transparent !important;
-        border-radius: 16px !important;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25) !important;
-        z-index: 99999999999 !important;
-    }
-
-    /* Target the iframe only when it's opened (width is not 0) */
-    #EZchatWidget iframe:not([width="0"]) {
-        width: 100% !important;
-        height: 100% !important;
-        border-radius: 16px !important;
-    }
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    z-index: -999 !important;
 }
