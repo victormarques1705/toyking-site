@@ -1605,3 +1605,28 @@ a[href*="elfsight.com"],
 #EZchatWidget>div:first-child {
     display: none !important;
 }
+
+/* Force mobile chat to be a floating widget instead of an annoying fullscreen modal */
+@media (max-width: 800px) {
+    #EZchatWidget {
+        top: auto !important;
+        left: auto !important;
+        bottom: 100px !important;
+        /* Open above the custom Giraffe button */
+        right: 20px !important;
+        width: auto !important;
+        height: auto !important;
+        background: transparent !important;
+    }
+
+    /* Target the iframe only when it's opened (width is not 0) */
+    #EZchatWidget iframe:not([width="0"]) {
+        width: calc(100vw - 40px) !important;
+        max-width: 380px !important;
+        height: 65vh !important;
+        min-height: 400px !important;
+        max-height: calc(100vh - 120px) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25) !important;
+    }
+}
