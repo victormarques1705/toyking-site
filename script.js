@@ -700,6 +700,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // ===== INJECT GLOBAL CHAT HTML && SCRIPT TAG =====
+    if (!document.getElementById('chat-widget')) {
+        const chatWidgetHtml = `
+            <div class="chat-widget" id="chat-widget">
+                <button class="chat-btn" id="chat-btn" aria-label="Abrir chat">
+                    <img src="assets/images/chat-avatar.jpg" alt="Atendimento" class="chat-avatar-btn">
+                    <span class="chat-badge">1</span>
+                </button>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', chatWidgetHtml);
+
+        const ezScript = document.createElement('script');
+        ezScript.type = 'application/javascript';
+        ezScript.src = 'https://ezchatbot.ai/webchat/index.umd.js';
+        ezScript.className = 'EzWebchat';
+        ezScript.id = '9d9f88d5-c4f7-4c74-8227-7268269f1560.a13ceb21-c0d8-4120-8a82-3877385a5f9f';
+        document.body.appendChild(ezScript);
+    }
+
     // ===== CUSTOM LAUNCHER FOR EZ CHAT =====
     const chatBtn = document.getElementById('chat-btn');
 
