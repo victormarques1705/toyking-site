@@ -1197,13 +1197,19 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Link do Catálogo Atual (PDF)</label>
+                                <label>Link do Catálogo (Envie arquivo ou cole um link aqui)</label>
                                 <div style="display: flex; gap: 10px;">
-                                    <input type="text" class="form-control" id="cfgCatalogoUrl" readonly
-                                        placeholder="Nenhum arquivo subido ainda">
+                                    <input type="text" class="form-control" id="cfgCatalogoUrl"
+                                        placeholder="Se o upload falhar, cole um link do Google Drive aqui..."
+                                        onchange="handleSaveCatalogUrl(this.value)">
                                     <a id="btnViewCatalogo" href="#" target="_blank" class="btn btn-outline"
                                         style="display: none;"><i class="fas fa-eye"></i> Ver</a>
                                 </div>
+                                <small style="color: #64748b; font-size: 0.8rem; margin-top: 5px; display: block;">
+                                    <strong>Dica:</strong> Se o Supabase bloquear o envio do arquivo abaix0, você pode
+                                    subir o PDF no seu Google Drive (em pasta pública) e colar o link diretamente ali em
+                                    cima! Ele salvará automaticamente.
+                                </small>
                             </div>
 
                             <div style="margin-top: 20px;">
@@ -1224,6 +1230,8 @@
                     <div class="panel">
                         <div class="panel-header">
                             <h2>📄 Gerenciamento de Páginas</h2>
+                            <button class="btn btn-primary" onclick="openPageModal()"><i class="fas fa-plus"></i> Nova
+                                Página</button>
                         </div>
                         <div class="panel-body">
                             <div class="table-wrap">
@@ -1232,6 +1240,7 @@
                                         <tr>
                                             <th>Página</th>
                                             <th>URL/Arquivo</th>
+                                            <th>Status</th>
                                             <th>Ações</th>
                                         </tr>
                                     </thead>
@@ -1321,13 +1330,14 @@
             let manuals = [];
             let settings = {};
 
+            let customPages = [];
             const defaultPages = [
-                { name: '🏠 Início', file: 'index.html' },
-                { name: '📋 Quem Somos', file: 'quem-somos.html' },
-                { name: '📖 Manuais e Vídeos', file: 'manuais.html' },
-                { name: '🧸 Produtos', file: 'produtos.html' },
-                { name: '📜 Catálogo', file: 'catalogo.html' },
-                { name: '📞 Contato', file: 'contato.html' },
+                { name: '🏠 Início', file: 'index.html', isAdminOnly: false },
+                { name: '📋 Quem Somos', file: 'quem-somos.html', isAdminOnly: false },
+                { name: '📖 Manuais e Vídeos', file: 'manuais.html', isAdminOnly: false },
+                { name: '🧸 Produtos', file: 'produtos.html', isAdminOnly: false },
+                { name: '📜 Catálogo', file: 'catalogo.html', isAdminOnly: false },
+                { name: '📞 Contato', file: 'contato.html', isAdminOnly: false },
             ];
 
             // Load data from Supabase on admin open
@@ -1599,10 +1609,78 @@
                 const tb = document.getElementById('pagesTable');
                 if (!tb) return;
                 tb.innerHTML = '';
+
+                // Show default pages (cannot delete)
                 defaultPages.forEach(p => {
-                    tb.innerHTML += `<tr><td><strong>${p.name}</strong></td><td>${p.file}</td>
-          <td><a href="${p.file}" class="btn btn-sm btn-outline" target="_blank"><i class="fas fa-external-link-alt"></i> Abrir</a></td></tr>`;
+                    tb.innerHTML += `<tr>
+                        <td><strong>${p.name}</strong></td>
+                        <td>${p.file}</td>
+                        <td><span class="badge-status badge-active">Sistema</span></td>
+                        <td><div class="td-actions">
+                            <a href="${p.file}" class="btn btn-sm btn-outline" target="_blank"><i class="fas fa-external-link-alt"></i></a>
+                        </div></td>
+                    </tr>`;
                 });
+
+                // Show custom pages
+                customPages.forEach((p, idx) => {
+                    tb.innerHTML += `<tr>
+                        <td><strong>${p.name}</strong></td>
+                        <td>${p.file}</td>
+                        <td><span class="badge-status badge-draft">Customizada</span></td>
+                        <td><div class="td-actions">
+                            <button class="btn btn-sm btn-outline" onclick="openPageModal(${idx})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-danger" onclick="deletePage(${idx})"><i class="fas fa-trash"></i></button>
+                            <a href="${p.file}" class="btn btn-sm btn-outline" target="_blank"><i class="fas fa-external-link-alt"></i></a>
+                        </div></td>
+                    </tr>`;
+                });
+            }
+
+            function openPageModal(idx = -1) {
+                const p = idx >= 0 ? customPages[idx] : { name: '', file: '' };
+                document.getElementById('modalTitle').textContent = idx >= 0 ? 'Editar Página' : 'Nova Página';
+                document.getElementById('modalBody').innerHTML = `
+                    <div class="form-group">
+                        <label>Nome da Página (Ex: Promoções)</label>
+                        <input type="text" class="form-control" id="mPageName" value="${p.name}">
+                    </div>
+                    <div class="form-group">
+                        <label>URL ou Arquivo (Ex: promocoes.html)</label>
+                        <input type="text" class="form-control" id="mPageFile" value="${p.file}">
+                    </div>
+                `;
+                document.getElementById('modalFooter').innerHTML = `
+                    <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
+                    <button class="btn btn-success" onclick="savePage(${idx})"><i class="fas fa-save"></i> Salvar Página</button>
+                `;
+                document.getElementById('modalOverlay').classList.add('show');
+            }
+
+            async function savePage(idx) {
+                const name = document.getElementById('mPageName').value;
+                const file = document.getElementById('mPageFile').value;
+                if (!name || !file) return showToast('Preencha todos os campos!', 'error');
+
+                const newPage = { name, file };
+                if (idx >= 0) {
+                    customPages[idx] = newPage;
+                } else {
+                    customPages.push(newPage);
+                }
+
+                await sbUpsertSetting('site_pages', JSON.stringify(customPages));
+                closeModal();
+                renderPages();
+                showToast('Página salva com sucesso!');
+            }
+
+            async function deletePage(idx) {
+                if (!confirm('Deseja excluir esta página?')) return;
+                customPages.splice(idx, 1);
+                await sbUpsertSetting('site_pages', JSON.stringify(customPages));
+                renderPages();
+                showToast('Página removida.');
             }
 
             function renderBanners() {
@@ -2638,7 +2716,8 @@
                     about_missao: document.getElementById('cfgAboutMissao') ? document.getElementById('cfgAboutMissao').value : '',
                     about_essencia: document.getElementById('cfgAboutEssencia') ? document.getElementById('cfgAboutEssencia').value : '',
                     insta_feed_data: document.getElementById('cfgInstaFeed') ? document.getElementById('cfgInstaFeed').value : '[]',
-                    video_feed_data: document.getElementById('cfgVideoFeed') ? document.getElementById('cfgVideoFeed').value : '[]'
+                    video_feed_data: document.getElementById('cfgVideoFeed') ? document.getElementById('cfgVideoFeed').value : '[]',
+                    site_pages: JSON.stringify(customPages)
                 };
                 for (const [key, value] of Object.entries(pairs)) {
                     await sbUpsertSetting(key, value);
@@ -2669,6 +2748,12 @@
                     document.getElementById('cfgVideoFeed').value = settings.video_feed_data;
                     renderVideoFeedPreview();
                 }
+                if (settings.site_pages) {
+                    try {
+                        customPages = JSON.parse(settings.site_pages);
+                        renderPages();
+                    } catch (e) { console.error('Erro ao carregar páginas:', e); }
+                }
 
                 // Catalog Config
                 if (settings.catalogo_pdf_url) {
@@ -2694,9 +2779,22 @@
                     const fileName = 'catalogo_toyking_' + Date.now() + '.pdf';
                     showToast('Enviando catálogo... Isso pode levar alguns segundos.', 'info');
 
-                    const uploadedUrl = await sbUploadImage('manuals', fileName, file); // Reusing manuals bucket
+                    // Expanded list of buckets to try
+                    const buckets = ['products', 'produtos', 'manuals', 'manuais', 'images', 'catalogo', 'files'];
+                    let result = { url: null, error: 'Iniciando upload...' };
+                    let successfulBucket = '';
 
-                    if (uploadedUrl) {
+                    for (const bucket of buckets) {
+                        status.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Tentando pasta: <strong>${bucket}</strong>...`;
+                        result = await sbUploadImage(bucket, fileName, file);
+                        if (result.url) {
+                            successfulBucket = bucket;
+                            break;
+                        }
+                    }
+
+                    if (result.url) {
+                        const uploadedUrl = result.url;
                         await sbUpsertSetting('catalogo_pdf_url', uploadedUrl);
                         settings.catalogo_pdf_url = uploadedUrl;
 
@@ -2705,15 +2803,40 @@
                         btn.href = uploadedUrl;
                         btn.style.display = 'inline-flex';
 
-                        status.innerHTML = '<span style="color:var(--green)"><i class="fas fa-check"></i> Catálogo atualizado com sucesso!</span>';
+                        status.innerHTML = `<span style="color:var(--green)"><i class="fas fa-check"></i> Sucesso via pasta <strong>${successfulBucket}</strong>!</span>`;
                         showToast('Catálogo PDF atualizado com sucesso!');
                     } else {
-                        throw new Error('Upload falhou');
+                        let finalError = result.error || 'Erro desconhecido';
+
+                        // Treat RLS/Permission errors specifically
+                        if (finalError.includes('row-level security') || finalError.includes('403') || finalError.includes('Permission denied')) {
+                            finalError = "Erro de Permissão (RLS). Vá no Supabase > Storage > Policies e habilite INSERT/UPDATE para o bucket 'products'.";
+                        } else if (finalError.includes('bucket not found') || finalError.includes('404')) {
+                            finalError = "Nenhuma pasta encontrada. Crie uma pasta chamada 'products' no Storage do seu Supabase e deixe-a como 'Public'.";
+                        }
+
+                        throw new Error(finalError);
                     }
                 } catch (err) {
                     console.error(err);
-                    status.innerHTML = '<span style="color:var(--red)"><i class="fas fa-times"></i> Erro ao subir arquivo.</span>';
-                    showToast('Erro ao subir o PDF.', 'error');
+                    status.innerHTML = `<div style="color:var(--red); background: #fee2e2; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.8rem; border: 1px solid #fecaca;">
+                        <strong><i class="fas fa-exclamation-triangle"></i> ERRO:</strong><br>${err.message}
+                    </div>`;
+                    showToast('Falha no upload. Veja os detalhes abaixo do botão.', 'error');
+                }
+            }
+
+            async function handleSaveCatalogUrl(url) {
+                if (!url) return;
+                try {
+                    await sbUpsertSetting('catalogo_pdf_url', url);
+                    settings.catalogo_pdf_url = url;
+                    const btn = document.getElementById('btnViewCatalogo');
+                    btn.href = url;
+                    btn.style.display = 'inline-flex';
+                    showToast('Link do catálogo salvo com sucesso!');
+                } catch (e) {
+                    showToast('Erro ao salvar o link', 'error');
                 }
             }
 

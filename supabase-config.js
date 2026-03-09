@@ -105,11 +105,23 @@ async function sbUpsertSetting(key, value) {
 
 // --- STORAGE (Image Upload) ---
 async function sbUploadImage(bucket, filePath, file) {
-    const { data, error } = await supabaseClient.storage.from(bucket).upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: true
-    });
-    if (error) { console.error('Erro ao fazer upload:', error); return null; }
-    const { data: urlData } = supabaseClient.storage.from(bucket).getPublicUrl(filePath);
-    return urlData.publicUrl;
+    try {
+        console.log(`Iniciando upload para bucket: ${bucket}, path: ${filePath}`);
+        const { data, error } = await supabaseClient.storage.from(bucket).upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: true
+        });
+
+        if (error) {
+            console.error('Erro detalhado Supabase Upload:', error);
+            return { url: null, error: error.message || JSON.stringify(error) };
+        }
+
+        const { data: urlData } = supabaseClient.storage.from(bucket).getPublicUrl(filePath);
+        console.log('Upload concluído com sucesso:', urlData.publicUrl);
+        return { url: urlData.publicUrl, error: null };
+    } catch (err) {
+        console.error('Erro de exceção no upload:', err);
+        return { url: null, error: err.message };
+    }
 }
