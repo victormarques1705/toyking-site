@@ -836,6 +836,20 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(() => {
         if (ezChatOpened) {
             forceStyleInEzChat();
+
+            // Reforço para a "bolha" que fica no documento principal (não no iframe)
+            const mainBranding = document.querySelector('#EZchatWidget a[data-testid="poweredBy"], #EZchatWidget [class*="poweredBy"]');
+            if (mainBranding) {
+                const bubble = mainBranding.closest('div');
+                if (bubble && bubble.id !== 'EZchatWidget') {
+                    bubble.style.setProperty('display', 'none', 'important');
+                    bubble.style.setProperty('opacity', '0', 'important');
+                    // Tenta subir mais um nível se for o contêiner branco detectado
+                    if (bubble.parentElement && bubble.parentElement.id !== 'EZchatWidget') {
+                        bubble.parentElement.style.setProperty('display', 'none', 'important');
+                    }
+                }
+            }
         }
     }, 500);
 });

@@ -1625,3 +1625,19 @@ button[data-testid="bubbleBtn"] {
     overflow: hidden !important;
     z-index: -999 !important;
 }
+
+/* Remove standard branding from the chat container (main document) */
+#EZchatWidget>div:last-child:has(a[href*="ezsoft"]),
+#EZchatWidget>div:nth-child(3):has(a[href*="ezsoft"]),
+#EZchatWidget a[data-testid="poweredBy"],
+#EZchatWidget [class*="poweredBy"],
+#EZchatWidget div:has(> a[data-testid="poweredBy"]) {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
