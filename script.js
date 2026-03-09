@@ -765,6 +765,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     el.style.setProperty('color', toyDarkText, 'important');
                 }
 
+                // Correção do texto invisível ao digitar: Força tudo que for campo de digitação a ter texto escuro
+                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable) {
+                    el.style.setProperty('color', toyDarkText, 'important');
+                    // Garante que o fundo do campo de texto também seja branco/claro
+                    el.style.setProperty('background-color', 'transparent', 'important');
+                }
+
                 // 3. Oculta a Imagem Gigante (Capa da loja com os balões)
                 if (el.tagName === 'IMG' && (el.style.objectFit === 'cover' || el.src.includes('jpg') || el.src.includes('jpeg'))) {
                     // Impede de ocultar micro avatar
@@ -777,14 +784,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (style.fontFamily && !style.fontFamily.includes('Nunito')) {
                     el.style.setProperty('font-family', "'Nunito', sans-serif", 'important');
                 }
+
+                // 5. Remove a logo nativa "Powered by EZSoft" por texto exato para não esconder painéis a toa
+                if (el.textContent === 'Powered by EZSoft') {
+                    el.style.setProperty('display', 'none', 'important');
+                    if (el.parentElement) {
+                        el.parentElement.style.setProperty('display', 'none', 'important');
+                    }
+                }
             });
 
             // Ajusta bordas dos botões internos e caixas para ficarem mais suaves iguais ao do site
-            const toykingHeader = Array.from(doc.querySelectorAll('p')).find(p => p.textContent.includes('Toyking'));
+            const toykingHeader = Array.from(doc.querySelectorAll('p')).find(p => p.textContent.includes('Toyking') && p.textContent !== 'Falar com a ToyKing');
             if (toykingHeader && toykingHeader.parentElement) {
                 toykingHeader.parentElement.style.setProperty('background-color', toyBlue, 'important');
                 toykingHeader.parentElement.style.setProperty('color', 'white', 'important');
             }
+
+            // Reforça a ocultação da flag do ezsoft através de seus seletores padrão
+            const powered = doc.querySelectorAll('a[href*="ezsoft"], [data-testid="poweredBy"]');
+            powered.forEach(p => p.style.setProperty('display', 'none', 'important'));
 
         } catch (e) { /* CORS or timing issue */ }
     }
