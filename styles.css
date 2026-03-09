@@ -1603,16 +1603,6 @@ a[href*="elfsight.com"],
 
 /* Hide the default EzChat launcher button so we only see the Girafa */
 /* Target specific nested React containers to avoid destroying the main iframe layout */
-#EZchatWidget {
-    pointer-events: none !important;
-    /* Evita que o widget invisível roube o clique da Girafa */
-}
-
-body.chat-opened #EZchatWidget {
-    pointer-events: auto !important;
-    /* Reativa quando estiver aberto */
-}
-
 #EZchatWidget>div:first-child,
 #EZchatWidget div:has(> button[data-testid="bubbleBtn"]),
 #EZchatWidget [data-testid="bubbleBtn"],
